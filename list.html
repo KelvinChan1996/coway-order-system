@@ -937,7 +937,7 @@
     function closeSuccessModal() { document.getElementById('successModal').classList.remove('active'); }
     
   
-   // 订单提交
+  // 订单提交 (Telegram 群组版)
 document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentProduct) { alert("Please select a product first"); return; }
@@ -945,6 +945,7 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
     if (!document.getElementById('address').value) { alert("Installation Address is required"); return; }
     if (!document.getElementById('email').value) { alert("Email Address is required"); return; }
     
+    // 格式化手机号
     function formatPhoneNumber(phone) {
         let cleaned = phone.replace(/\D/g, '');
         if (cleaned.startsWith('0')) cleaned = '60' + cleaned.substring(1);
@@ -952,6 +953,7 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
         return cleaned;
     }
     
+    // 压缩图片函数
     function compressImage(file, maxSizeMB = 1) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -985,6 +987,7 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
         });
     }
     
+    // 获取表单数据
     const productName = currentProduct.name;
     const contact1 = formatPhoneNumber(document.getElementById('contact1').value);
     const contact2Raw = document.getElementById('contact2').value;
@@ -1000,6 +1003,7 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
     submitBtn.innerText = '⏳ 上传图片中...';
     submitBtn.disabled = true;
     
+    // 上传 IC 图片
     let icImageUrl = '';
     const icFile = document.getElementById('icUpload').files[0];
     
@@ -1042,21 +1046,42 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
         return;
     }
     
-    // ========== 修复：使用 \n 然后 encodeURIComponent ==========
-    let whatsappMsg = `Name: ${productName}\n`;
-whatsappMsg += `Contact#1: ${contact1}\n`;
-if (contact2) whatsappMsg += `Contact#2: ${contact2}\n`;
-whatsappMsg += `Address: ${address}\n`;
-if (isDifferent && deliveryAddr) {
-    whatsappMsg += `Delivery address: ${deliveryAddr}\n`;
-}
-if (cardFirst6 || cardLast4) {
-    whatsappMsg += `Credit card number: ${cardFirst6}xxxxxx${cardLast4}\n`;
-}
-whatsappMsg += `IC Link: ${icImageUrl}\n`;
-whatsappMsg += `Order ID: ${orderId}`;
+    // ========== Telegram 配置 (已设置好群组ID) ==========
+    const BOT_TOKEN = '8386407941:AAF0W9XaG1tZNdwovITL2wrM-7L3uwQJfso';
+    const CHAT_ID = '-1003696449169'; // 这里已经替换成你的群组ID
     
-    const encodedMsg = encodeURIComponent(whatsappMsg);
+    // 构建 Telegram 消息
+    let tgMessage = `🧾 *NEW ORDER*\n\n`;
+    tgMessage += `*Name:* ${productName}\n`;
+    tgMessage += `*Contact#1:* ${contact1}\n`;
+    if (contact2) tgMessage += `*Contact#2:* ${contact2}\n`;
+    tgMessage += `*Address:* ${address}\n`;
+    if (isDifferent && deliveryAddr) tgMessage += `*Delivery:* ${deliveryAddr}\n`;
+    if (cardFirst6 || cardLast4) tgMessage += `*Card:* ${cardFirst6}xxxxxx${cardLast4}\n`;
+    tgMessage += `*IC Photo:* ${icImageUrl}\n`;
+    tgMessage += `*Agent Code:* ${agent.hp_code}\n`;
+    tgMessage += `*Order ID:* ${orderId}`;
+    
+    // 发送到 Telegram
+    try {
+        const tgResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: tgMessage,
+                parse_mode: 'Markdown'
+            })
+        });
+        const tgResult = await tgResponse.json();
+        if (tgResult.ok) {
+            console.log('✅ Telegram sent to group');
+        } else {
+            console.error('Telegram error:', tgResult.description);
+        }
+    } catch (error) {
+        console.error('Telegram send error:', error);
+    }
     
     // 保存订单
     let orders = localStorage.getItem('coway_orders');
@@ -1065,12 +1090,12 @@ whatsappMsg += `Order ID: ${orderId}`;
         orderId: orderId, date: new Date().toISOString(), product: productName,
         contact1: contact1, contact2: contact2, address: address,
         deliveryAddress: deliveryAddr, cardFirst6: cardFirst6, cardLast4: cardLast4,
-        icImageUrl: icImageUrl, assignedAgent: agent.name, agentContact: agent.contact, status: 'pending'
+        icImageUrl: icImageUrl, assignedAgent: agent.name, agentCode: agent.hp_code,
+        status: 'pending'
     });
     localStorage.setItem('coway_orders', JSON.stringify(orders));
     
     incrementAgentReceipt(agent);
-    window.open(`https://wa.me/${agent.contact}?text=${encodedMsg}`, '_blank');
     
     submitBtn.innerText = originalText;
     submitBtn.disabled = false;
