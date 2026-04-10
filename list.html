@@ -937,146 +937,171 @@
     function closeSuccessModal() { document.getElementById('successModal').classList.remove('active'); }
     
     // 订单提交
-    document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentProduct) { alert("Please select a product first"); return; }
-        if (!document.getElementById('contact1').value) { alert("Contact Number #1 is required"); return; }
-        if (!document.getElementById('address').value) { alert("Installation Address is required"); return; }
-        if (!document.getElementById('email').value) { alert("Email Address is required"); return; }
-        
-        function formatPhoneNumber(phone) {
-            let cleaned = phone.replace(/\D/g, '');
-            if (cleaned.startsWith('0')) cleaned = '60' + cleaned.substring(1);
-            if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
-            return cleaned;
-        }
-        
-        function compressImage(file, maxSizeMB = 1) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width, height = img.height;
-                        const maxWidth = 1024;
-                        if (width > maxWidth) {
-                            height = (height * maxWidth) / width;
-                            width = maxWidth;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        let quality = 0.8;
-                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        while (dataUrl.length > maxSizeMB * 1024 * 1024 && quality > 0.1) {
-                            quality -= 0.1;
-                            dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        }
-                        resolve(dataUrl.split(',')[1]);
-                    };
-                    img.onerror = reject;
-                };
-                reader.onerror = reject;
-            });
-        }
-        
-        const productName = currentProduct.name;
-        const contact1 = formatPhoneNumber(document.getElementById('contact1').value);
-        const contact2Raw = document.getElementById('contact2').value;
-        const contact2 = contact2Raw ? formatPhoneNumber(contact2Raw) : '';
-        const address = document.getElementById('address').value;
-        const cardFirst6 = document.getElementById('cardFirst6').value || '';
-        const cardLast4 = document.getElementById('cardLast4').value || '';
-        const isDifferent = differentCheckbox?.checked || false;
-        const deliveryAddr = isDifferent ? document.getElementById('deliveryAddress').value : '';
-        
-        const submitBtn = e.target.querySelector('.btn-submit');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = '⏳ 上传图片中...';
-        submitBtn.disabled = true;
-        
-        let icImageUrl = '';
-        const icFile = document.getElementById('icUpload').files[0];
-        
-        if (icFile) {
-            try {
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-                if (!validTypes.includes(icFile.type)) {
-                    icImageUrl = 'Please upload JPG/PNG format';
-                } else {
-                    const base64Data = await compressImage(icFile, 1);
-                    const IGBB_API_KEY = '978bac3cd6a29001be02dd36d08c192e';
-                    const params = new URLSearchParams();
-                    params.append('key', IGBB_API_KEY);
-                    params.append('image', base64Data);
-                    const response = await fetch('https://api.imgbb.com/1/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: params
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        icImageUrl = result.data.url;
-                    } else {
-                        icImageUrl = `Upload failed: ${result.error?.message || 'Unknown error'}`;
+document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentProduct) { alert("Please select a product first"); return; }
+    if (!document.getElementById('contact1').value) { alert("Contact Number #1 is required"); return; }
+    if (!document.getElementById('address').value) { alert("Installation Address is required"); return; }
+    if (!document.getElementById('email').value) { alert("Email Address is required"); return; }
+    
+    // 格式化手机号
+    function formatPhoneNumber(phone) {
+        let cleaned = phone.replace(/\D/g, '');
+        if (cleaned.startsWith('0')) cleaned = '60' + cleaned.substring(1);
+        if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
+        return cleaned;
+    }
+    
+    // 压缩图片函数
+    function compressImage(file, maxSizeMB = 1) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width, height = img.height;
+                    const maxWidth = 1024;
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
                     }
-                }
-            } catch (error) {
-                icImageUrl = `Upload error: ${error.message}`;
-            }
-        } else {
-            icImageUrl = 'No IC uploaded';
-        }
-        
-        const orderId = 'COW' + Date.now();
-        const agent = getLeastBusyAgent();
-        if (!agent) {
-            alert('No agent available. Please try again later.');
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-            return;
-        }
-        
-        // 构建 WhatsApp 消息
-        let whatsappMsg = `Name: ${productName}\n`;
-        whatsappMsg += `Contact#1: ${contact1}\n`;
-        if (contact2) whatsappMsg += `Contact#2: ${contact2}\n`;
-        whatsappMsg += `Address: ${address}\n`;
-        if (isDifferent && deliveryAddr) {
-            whatsappMsg += `Delivery address: ${deliveryAddr}\n`;
-        }
-        if (cardFirst6 || cardLast4) {
-            whatsappMsg += `Credit card number: ${cardFirst6}xxxxxx${cardLast4}\n`;
-        }
-        whatsappMsg += `IC Link: ${icImageUrl}\n`;
-        whatsappMsg += `Order ID: ${orderId}`;
-        
-        const encodedMsg = encodeURIComponent(whatsappMsg);
-        
-        // 保存订单
-        let orders = localStorage.getItem('coway_orders');
-        orders = orders ? JSON.parse(orders) : [];
-        orders.unshift({
-            orderId: orderId, date: new Date().toISOString(), product: productName,
-            contact1: contact1, contact2: contact2, address: address,
-            deliveryAddress: deliveryAddr, cardFirst6: cardFirst6, cardLast4: cardLast4,
-            icImageUrl: icImageUrl, assignedAgent: agent.name, agentContact: agent.contact, status: 'pending'
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    let quality = 0.8;
+                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    while (dataUrl.length > maxSizeMB * 1024 * 1024 && quality > 0.1) {
+                        quality -= 0.1;
+                        dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    resolve(dataUrl.split(',')[1]);
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
         });
-        localStorage.setItem('coway_orders', JSON.stringify(orders));
-        
-        incrementAgentReceipt(agent);
-        window.open(`https://wa.me/${agent.contact}?text=${encodedMsg}`, '_blank');
-        
+    }
+    
+    const productName = currentProduct.name;
+    const contact1 = formatPhoneNumber(document.getElementById('contact1').value);
+    const contact2Raw = document.getElementById('contact2').value;
+    const contact2 = contact2Raw ? formatPhoneNumber(contact2Raw) : '';
+    const address = document.getElementById('address').value;
+    const cardFirst6 = document.getElementById('cardFirst6').value || '';
+    const cardLast4 = document.getElementById('cardLast4').value || '';
+    const isDifferent = differentCheckbox?.checked || false;
+    const deliveryAddr = isDifferent ? document.getElementById('deliveryAddress').value : '';
+    
+    const submitBtn = e.target.querySelector('.btn-submit');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = '⏳ 上传图片中...';
+    submitBtn.disabled = true;
+    
+    // 上传 IC 图片
+    let icImageUrl = '';
+    const icFile = document.getElementById('icUpload').files[0];
+    
+    if (icFile) {
+        try {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(icFile.type)) {
+                icImageUrl = 'Please upload JPG/PNG format';
+            } else {
+                const base64Data = await compressImage(icFile, 1);
+                const IGBB_API_KEY = '978bac3cd6a29001be02dd36d08c192e';
+                const params = new URLSearchParams();
+                params.append('key', IGBB_API_KEY);
+                params.append('image', base64Data);
+                const response = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+                const result = await response.json();
+                if (result.success) {
+                    icImageUrl = result.data.url;
+                } else {
+                    icImageUrl = `Upload failed: ${result.error?.message || 'Unknown error'}`;
+                }
+            }
+        } catch (error) {
+            icImageUrl = `Upload error: ${error.message}`;
+        }
+    } else {
+        icImageUrl = 'No IC uploaded';
+    }
+    
+    const orderId = 'COW' + Date.now();
+    const agent = getLeastBusyAgent();
+    if (!agent) {
+        alert('No agent available. Please try again later.');
         submitBtn.innerText = originalText;
         submitBtn.disabled = false;
-        closeOrderModal();
-        document.getElementById('successModal').classList.add('active');
-        currentProduct = null;
+        return;
+    }
+    
+    // ==================== Telegram 配置 ====================
+    const BOT_TOKEN = '8386407941:AAF0W9XaG1tZNdwovITL2wrM-7L3uwQJfso';
+    const CHAT_ID = '-1003696449169'; // 你的群组ID
+    
+    // 构建 Telegram 消息
+    let tgMessage = `🧾 *NEW ORDER*\n\n`;
+    tgMessage += `*Name:* ${productName}\n`;
+    tgMessage += `*Contact#1:* ${contact1}\n`;
+    if (contact2) tgMessage += `*Contact#2:* ${contact2}\n`;
+    tgMessage += `*Address:* ${address}\n`;
+    if (isDifferent && deliveryAddr) tgMessage += `*Delivery:* ${deliveryAddr}\n`;
+    if (cardFirst6 || cardLast4) tgMessage += `*Card:* ${cardFirst6}xxxxxx${cardLast4}\n`;
+    tgMessage += `*IC Photo:* ${icImageUrl}\n`;
+    tgMessage += `*Agent Code:* ${agent.hp_code}\n`;
+    tgMessage += `*Order ID:* ${orderId}`;
+    
+    // 发送到 Telegram
+    try {
+        const tgResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: tgMessage,
+                parse_mode: 'Markdown'
+            })
+        });
+        const tgResult = await tgResponse.json();
+        if (tgResult.ok) {
+            console.log('✅ Telegram sent to group');
+        } else {
+            console.error('Telegram error:', tgResult.description);
+        }
+    } catch (error) {
+        console.error('Telegram send error:', error);
+    }
+    // =====================================================
+    
+    // 保存订单
+    let orders = localStorage.getItem('coway_orders');
+    orders = orders ? JSON.parse(orders) : [];
+    orders.unshift({
+        orderId: orderId, date: new Date().toISOString(), product: productName,
+        contact1: contact1, contact2: contact2, address: address,
+        deliveryAddress: deliveryAddr, cardFirst6: cardFirst6, cardLast4: cardLast4,
+        icImageUrl: icImageUrl, assignedAgent: agent.name, agentCode: agent.hp_code,
+        status: 'pending'
     });
+    localStorage.setItem('coway_orders', JSON.stringify(orders));
+    
+    incrementAgentReceipt(agent);
+    
+    submitBtn.innerText = originalText;
+    submitBtn.disabled = false;
+    closeOrderModal();
+    document.getElementById('successModal').classList.add('active');
+    currentProduct = null;
+});
     
     function escapeHtml(str) {
         if (!str) return '';
