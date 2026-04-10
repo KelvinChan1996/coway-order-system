@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Coway Malaysia | Privacy Notice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fafafa;
+            padding-top: 70px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            z-index: 1000;
+            padding: 15px 20px;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo img {
+            height: 32px;
+            transition: transform 0.3s;
+        }
+        .logo img:hover {
+            transform: scale(1.02);
+        }
+        .nav-menu {
+            display: flex;
+            gap: 35px;
+        }
+        .nav-menu a {
+            text-decoration: none;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover {
+            color: #80abce;
+        }
+        .btn-order-nav {
+            background: #80abce;
+            color: #fff !important;
+            padding: 8px 24px;
+            border-radius: 40px;
+            transition: all 0.3s;
+        }
+        .btn-order-nav:hover {
+            background: #6a9ab8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128,171,206,0.3);
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #555;
+        }
+        
+        /* 移动端菜单 */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            z-index: 1001;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 70px 25px;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+        }
+        .mobile-sidebar.open { right: 0; }
+        .mobile-sidebar a {
+            display: block;
+            padding: 14px 0;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            transition: color 0.3s;
+        }
+        .mobile-sidebar a:hover { color: #80abce; }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+        }
+        .overlay.show { display: block; }
+        
+        /* ========== Privacy 内容区 ========== */
+        .privacy-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px 60px;
+        }
+        
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .privacy-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .privacy-divider {
+            width: 80px;
+            height: 3px;
+            background: #80abce;
+            margin: 20px auto;
+            border-radius: 3px;
+        }
+        
+        .lang-switch {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .lang-switch a {
+            color: #80abce;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        .lang-switch a:hover {
+            background: #80abce;
+            color: #fff;
+        }
+        
+        .privacy-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.04);
+            border: 1px solid #eee;
+        }
+        .privacy-section h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #80abce;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .privacy-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #444;
+            margin: 20px 0 10px;
+        }
+        .privacy-section p {
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        .privacy-section ol, .privacy-section ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        .privacy-section li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .privacy-section a {
+            color: #80abce;
+            text-decoration: none;
+        }
+        .privacy-section a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #80abce;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            transform: translateX(-5px);
+            color: #6a9ab8;
+        }
+        
+        /* 页脚 */
+        footer {
+            background: #2c3e50;
+            color: #ccc;
+            padding: 50px 20px 30px;
+            text-align: center;
+        }
+        footer a {
+            color: #aaa;
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #80abce;
+        }
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: #80abce;
+            margin: 20px auto;
+            border-radius: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .mobile-menu-btn { display: block; }
+            body { padding-top: 60px; }
+            .privacy-section { padding: 20px; }
+            .privacy-header h1 { font-size: 28px; }
+            .privacy-section h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo">
+            <img src="https://www.coway.com.my/img/coway-malaysia-logo.png" alt="Coway Malaysia">
+        </a>
+        <div class="nav-menu">
+    <a href="list.html" class="btn-order-nav">Order Now</a>
+    <a href="location.html">Locations</a>
+    <a href="support.html">Support</a>
+    <a href="#">Trade-In</a>
+    <a href="#">About</a>
+</div>
+        <button class="mobile-menu-btn" id="menuBtn">☰</button>
+    </div>
+</div>
+
+<!-- 移动端侧边栏 -->
+<div class="mobile-sidebar" id="sidebar">
+    <a href="list.html">Order Now</a>
+    <a href="#">Service</a>
+    <a href="#">Trade-In</a>
+    <a href="#">About</a>
+    <a href="#">Support</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- Privacy 内容 -->
+<div class="privacy-container">
+    <div class="privacy-header">
+        <h1>Privacy Notice</h1>
+        <div class="privacy-divider"></div>
+        <p>Last Updated: April 2026</p>
+    </div>
+    
+    <div class="lang-switch">
+        <a href="#privacy-notice-eng-version">English</a> | 
+        <a href="#privacy-notice-bm-version">Bahasa Malaysia</a>
+    </div>
+    
+    <!-- 英文版 -->
+    <div id="privacy-notice-eng-version" class="privacy-section">
+        <h2>A. INTRODUCTION</h2>
+        <ol type="1">
+            <li>Coway (Malaysia) Sdn. Bhd. ("<strong>Coway</strong>", "<strong>we</strong>", "<strong>our</strong>" or "<strong>us</strong>") values and is committed to protecting your Personal Data (as defined below). As such, in compliance with the Personal Data Protection Act 2010 (the "Act") and commitment towards the protection of your Personal Data, we have put in place this Privacy Notice ("Notice").</li>
+            <li>This Notice explains the type of Personal Data we collect or have collected, how we collect, process, store and retain your Personal Data, and to whom we disclose or have disclosed your Personal Data as required under the Act.</li>
+            <li>By providing your Personal Data to us and/or continuing access to any of our websites, online platforms and/or mobile applications (collectively "our Sites"), you declare that you have read and understood this Notice and agree to us processing your Personal Data in accordance with the manner as set out in this Notice.</li>
+            <li>Kindly note that we reserve the right to amend, update and/or vary this Notice at any time. Notification of such revision shall be posted on our Sites and/or other means of communication deemed suitable by Coway. Please check our Sites from time to time to stay informed of any revisions to this Notice.</li>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>B. COLLECTION OF PERSONAL DATA</h2>
+        <ol>
+            <li>We collect and process your personal data in the course of your dealings with us, which includes without limitation:</li>
+            <ol type="I">
+                <li>your personal details, such as your name, company name, residential address, contact number, email address, date of birth, race, gender, marital status, national registration identity card number, passport number, nationality, images and biometrics;</li>
+                <li>specimen, digital or electronic signatures as recognised under applicable laws and regulations;</li>
+                <li>your payment details such as your debit/credit card information, bank account details and payment history;</li>
+                <li>financial information such as your income and risk profile;</li>
+                <li>technical information such as Internet Protocol (IP) address, browser type and version, time zone settings, browser plugin types, operating systems and platform, device information and account login information;</li>
+                <li>information relating to your activities, habits, preferences and interests arising from your use of our products and services including your views or opinions made known to us via feedback or surveys;</li>
+                <li>any details relating to any other person(s) who may be identified from any information, data or document you submit to us; and/or</li>
+                <li>any other personal information you provide to us in the course of your dealings with us,</li>
+            </ol>
+            <p>(collectively referred to as "Personal Data").</p>
+            <li>We may collect Personal Data:</li>
+            <ol type="I">
+                <li>when you ask us about our products or services or otherwise communicate with us;</li>
+                <li>when you enter into a contract with us;</li>
+                <li>when you place an order for the purchase or rental of the products or services with us, both online or offline;</li>
+                <li>when you make payment for the purchase or rental of our products or services;</li>
+                <li>when you register an account with us;</li>
+                <li>when you participate in our promotional events;</li>
+                <li>from publicly available sources;</li>
+                <li>when you access our Sites;</li>
+                <li>when we provide any goods or services to you;</li>
+                <li>when you provide us with any feedback, participate in surveys and/or lodge a complaint with us; and/or</li>
+                <li>where relevant, from third parties.</li>
+            </ol>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>C. PURPOSES</h2>
+        <p>We may use and process your Personal Data in a number of ways, including but not limited to the following purposes:</p>
+        <ol type="I">
+            <li>to register an account with us on our Sites;</li>
+            <li>to create, manage and maintain your account on our Sites;</li>
+            <li>to process and fulfil your orders of our products or services, both online or offline;</li>
+            <li>to assess and/or verify your creditworthiness;</li>
+            <li>to process payments made by you or on your behalf for the purchase or rental of our products or services;</li>
+            <li>to provide care and enhance customer satisfaction, including but not limited to, resolving complaints, dealing with and/or responding to requests and enquiries, warranty, returns and/or other after sales services;</li>
+            <li>to manage and maintain our relationship with you;</li>
+            <li>to keep you informed of our products and/or services, promotions, discounts, and/or events;</li>
+            <li>to analyse and enhance our marketing communications and strategies;</li>
+            <li>to operate, evaluate and improve our business and the products and services we offer;</li>
+            <li>for internal record keeping or other administrative purposes;</li>
+            <li>for statistical analysis purposes;</li>
+            <li>for recruitment purposes;</li>
+            <li>for information management and security purposes, including but not limited to managing and administrating e-mails, handling and investigating any security related issue, vulnerability, and/or incidents;</li>
+            <li>(if no longer a customer of Coway) where there are outstanding obligations either on your part or on our part;</li>
+            <li>to exercise of any functions conferred by law and/or towards the administration of justice; and/or</li>
+            <li>for and/or in connection with all other purpose incidental and/or ancillary to our business or in furtherance to any of the abovementioned purposes,</li>
+        </ol>
+        <p>(collectively referred to as "Purposes").</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>D. DISCLOSURE TO THIRD PARTIES</h2>
+        <ol>
+            <li>If and when necessary in connection with the above Purposes, your Personal Data may be disclosed and/or transferred to third parties which may or may not be located outside Malaysia, including but not limited to:</li>
+            <ol type="I">
+                <li>our affiliates;</li>
+                <li>our employees, authorised agents or contractors and other third party service providers who provide services to Coway for any of the Purposes contemplated in Paragraph C;</li>
+                <li>our external advisors, professional or otherwise, including solicitors, accountants and auditors; and/or</li>
+                <li>government or quasi-government and regulatory authorities.</li>
+            </ol>
+            <li>In addition to the above, we may also disclose and transfer your Personal Data to the above third parties for the purposes of any corporate exercise involving Coway including any merger or acquisition.</li>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>E. SECURITY OF PERSONAL DATA</h2>
+        <p>Although we endeavour to maintain appropriate technical and organizational security measures to protect the security of your Personal Data against loss, misuse, unauthorized access, disclosure or alteration, no electronic transmission of information can be entirely secure. We cannot guarantee that the security measures we have in place are one hundred percent sufficient or effective to safeguard your Personal Data. As a user of our Sites, you agree to assume all responsibilities and risks in your use of our Sites, and acknowledge the existence of all such risks in using the internet generally. To further protect your Personal Data, you should safeguard your username and password (registered on our Sites) and not share such information with anyone.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>F. ACCESS AND CORRECTION</h2>
+        <p>Under the Act, you have the right of access to your Personal Data upon payment of a prescribed fee and you may request that we correct any of your Personal Data that is inaccurate, incomplete or outdated unless compliance is refused under the Act. We will notify you of the reasons for not being able to accede to your request. We may also exercise our discretion in allowing the corrections requested and/or may require further documentary evidence of the new data to avoid fraud and inaccuracy.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>G. CONSENT, WITHDRAWAL OF CONSENT AND OPT-OUT</h2>
+        <ol>
+            <li>Except as otherwise provided in this Notice, we only collect the Personal Data that you provide to us. If you would prefer that we do not collect Personal Data from you, please do not provide us with any such information or access our Sites. By visiting our Sites, providing Personal Data to us, or otherwise interacting with us, you shall be deemed to have read and consented to our processing of your Personal Data in the manner as described in this Notice. You may withdraw your consent to our processing for any of the above Purposes, at any time by contacting us via the contact details provided below at Paragraph K. If we do not receive any notification from you concerning our processing of your Personal Data, we shall proceed to continue to process the same for the Purposes as set out above, on the basis that you have consented to our current as well as all our previous processing of your Personal Data in accordance with this Notice.</li>
+            <li>Please note that we may not be able to provide you with our goods or services if you do not provide us with your consent or withdraw your consent for any of the Purposes.</li>
+            <li>Notwithstanding any other provision in this Notice, you may opt out of or unsubscribe from receiving our promotional materials by emailing us via the contact details provided at Paragraph K.</li>
+            <li>Where you provide us with Personal Data of other data subject(s), you agree that you shall ensure that the data subject(s) has given consent to this Notice.</li>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>H. RETENTION PERIOD</h2>
+        <p>We only keep your Personal Data for as long as we require it in order to fulfil the Purposes stated above (unless we are required to keep it for a longer period to satisfy any legal, regulatory and/or accounting requirements or to protect our interests).</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>I. THIRD PARTY WEBSITES</h2>
+        <p>Our Sites may provide links to other websites or social media platforms, including those of our partners, vendors, sponsors, advertisers and affiliates. Please note that we are not responsible for those websites or social media platforms. If you link to or otherwise visit any other site, please review the privacy policies posted at that site.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>J. WEB BROWSER COOKIES</h2>
+        <p>Our Sites may use "cookies" to enhance the experience of our users. A "cookie" is an element of data that can be sent to your browser. Your browser may then store it on your system based on the preferences you have set on your browser. Cookies gather information about your operating system including, but not limited to, browser type, and Internet Protocol (IP) address. Our Sites use this information to analyse the traffic on our Sites, and better serve you when you return to our Sites. It is not our intention to use such information to personally identify a user. You have the option to configure your internet browser to notify you when you receive a cookie, giving you the chance to decide whether or not to accept it. Further, you have the option to block all cookies. Please note, however, that if you refuse or otherwise block cookies you may not be able to use all of the functionalities available on our Sites.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>K. INQUIRIES OR COMPLAINTS</h2>
+        <p>Should you require further information, have any complaints regarding the processing of your Personal Data or have any requests as prescribed above, kindly contact us at <a href="mailto:callcenter@coway.com.my">callcenter@coway.com.my</a> (Attention: Data Protection Officer) or via our Toll-Free Careline at 1800-888-111.</p>
+    </div>
+    
+    <!-- 马来文版 -->
+    <div id="privacy-notice-bm-version" class="privacy-section">
+        <h2>A. PENGENALAN</h2>
+        <ol type="1">
+            <li>Coway (Malaysia) Sdn. Bhd. ("<strong>Coway</strong>", "<strong>kami</strong>" atau "<strong>kita</strong>") menghargai dan komited dalam melindungi Data Peribadi (seperti yang ditakrifkan di bawah) anda. Oleh demikian, untuk mematuhi Akta Perlindungan Data Peribadi 2010 ("Akta") dan komitmen terhadap perlindungan Data Peribadi anda, kami menyediakan Notis Privasi ini ("Notis").</li>
+            <li>Notis ini menerangkan tentang jenis Data Peribadi yang kami kumpul atau telah dikumpulkan, cara pengumpulan, pemprosesan, penyimpanan dan pengekalan, dan pendedahan Data Peribadi anda sebagaimana yang diperuntukkan di bawah Akta.</li>
+            <li>Dengan memberikan Data Peribadi anda kepada kami dan/atau akses berterusan ke mana-mana laman web, platform secara talian dan/atau aplikasi mudah alih kami (secara kolektif "Laman Web kami"), anda mengesahkan bahawa anda telah membaca dan memahami Notis ini dan bersetuju untuk kami memproses Data Peribadi anda mengikut cara yang ditetapkan dalam Notis ini.</li>
+            <li>Sila ambil maklum bahawa kami berhak untuk meminda, kemaskini dan/atau mengubah Notis ini pada bila-bila masa. Notifikasi mengenai pemindaan, pengemaskinian dan/atau perubahan tersebut akan disiarkan di Laman Web kami dan/atau melalui kaedah komunikasi lain yang dianggap sesuai oleh Coway. Sila semak Laman Web kami dari semasa ke semasa untuk mengetahui sebarang pemindaan, pengemaskinian dan/atau perubahan terhadap Notis ini.</li>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>B. PENGUMPULAN DATA PERIBADI</h2>
+        <ol>
+            <li>Kami mengumpul dan memproses data peribadi anda semasa anda berurusan dengan kami, yang termasuk tetapi tidak terhad kepada:</li>
+            <ol type="I">
+                <li>butiran peribadi anda seperti nama, nama syarikat, alamat kediaman, nombor telefon, alamat emel, tarikh lahir, bangsa, jantina, status perkahwinan, nombor kad pengenalan, nombor passport, kewarganegaraan, gambar dan biometrik;</li>
+                <li>tanda tangan spesimen, digital atau elektronik seperti yang diiktiraf di bawah undang-undang dan peraturan yang relevan;</li>
+                <li>butiran pembayaran anda, seperti maklumat kad debit/kredit anda, maklumat akaun bank anda dan transaksi pembayaran;</li>
+                <li>butiran kewangan seperti pendapatan dan profil risiko anda;</li>
+                <li>butiran teknikal seperti alamat Internet Protocol (IP), jenis dan versi penyemak imbas, penetapan zon waktu, jenis 'browser plugin', sistem dan platform operasi, maklumat peranti dan maklumat login akaun;</li>
+                <li>butiran berkenaan dengan aktiviti, tabiat, pilihan dan minat anda yang berkaitan dengan penggunaan produk dan perkhidmatan kami termasuk pandangan atau pendapat anda yang dimaklumkan kepada kami melalui maklum balas atau tinjauan;</li>
+                <li>butiran lain yang berkaitan dengan individu lain yang mungkin dikenal pasti dari sebarang maklumat, data atau dokumen yang anda berikan kepada kami; dan/atau</li>
+                <li>sebarang maklumat peribadi lain yang anda berikan kepada kami semasa anda berurusan dengan kami.</li>
+            </ol>
+            <p>(secara kolektif dirujuk sebagai "Data Peribadi").</p>
+            <li>Kami mungkin akan mengumpul Data Peribadi anda:</li>
+            <ol type="I">
+                <li>apabila anda membuat pertanyaan kepada kami mengenai produk atau perkhidmatan kami atau berkomunikasi dengan kami;</li>
+                <li>apabila anda memasuki suatu kontrak dengan kami;</li>
+                <li>apabila anda membuat pesanan untuk pembelian atau penyewaan produk atau perkhidmatan dengan kami, secara talian atau luar talian;</li>
+                <li>apabila anda membuat pembayaran untuk pembelian atau penyewaan produk atau perkhidmatan dengan kami;</li>
+                <li>apabila anda mendaftar akaun dengan kami;</li>
+                <li>apabila anda mengambil bahagian dalam acara promosi kami;</li>
+                <li>dari sumber umum sedia ada;</li>
+                <li>apabila anda mengakses Laman Web kami;</li>
+                <li>apabila kami menyediakan sebarang barangan atau perkhidmatan kepada anda;</li>
+                <li>apabila anda memberikan sebarang maklum balas kepada kami, mengambil bahagian dalam tinjauan dan/atau membuat aduan kepada kami; dan/atau</li>
+                <li>jika berkaitan, dari pihak ketiga.</li>
+            </ol>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>C. TUJUAN</h2>
+        <p>Kami boleh mengguna dan memproses Data Peribadi anda dalam beberapa cara, termasuk tetapi tidak terhad kepada tujuan berikut:</p>
+        <ol type="I">
+            <li>untuk mendaftar akaun dengan kami dalam Laman Web kami;</li>
+            <li>untuk mencipta, mengurus, dan mengekalkan akaun anda dalam Laman Web kami;</li>
+            <li>untuk memproses dan memenuhi pesanan anda terhadap produk atau perkhidmatan kami, secara talian atau luar talian;</li>
+            <li>untuk menilai dan/atau mengesahkan kelayakan kredit anda;</li>
+            <li>untuk memproses pembayaran yang dibuat oleh anda atau bagi pihak anda untuk pembelian atau penyewaan produk atau perkhidmatan kami;</li>
+            <li>menyediakan perkhidmatan dan meningkatkan kepuasan pelanggan, termasuk tetapi tidak terhad kepada menyelesaikan aduan, mengurus dan/atau membalas permintaan dan pertanyaan, jaminan, pulangan dan/atau perkhidmatan selepas jualan yang lain;</li>
+            <li>untuk menguruskan dan mengekalkan hubungan kami dengan anda;</li>
+            <li>untuk memaklumkan anda mengenai produk dan/atau perkhidmatan, promosi, diskaun, dan/atau acara kami;</li>
+            <li>untuk menganalisis dan meningkatkan komunikasi dan strategi pemasaran kami;</li>
+            <li>untuk mengendalikan, menilai dan mempertingkatkan perniagaan kami dan produk dan perkhidmatan yang kami tawarkan;</li>
+            <li>untuk penyimpanan rekod dalaman atau tujuan pentadbiran lain;</li>
+            <li>untuk tujuan analisis statistik;</li>
+            <li>untuk tujuan pengrekruitan;</li>
+            <li>untuk pengurusan maklumat dan tujuan keselamatan, termasuk tetapi tidak terhad kepada pengurusan dan pentadbiran emel, pengendalian dan penyiasatan sebarang isu berkaitan keselamatan, kerentanan, dan/atau insiden;</li>
+            <li>(jika tidak lagi menjadi pelanggan Coway) di mana terdapat obligasi tertunggak oleh anda atau kami;</li>
+            <li>untuk menjalankan apa-apa fungsi yang diperlukan oleh undang-undang dan/atau ke arah pentadbiran keadilan; dan/atau</li>
+            <li>untuk dan/atau berkaitan dengan semua tujuan lain yang selari dan/atau sampingan kepada perniagaan kami atau untuk mana-mana tujuan lanjut yang tersebut di atas,</li>
+        </ol>
+        <p>(secara kolektif dirujuk sebagai "Tujuan").</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>D. PENDEDAHAN KEPADA PIHAK KETIGA</h2>
+        <ol>
+            <li>Jika dan apabila perlu, berkaitan dengan Tujuan di atas, Data Peribadi anda boleh didedahkan dan/atau dipindahkan kepada pihak ketiga yang mungkin berada di dalam atau di luar Malaysia, termasuk tetapi tidak terhad kepada:</li>
+            <ol type="I">
+                <li>pihak afiliasi kami;</li>
+                <li>pekerja, ejen atau kontraktor yang diberi kuasa dan pembekal perkhidmatan pihak ketiga yang lain yang memberikan perkhidmatan kepada Coway untuk mana-mana Tujuan yang dimaksudkan dalam Perenggan C;</li>
+                <li>penasihat luar kami, profesional atau sebaliknya, termasuk peguam, akauntan dan juruaudit; dan/atau</li>
+                <li>kerajaan atau kausi-kerajaan dan pihak regulatori.</li>
+            </ol>
+            <li>Di samping itu, kami juga boleh mendedahkan dan memindahkan Data Peribadi anda kepada pihak ketiga di atas untuk tujuan perlaksanaan korporat yang melibatkan Coway termasuk sebarang penggabungan atau pengambilalihan.</li>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>E. KESELAMATAN DATA PERIBADI</h2>
+        <p>Walaupun kami berusaha untuk mengekalkan langkah-langkah keselamatan teknikal dan organisasi yang sesuai untuk melindungi keselamatan Data Peribadi anda daripada kehilangan, penyalahgunaan, akses tanpa izin, pendedahan atau pengubahan, tidak ada penghantaran maklumat elektronik yang selamat sepenuhnya. Kami tidak dapat menjamin bahawa langkah-langkah keselamatan yang kami ambil adalah seratus peratus mencukupi atau berkesan untuk melindungi Data Peribadi anda. Sebagai pengguna Laman Web kami, anda bersetuju untuk mengambil segala tanggungjawab dan risiko dalam penggunaan Laman Web kami, dan mengakui kewujudan segala risiko tersebut dalam penggunaan internet secara amnya. Untuk melindungi Data Peribadi anda selanjutnya, anda harus melindungi nama pengguna dan kata laluan anda (yang didaftarkan di Laman Web kami) dan tidak berkongsi maklumat tersebut dengan orang lain.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>F. AKSES DAN PEMBETULAN</h2>
+        <p>Di bawah Akta, anda mempunyai hak untuk mengakses Data Peribadi anda setelah membayar yuran yang ditentukan dan anda boleh meminta kami membetulkan mana-mana Data Peribadi anda yang tidak tepat, tidak lengkap atau yang tidak dikemaskinikan kecuali sekiranya permintaan tersebut boleh ditolak di bawah Akta. Kami akan memberitahu anda sebab-sebab tidak dapat memenuhi permintaan anda. Kami juga mungkin menggunakan budi bicara kami dalam membenarkan pembetulan yang diminta dan/atau mungkin memerlukan bukti dokumentari yang lebih lanjut mengenai data baru tersebut untuk mengelakkan penipuan dan ketidaktepatan.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>G. KEBENARAN, PENARIKAN KEBENARAN DAN OPSYEN-KELUAR (OPT-OUT)</h2>
+        <ol>
+            <li>Kecuali jika diperuntukkan selainnya dalam Notis ini, kami hanya mengumpul Data Peribadi yang anda berikan kepada kami. Jika anda tidak bersetuju Data Peribadi anda dikumpul oleh kami, jangan berikan maklumat anda atau mengakses Laman Web kami. Dengan melayari Laman Web kami, memberikan Data Peribadi kepada kami, atau berinteraksi dengan kami, anda akan dianggap telah membaca dan memberikan persetujuan kepada kami untuk memproses Data Peribadi anda melalui cara yang dinyatakan dalam Notis ini. Anda boleh menarik balik persetujuan anda terhadap pemprosesan Data Peribadi untuk Tujuan di atas pada bila-bila masa dengan menghubungi kami melalui butiran yang diberikan di Perenggan K. Sekiranya kami tidak menerima sebarang notifikasi daripada anda mengenai pemprosesan Data Peribadi anda, kami akan terus memproses untuk Tujuan sebagaimana dinyatakan di atas, atas dasar bahawa anda teleh memberikan persetujuan untuk pemprosesan Data Peribadi anda yang terkini dan sebelumnya menurut Notis ini.</li>
+            <li>Sila ambil perhatian bahawa kami mungkin tidak dapat memberikan produk atau perkhidmatan kami jika anda tidak memberi persetujuan atau menarik balik persetujuan anda untuk mana-mana Tujuan.</li>
+            <li>Walau apa pun peruntukan lain dalam Notis ini, anda boleh menarik diri (Opt out) atau menghentikan pelangganan bahan promosi kami dengan menghantar emel kepada kami ke butiran yang diberikan di Perenggan K.</li>
+            <li>Sekiranya anda memberikan kami Data Peribadi bagi subjek data yang lain, anda bersetuju bahawa anda hendaklah memastikan subjek data tersebut telah memberi persetujuan terhadap Notis ini.</li>
+        </ol>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>H. TEMPOH PENYIMPANAN</h2>
+        <p>Kami hanya menyimpan Data Peribadi anda selagi kami memerlukannya untuk memenuhi Tujuan yang dinyatakan di atas (melainkan jika kami perlu menyimpannya untuk jangka masa yang lebih lama untuk memenuhi sebarang keperluan undang-undang, peraturan dan/atau keperluan perakaunan atau untuk melindungi kepentingan kami).</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>I. LAMAN WEB PIHAK KETIGA</h2>
+        <p>Laman Web kami mungkin akan menyediakan pautan ke laman web atau platform media sosial lain, termasuk dari rakan kongsi, vendor, penaja, pengiklan dan afiliasi kami. Harap maklum bahawa kami tidak bertanggungjawab untuk laman web atau platform media sosial tersebut. Sekiranya anda memaut ke atau melayari laman web lain, sila semak dasar privasi yang dipaparkan di laman web tersebut.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>J. COOKIE PELAYAR WEB</h2>
+        <p>Laman Web kami mungkin menggunakan "cookies" untuk meningkatkan pengalaman pengguna kami. Suatu "cookie" adalah elemen data yang boleh dihantar ke pelayar (browser) anda. Pelayar anda kemudian boleh menyimpannya pada sistem anda berdasarkan keutamaan yang telah anda tetapkan pada pelayar anda. Cookies mengumpul maklumat mengenai sistem pengendalian anda termasuk, tetapi tidak terhad kepada, jenis pelayar, dan alamat Protokol Internet (IP). Laman Web kami menggunakan maklumat ini untuk membuat analisa trafik di Laman Web kami untuk tujuan memberikan anda layanan yang lebih baik apabila anda kembali ke Laman Web kami. Ia adalah bukan niat kami untuk menggunakan maklumat sedemikian untuk mengenal pasti pengguna secara peribadi. Anda mempunyai pilihan untuk mengkonfigurasi pelayar internet anda untuk memaklumkan anda apabila anda menerima cookie yang akan memberikan anda peluang untuk memutuskan sama ada untuk menerimanya atau tidak. Selanjutnya, anda mempunyai pilihan untuk menyekat semua cookies. Sila ambil maklum bahawa jika anda menolak atau sebaliknya menyekat cookies anda mungkin tidak dapat menggunakan semua fungsi yang terdapat di Laman Web kami.</p>
+    </div>
+    
+    <div class="privacy-section">
+        <h2>K. PERTANYAAN ATAU ADUAN</h2>
+        <p>Sekiranya anda memerlukan maklumat lanjut, mempunyai sebarang aduan mengenai pemprosesan Data Peribadi anda atau mempunyai sebarang permintaan seperti yang diperuntukkan di atas, sila hubungi kami di <a href="mailto:callcenter@coway.com.my">callcenter@coway.com.my</a> (Perhatian: Pegawai Perlindungan Data) atau melalui Talian Bebas Tol Careline kami di 1800-888-111.</p>
+    </div>
+    
+    <a href="index.html" class="back-link">← Back to Home</a>
+</div>
+
+<!-- 页脚 -->
+<footer>
+    <div>
+        <a href="terms.html">Terms of Use</a> • 
+        <a href="privacy.html">Privacy Notice</a> • 
+        <a href="#">Faq</a>
+    </div>
+    <div class="footer-divider"></div>
+    <div>COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
+</footer>
+
+<script>
+    // 移动端菜单
+    document.getElementById('menuBtn')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('overlay').classList.add('show');
+    });
+    document.getElementById('overlay')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+    });
+</script>
+
+</body>
+</html>

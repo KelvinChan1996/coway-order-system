@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Coway Admin | 内容管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+        
+        /* 登录页 */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .login-container h2 { color: #80abce; margin-bottom: 30px; }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background: #80abce;
+            color: #fff;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .error-msg { color: #e74c3c; margin-top: 15px; font-size: 14px; }
+        
+        /* 管理页面 */
+        .admin-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #80abce;
+        }
+        .admin-header h1 { color: #80abce; }
+        .btn-logout {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        
+        /* Tab 切换 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 10px 24px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .tab-btn.active {
+            background: #80abce;
+            color: #fff;
+        }
+        
+        .panel { display: none; }
+        .panel.active { display: block; }
+        
+        .btn-add {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        /* 列表样式 */
+        .item-list {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .item-row {
+            display: flex;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .preview-img {
+            width: 100px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+        .info { flex: 1; min-width: 200px; }
+        .info h4 { margin-bottom: 8px; color: #333; }
+        .info p { color: #666; font-size: 13px; margin-bottom: 5px; }
+        .info small { color: #999; font-size: 12px; }
+        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-edit, .btn-delete, .btn-up {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-edit { background: #3498db; color: #fff; }
+        .btn-delete { background: #e74c3c; color: #fff; }
+        .btn-up { background: #95a5a6; color: #fff; }
+        
+        /* 弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #fff;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+        }
+        .modal-content h3 { margin-bottom: 20px; color: #80abce; }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
+        .modal-buttons button { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; }
+        .btn-save { background: #27ae60; color: #fff; }
+        .btn-cancel { background: #95a5a6; color: #fff; }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        .empty-msg { text-align: center; padding: 50px; color: #999; }
+        
+        @media (max-width: 700px) {
+            .item-row { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loginPage" class="login-container">
+    <h2>🔐 Admin Login</h2>
+    <input type="text" id="adminId" placeholder="Admin ID">
+    <input type="password" id="adminPassword" placeholder="Password">
+    <button onclick="doLogin()">Login</button>
+    <div id="loginError" class="error-msg"></div>
+</div>
+
+<div id="adminPage" style="display: none;">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>📢 内容管理系统</h1>
+            <button class="btn-logout" onclick="logout()">退出登录</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-btn" data-tab="products">📦 商品管理</button>
+            <button class="tab-btn" data-tab="carousel">🎠 轮播广告</button>
+            <button class="tab-btn" data-tab="notice">📰 优惠公告</button>
+            <button class="tab-btn" data-tab="agents">👥 Agent 管理</button>
+            <button class="tab-btn" data-tab="locations">📍 门店管理</button>
+        </div>
+        
+        <!-- 商品管理 -->
+        <div id="productsPanel" class="panel">
+            <button class="btn-add" onclick="openProductModal()">+ 新增商品</button>
+            <div id="productsList" class="item-list"></div>
+        </div>
+        
+        <!-- 轮播广告管理 -->
+        <div id="carouselPanel" class="panel">
+            <button class="btn-add" onclick="openCarouselModal()">+ 新增广告</button>
+            <div id="carouselList" class="item-list"></div>
+        </div>
+        
+        <!-- 公告管理 -->
+        <div id="noticePanel" class="panel">
+            <button class="btn-add" onclick="openNoticeModal()">+ 新增公告</button>
+            <div id="noticeList" class="item-list"></div>
+        </div>
+        
+        <!-- Agent 管理 -->
+        <div id="agentsPanel" class="panel">
+            <button class="btn-add" onclick="openAgentModal()">+ 新增 Agent</button>
+            <div id="agentsList" class="item-list"></div>
+        </div>
+        
+        <!-- 门店管理 -->
+        <div id="locationsPanel" class="panel">
+            <button class="btn-add" onclick="openLocationModal()">+ 新增门店</button>
+            <div id="locationsList" class="item-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 通用弹窗 -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">编辑</h3>
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editType">
+        
+        <!-- 商品字段 -->
+        <div id="productFields">
+            <input type="text" id="productName" placeholder="商品名称">
+            <select id="productCategory">
+                <option value="water">水机</option><option value="air">空气净化器</option>
+                <option value="ac">冷气机</option><option value="washer">洗衣机</option>
+                <option value="toilet">马桶</option><option value="massageChair">按摩椅</option>
+                <option value="massageBed">按摩床</option><option value="bed">床</option>
+            </select>
+            <input type="text" id="productPrice" placeholder="价格 (如: RM 3,999)">
+            <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
+            <textarea id="productDescEn" placeholder="英文描述" rows="3"></textarea>
+            <input type="text" id="productImages" placeholder="图片URL (多张用 | 分隔)">
+        </div>
+        
+        <!-- Agent 字段 -->
+        <div id="agentFields" style="display:none;">
+            <input type="text" id="agentName" placeholder="Agent 姓名">
+            <select id="agentPosition">
+                <option value="HP">HP</option><option value="SM">SM</option>
+            </select>
+            <input type="text" id="agentHpCode" placeholder="HP Code">
+            <input type="text" id="agentContact" placeholder="手机号码 (如: 60123456789)">
+            <input type="email" id="agentEmail" placeholder="Email">
+            <input type="number" id="agentReceipt" placeholder="当前单数">
+        </div>
+        
+        <!-- 广告字段 -->
+        <div id="carouselFields" style="display:none;">
+            <input type="text" id="carouselTitle" placeholder="广告标题">
+            <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
+            <input type="text" id="carouselImage" placeholder="图片URL">
+            <input type="text" id="carouselLink" placeholder="链接">
+        </div>
+        
+        <!-- 公告字段 -->
+        <div id="noticeFields" style="display:none;">
+            <input type="text" id="noticeTitle" placeholder="公告标题">
+            <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
+            <input type="text" id="noticeImage" placeholder="图片URL">
+            <input type="date" id="noticeDate">
+        </div>
+        
+        <!-- 门店字段 -->
+        <div id="locationFields" style="display:none;">
+            <input type="text" id="locationName" placeholder="门店名称">
+            <input type="text" id="locationImage" placeholder="图片URL">
+            <textarea id="locationAddress" placeholder="地址" rows="2"></textarea>
+            <input type="text" id="locationHours" placeholder="营业时间">
+            <input type="text" id="locationPhone" placeholder="电话">
+            <input type="text" id="locationWaze" placeholder="Waze 链接">
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="btn-save" onclick="saveItem()">保存</button>
+            <button class="btn-cancel" onclick="closeModal()">取消</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ADMIN_ID = "coway_admin";
+    const ADMIN_PASSWORD = "Coway2026!";
+    
+    let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
+    let currentTab = "products";
+    
+    function doLogin() {
+        const id = document.getElementById('adminId').value;
+        const pwd = document.getElementById('adminPassword').value;
+        if (id === ADMIN_ID && pwd === ADMIN_PASSWORD) {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPage').style.display = 'block';
+            loadAllData();
+        } else {
+            document.getElementById('loginError').innerText = 'Invalid ID or Password';
+        }
+    }
+    
+    function logout() {
+        document.getElementById('loginPage').style.display = 'block';
+        document.getElementById('adminPage').style.display = 'none';
+        document.getElementById('adminId').value = '';
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('loginError').innerText = '';
+    }
+    
+    function loadAllData() {
+        // 商品
+        let saved = localStorage.getItem('coway_products');
+        productsData = saved ? JSON.parse(saved) : [];
+        // 轮播
+        saved = localStorage.getItem('coway_carousel');
+        carouselData = saved ? JSON.parse(saved) : [];
+        // 公告
+        saved = localStorage.getItem('coway_notices');
+        noticeData = saved ? JSON.parse(saved) : [];
+        // Agent
+        saved = localStorage.getItem('coway_agents');
+        agentsData = saved ? JSON.parse(saved) : [
+            { id: 1, name: "Ali Rehman", position: "HP", hp_code: "ALI01", contact: "60123456789", receipt: 0, email: "ali@coway.com" },
+            { id: 2, name: "Siti Nuraini", position: "SM", hp_code: "SITI02", contact: "60129876543", receipt: 0, email: "siti@coway.com" },
+            { id: 3, name: "Chong Wei", position: "HP", hp_code: "CHONG03", contact: "60115551234", receipt: 1, email: "chong@coway.com" }
+        ];
+        // 门店
+        saved = localStorage.getItem('coway_locations');
+        locationsData = saved ? JSON.parse(saved) : [
+            { id: 1, name: "Coway Experience Centre KL", image: "https://placehold.co/600x400/80abce/white?text=KL+Centre", address: "Wisma UOA II, Jalan Pinang, Kuala Lumpur", hours: "Mon-Fri: 10am-7pm, Sat: 10am-2pm", phone: "1800-888-111", wazeLink: "https://waze.com/ul?ll=3.1585,101.7156&navigate=yes" }
+        ];
+        
+        renderProducts();
+        renderCarousel();
+        renderNotices();
+        renderAgents();
+        renderLocations();
+    }
+    
+    // ========== 商品 ==========
+    function renderProducts() {
+        const container = document.getElementById('productsList');
+        if (!productsData.length) { container.innerHTML = '<div class="empty-msg">暂无商品</div>'; return; }
+        container.innerHTML = '';
+        productsData.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `<div class="info"><h4>${escapeHtml(p.name)}</h4><p>${p.price}</p><small>${p.category}</small></div>
+                <div class="actions"><button class="btn-edit" onclick="editProduct(${p.id})">编辑</button><button class="btn-delete" onclick="deleteProduct(${p.id})">删除</button></div>`;
+            container.appendChild(div);
+        });
+    }
+    
+    function editProduct(id) { openModal('product', productsData.find(i => i.id === id)); }
+    function deleteProduct(id) { if(confirm('确定删除？')){ productsData = productsData.filter(i => i.id !== id); localStorage.setItem('coway_products', JSON.stringify(productsData)); renderProducts(); } }
+    function openProductModal() { openModal('product', null); }
+    
+    // ========== 轮播 ==========
+    function renderCarousel() {
+        const container = document.getElementById('carouselList');
+        if (!carouselData.length) { container.innerHTML = '<div class="empty-msg">暂无广告</div>'; return; }
+        container.innerHTML = '';
+        carouselData.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `<div class="info"><h4>${escapeHtml(c.title)}</h4><p>${escapeHtml(c.desc)}</p></div>
+                <div class="actions"><button class="btn-edit" onclick="editCarousel(${c.id})">编辑</button><button class="btn-delete" onclick="deleteCarousel(${c.id})">删除</button></div>`;
+            container.appendChild(div);
+        });
+    }
+    function editCarousel(id) { openModal('carousel', carouselData.find(i => i.id === id)); }
+    function deleteCarousel(id) { if(confirm('确定删除？')){ carouselData = carouselData.filter(i => i.id !== id); localStorage.setItem('coway_carousel', JSON.stringify(carouselData)); renderCarousel(); } }
+    function openCarouselModal() { openModal('carousel', null); }
+    
+    // ========== 公告 ==========
+    function renderNotices() {
+        const container = document.getElementById('noticeList');
+        if (!noticeData.length) { container.innerHTML = '<div class="empty-msg">暂无公告</div>'; return; }
+        container.innerHTML = '';
+        noticeData.forEach(n => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `<div class="info"><h4>${escapeHtml(n.title)}</h4><p>${escapeHtml(n.description)}</p><small>${n.date}</small></div>
+                <div class="actions"><button class="btn-edit" onclick="editNotice(${n.id})">编辑</button><button class="btn-delete" onclick="deleteNotice(${n.id})">删除</button></div>`;
+            container.appendChild(div);
+        });
+    }
+    function editNotice(id) { openModal('notice', noticeData.find(i => i.id === id)); }
+    function deleteNotice(id) { if(confirm('确定删除？')){ noticeData = noticeData.filter(i => i.id !== id); localStorage.setItem('coway_notices', JSON.stringify(noticeData)); renderNotices(); } }
+    function openNoticeModal() { openModal('notice', null); }
+    
+    // ========== Agent ==========
+    function renderAgents() {
+        const container = document.getElementById('agentsList');
+        if (!agentsData.length) { container.innerHTML = '<div class="empty-msg">暂无 Agent</div>'; return; }
+        container.innerHTML = '';
+        agentsData.forEach(a => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `<div class="info"><h4>${escapeHtml(a.name)}</h4><p>📞 ${a.contact} | 📧 ${a.email}</p><p>📊 当前单数: ${a.receipt} | ${a.position}</p></div>
+                <div class="actions"><button class="btn-edit" onclick="editAgent(${a.id})">编辑</button><button class="btn-delete" onclick="deleteAgent(${a.id})">删除</button></div>`;
+            container.appendChild(div);
+        });
+    }
+    function editAgent(id) { openModal('agent', agentsData.find(i => i.id === id)); }
+    function deleteAgent(id) { if(confirm('确定删除？')){ agentsData = agentsData.filter(i => i.id !== id); localStorage.setItem('coway_agents', JSON.stringify(agentsData)); renderAgents(); } }
+    function openAgentModal() { openModal('agent', null); }
+    
+    // ========== 门店 ==========
+    function renderLocations() {
+        const container = document.getElementById('locationsList');
+        if (!locationsData.length) { container.innerHTML = '<div class="empty-msg">暂无门店</div>'; return; }
+        container.innerHTML = '';
+        locationsData.forEach(l => {
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `<div class="info"><h4>${escapeHtml(l.name)}</h4><p>${escapeHtml(l.address)}</p><small>${l.hours}</small></div>
+                <div class="actions"><button class="btn-edit" onclick="editLocation(${l.id})">编辑</button><button class="btn-delete" onclick="deleteLocation(${l.id})">删除</button></div>`;
+            container.appendChild(div);
+        });
+    }
+    function editLocation(id) { openModal('location', locationsData.find(i => i.id === id)); }
+    function deleteLocation(id) { if(confirm('确定删除？')){ locationsData = locationsData.filter(i => i.id !== id); localStorage.setItem('coway_locations', JSON.stringify(locationsData)); renderLocations(); } }
+    function openLocationModal() { openModal('location', null); }
+    
+    // ========== 通用弹窗 ==========
+    function openModal(type, item) {
+        document.getElementById('editType').value = type;
+        document.getElementById('editId').value = item ? item.id : '';
+        
+        // 隐藏所有字段组
+        document.getElementById('productFields').style.display = 'none';
+        document.getElementById('agentFields').style.display = 'none';
+        document.getElementById('carouselFields').style.display = 'none';
+        document.getElementById('noticeFields').style.display = 'none';
+        document.getElementById('locationFields').style.display = 'none';
+        
+        if (type === 'product') {
+            document.getElementById('productFields').style.display = 'block';
+            document.getElementById('modalTitle').innerText = item ? '编辑商品' : '新增商品';
+            document.getElementById('productName').value = item ? item.name : '';
+            document.getElementById('productCategory').value = item ? item.category : 'water';
+            document.getElementById('productPrice').value = item ? item.price : '';
+            document.getElementById('productDescZh').value = item ? item.desc_zh : '';
+            document.getElementById('productDescEn').value = item ? item.desc_en : '';
+            document.getElementById('productImages').value = item && item.images ? item.images.join('|') : '';
+        } else if (type === 'agent') {
+            document.getElementById('agentFields').style.display = 'block';
+            document.getElementById('modalTitle').innerText = item ? '编辑 Agent' : '新增 Agent';
+            document.getElementById('agentName').value = item ? item.name : '';
+            document.getElementById('agentPosition').value = item ? item.position : 'HP';
+            document.getElementById('agentHpCode').value = item ? item.hp_code : '';
+            document.getElementById('agentContact').value = item ? item.contact : '';
+            document.getElementById('agentEmail').value = item ? item.email : '';
+            document.getElementById('agentReceipt').value = item ? item.receipt : 0;
+        } else if (type === 'carousel') {
+            document.getElementById('carouselFields').style.display = 'block';
+            document.getElementById('modalTitle').innerText = item ? '编辑广告' : '新增广告';
+            document.getElementById('carouselTitle').value = item ? item.title : '';
+            document.getElementById('carouselDesc').value = item ? item.desc : '';
+            document.getElementById('carouselImage').value = item ? item.image : '';
+            document.getElementById('carouselLink').value = item ? item.link : '';
+        } else if (type === 'notice') {
+            document.getElementById('noticeFields').style.display = 'block';
+            document.getElementById('modalTitle').innerText = item ? '编辑公告' : '新增公告';
+            document.getElementById('noticeTitle').value = item ? item.title : '';
+            document.getElementById('noticeDesc').value = item ? item.description : '';
+            document.getElementById('noticeImage').value = item ? item.image : '';
+            document.getElementById('noticeDate').value = item ? item.date : new Date().toISOString().split('T')[0];
+        } else if (type === 'location') {
+            document.getElementById('locationFields').style.display = 'block';
+            document.getElementById('modalTitle').innerText = item ? '编辑门店' : '新增门店';
+            document.getElementById('locationName').value = item ? item.name : '';
+            document.getElementById('locationImage').value = item ? item.image : '';
+            document.getElementById('locationAddress').value = item ? item.address : '';
+            document.getElementById('locationHours').value = item ? item.hours : '';
+            document.getElementById('locationPhone').value = item ? item.phone : '';
+            document.getElementById('locationWaze').value = item ? item.wazeLink : '';
+        }
+        document.getElementById('editModal').classList.add('active');
+    }
+    
+    function saveItem() {
+        const type = document.getElementById('editType').value;
+        const id = document.getElementById('editId').value;
+        const isEdit = id !== '';
+        
+        if (type === 'product') {
+            const newItem = {
+                id: isEdit ? parseInt(id) : Date.now(),
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: document.getElementById('productPrice').value,
+                desc_zh: document.getElementById('productDescZh').value,
+                desc_en: document.getElementById('productDescEn').value,
+                images: document.getElementById('productImages').value.split('|').filter(s => s.trim())
+            };
+            if (isEdit) {
+                const index = productsData.findIndex(i => i.id == id);
+                if (index !== -1) productsData[index] = newItem;
+            } else productsData.push(newItem);
+            localStorage.setItem('coway_products', JSON.stringify(productsData));
+            renderProducts();
+        } else if (type === 'agent') {
+            const newItem = {
+                id: isEdit ? parseInt(id) : Date.now(),
+                name: document.getElementById('agentName').value,
+                position: document.getElementById('agentPosition').value,
+                hp_code: document.getElementById('agentHpCode').value,
+                contact: document.getElementById('agentContact').value,
+                email: document.getElementById('agentEmail').value,
+                receipt: parseInt(document.getElementById('agentReceipt').value) || 0
+            };
+            if (isEdit) {
+                const index = agentsData.findIndex(i => i.id == id);
+                if (index !== -1) agentsData[index] = newItem;
+            } else agentsData.push(newItem);
+            localStorage.setItem('coway_agents', JSON.stringify(agentsData));
+            renderAgents();
+        } else if (type === 'carousel') {
+            const newItem = {
+                id: isEdit ? parseInt(id) : Date.now(),
+                title: document.getElementById('carouselTitle').value,
+                desc: document.getElementById('carouselDesc').value,
+                image: document.getElementById('carouselImage').value,
+                link: document.getElementById('carouselLink').value
+            };
+            if (isEdit) {
+                const index = carouselData.findIndex(i => i.id == id);
+                if (index !== -1) carouselData[index] = newItem;
+            } else carouselData.push(newItem);
+            localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
+            renderCarousel();
+        } else if (type === 'notice') {
+            const newItem = {
+                id: isEdit ? parseInt(id) : Date.now(),
+                title: document.getElementById('noticeTitle').value,
+                description: document.getElementById('noticeDesc').value,
+                image: document.getElementById('noticeImage').value,
+                date: document.getElementById('noticeDate').value
+            };
+            if (isEdit) {
+                const index = noticeData.findIndex(i => i.id == id);
+                if (index !== -1) noticeData[index] = newItem;
+            } else noticeData.unshift(newItem);
+            localStorage.setItem('coway_notices', JSON.stringify(noticeData));
+            renderNotices();
+        } else if (type === 'location') {
+            const newItem = {
+                id: isEdit ? parseInt(id) : Date.now(),
+                name: document.getElementById('locationName').value,
+                image: document.getElementById('locationImage').value,
+                address: document.getElementById('locationAddress').value,
+                hours: document.getElementById('locationHours').value,
+                phone: document.getElementById('locationPhone').value,
+                wazeLink: document.getElementById('locationWaze').value
+            };
+            if (isEdit) {
+                const index = locationsData.findIndex(i => i.id == id);
+                if (index !== -1) locationsData[index] = newItem;
+            } else locationsData.push(newItem);
+            localStorage.setItem('coway_locations', JSON.stringify(locationsData));
+            renderLocations();
+        }
+        closeModal();
+    }
+    
+    function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
+    
+    // Tab 切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            currentTab = tab;
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${tab}Panel`).classList.add('active');
+        });
+    });
+</script>
+
+</body>
+</html>

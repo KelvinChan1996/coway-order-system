@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Coway Malaysia | 门店位置</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #333;
+            background-color: #f5f5f5;
+            padding-top: 70px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            z-index: 1000;
+            padding: 15px 20px;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo img { height: 28px; transition: transform 0.3s; }
+        .logo img:hover { transform: scale(1.02); }
+        .nav-menu { display: flex; gap: 35px; }
+        .nav-menu a {
+            text-decoration: none;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover { color: #80abce; }
+        .btn-order-nav {
+            background: #80abce;
+            color: #fff !important;
+            padding: 8px 24px;
+            border-radius: 40px;
+            transition: all 0.3s;
+        }
+        .btn-order-nav:hover {
+            background: #6a9ab8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128,171,206,0.3);
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #555;
+        }
+        
+        /* 移动端菜单 */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            z-index: 1001;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 70px 25px;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+        }
+        .mobile-sidebar.open { right: 0; }
+        .mobile-sidebar a {
+            display: block;
+            padding: 14px 0;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            transition: color 0.3s;
+        }
+        .mobile-sidebar a:hover { color: #80abce; }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+        }
+        .overlay.show { display: block; }
+        
+        /* ========== 页面标题 ========== */
+        .page-header {
+            text-align: center;
+            margin: 40px 20px 30px;
+        }
+        .page-header h1 {
+            font-size: 36px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .page-header p {
+            color: #777;
+        }
+        .header-divider {
+            width: 60px;
+            height: 3px;
+            background: #80abce;
+            margin: 15px auto;
+            border-radius: 3px;
+        }
+        
+        /* ========== 门店网格 ========== */
+        .locations-container {
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .location-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+        
+        .location-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: #e0e0e0;
+        }
+        
+        .location-info {
+            padding: 20px;
+            flex: 1;
+        }
+        .location-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .location-name i {
+            color: #80abce;
+        }
+        .location-address {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            padding-left: 26px;
+        }
+        .location-hours {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+            padding-left: 26px;
+        }
+        .location-phone {
+            color: #80abce;
+            font-size: 14px;
+            margin-bottom: 15px;
+            padding-left: 26px;
+        }
+        .location-phone a {
+            color: #80abce;
+            text-decoration: none;
+        }
+        
+        .waze-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1da1f2;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-top: 10px;
+            width: fit-content;
+        }
+        .waze-link:hover {
+            background: #0d8bdc;
+            transform: translateY(-2px);
+        }
+        
+        .empty-locations {
+            text-align: center;
+            padding: 60px;
+            background: #fff;
+            border-radius: 20px;
+            color: #999;
+        }
+        
+        /* 页脚 */
+        footer {
+            background: #2c3e50;
+            color: #ccc;
+            padding: 50px 20px 30px;
+            text-align: center;
+        }
+        footer a {
+            color: #aaa;
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #80abce;
+        }
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: #80abce;
+            margin: 20px auto;
+            border-radius: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .mobile-menu-btn { display: block; }
+            body { padding-top: 60px; }
+            .page-header h1 { font-size: 28px; }
+            .locations-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo"><img src="https://www.coway.com.my/img/coway-malaysia-logo.png" alt="Coway Malaysia"></a>
+        <div class="nav-menu">
+            <a href="list.html" class="btn-order-nav">Order Now</a>
+            <a href="location.html">Locations</a>
+            <a href="support.html">Support</a>
+            <a href="#">Trade-In</a>
+            <a href="#">About</a>
+        </div>
+        <button class="mobile-menu-btn" id="menuBtn">☰</button>
+    </div>
+</div>
+
+<div class="mobile-sidebar" id="sidebar">
+    <a href="list.html">Order Now</a>
+    <a href="location.html">Locations</a>
+    <a href="support.html">Support</a>
+    <a href="#">Trade-In</a>
+    <a href="#">About</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="page-header">
+    <h1>📍 Our Locations</h1>
+    <div class="header-divider"></div>
+    <p>Find the nearest Coway experience centre near you</p>
+</div>
+
+<div id="locationsContainer" class="locations-container">
+    <div class="empty-locations">加载中...</div>
+</div>
+
+<!-- 页脚 -->
+<footer>
+    <div>
+        <a href="terms.html">Terms of Use</a> • 
+        <a href="privacy.html">Privacy Notice</a> • 
+        <a href="#">Faq</a>
+    </div>
+    <div class="footer-divider"></div>
+    <div>COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
+</footer>
+
+<script>
+    // 加载门店数据
+    function loadLocations() {
+        const container = document.getElementById('locationsContainer');
+        let locations = localStorage.getItem('coway_locations');
+        
+        if (locations) {
+            locations = JSON.parse(locations);
+        } else {
+            // 默认门店数据
+            locations = [
+                {
+                    id: 1,
+                    name: "Coway Experience Centre KL",
+                    image: "https://placehold.co/600x400/80abce/white?text=KL+Centre",
+                    address: "Wisma UOA II, Jalan Pinang, Kuala Lumpur",
+                    hours: "Mon-Fri: 10am-7pm, Sat: 10am-2pm",
+                    phone: "1800-888-111",
+                    wazeLink: "https://waze.com/ul?ll=3.1585,101.7156&navigate=yes"
+                },
+                {
+                    id: 2,
+                    name: "Coway PJ Showroom",
+                    image: "https://placehold.co/600x400/80abce/white?text=PJ+Showroom",
+                    address: "Lot 1-03, Jalan SS2/72, Petaling Jaya, Selangor",
+                    hours: "Mon-Sat: 10am-6pm, Sun: Closed",
+                    phone: "1800-888-111",
+                    wazeLink: "https://waze.com/ul?ll=3.1185,101.6245&navigate=yes"
+                },
+                {
+                    id: 3,
+                    name: "Coway JB Branch",
+                    image: "https://placehold.co/600x400/80abce/white?text=JB+Branch",
+                    address: "No 15, Jalan Bestari 1/5, Taman Bestari Indah, Johor Bahru",
+                    hours: "Mon-Fri: 9am-6pm, Sat: 9am-1pm",
+                    phone: "1800-888-111",
+                    wazeLink: "https://waze.com/ul?ll=1.4927,103.7413&navigate=yes"
+                }
+            ];
+            localStorage.setItem('coway_locations', JSON.stringify(locations));
+        }
+        
+        if (locations.length === 0) {
+            container.innerHTML = '<div class="empty-locations">暂无门店信息，请稍后再来</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        locations.forEach(loc => {
+            const card = document.createElement('div');
+            card.className = 'location-card';
+            card.innerHTML = `
+                <img class="location-image" src="${loc.image}" alt="${loc.name}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'">
+                <div class="location-info">
+                    <div class="location-name">
+                        <i>📍</i> ${escapeHtml(loc.name)}
+                    </div>
+                    <div class="location-address">
+                        <i>🏠</i> ${escapeHtml(loc.address)}
+                    </div>
+                    <div class="location-hours">
+                        <i>⏰</i> ${escapeHtml(loc.hours)}
+                    </div>
+                    <div class="location-phone">
+                        <i>📞</i> <a href="tel:${loc.phone}">${loc.phone}</a>
+                    </div>
+                    <a href="${loc.wazeLink}" target="_blank" class="waze-link">
+                        <i>🗺️</i> Navigate with Waze
+                    </a>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // 移动端菜单
+    document.getElementById('menuBtn')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('overlay').classList.add('show');
+    });
+    document.getElementById('overlay')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+    });
+    
+    loadLocations();
+</script>
+
+</body>
+</html>

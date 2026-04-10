@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Coway Malaysia | Terms of Use</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fafafa;
+            padding-top: 70px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            z-index: 1000;
+            padding: 15px 20px;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo img {
+            height: 32px;
+            transition: transform 0.3s;
+        }
+        .logo img:hover {
+            transform: scale(1.02);
+        }
+        .nav-menu {
+            display: flex;
+            gap: 35px;
+        }
+        .nav-menu a {
+            text-decoration: none;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover {
+            color: #80abce;
+        }
+        .btn-order-nav {
+            background: #80abce;
+            color: #fff !important;
+            padding: 8px 24px;
+            border-radius: 40px;
+            transition: all 0.3s;
+        }
+        .btn-order-nav:hover {
+            background: #6a9ab8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128,171,206,0.3);
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #555;
+        }
+        
+        /* 移动端菜单 */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            z-index: 1001;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 70px 25px;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+        }
+        .mobile-sidebar.open { right: 0; }
+        .mobile-sidebar a {
+            display: block;
+            padding: 14px 0;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            transition: color 0.3s;
+        }
+        .mobile-sidebar a:hover { color: #80abce; }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+        }
+        .overlay.show { display: block; }
+        
+        /* ========== Terms 内容区 ========== */
+        .terms-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px 60px;
+        }
+        
+        .terms-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .terms-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .terms-header p {
+            color: #777;
+            font-size: 14px;
+        }
+        .terms-divider {
+            width: 80px;
+            height: 3px;
+            background: #80abce;
+            margin: 20px auto;
+            border-radius: 3px;
+        }
+        
+        .terms-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.04);
+            border: 1px solid #eee;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .terms-section:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        .terms-section h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #80abce;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .terms-section h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #444;
+            margin: 20px 0 10px;
+        }
+        .terms-section p {
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        .terms-section ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        .terms-section li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .terms-section a {
+            color: #80abce;
+            text-decoration: none;
+        }
+        .terms-section a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #80abce;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            transform: translateX(-5px);
+            color: #6a9ab8;
+        }
+        
+        /* 页脚 */
+        footer {
+            background: #2c3e50;
+            color: #ccc;
+            padding: 50px 20px 30px;
+            text-align: center;
+        }
+        footer a {
+            color: #aaa;
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #80abce;
+        }
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: #80abce;
+            margin: 20px auto;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .mobile-menu-btn { display: block; }
+            body { padding-top: 60px; }
+            .terms-section { padding: 20px; }
+            .terms-header h1 { font-size: 28px; }
+            .terms-section h2 { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo">
+            <img src="https://www.coway.com.my/img/coway-malaysia-logo.png" alt="Coway Malaysia">
+        </a>
+       <div class="nav-menu">
+    <a href="list.html" class="btn-order-nav">Order Now</a>
+    <a href="location.html">Locations</a>
+    <a href="support.html">Support</a>
+    <a href="#">Trade-In</a>
+    <a href="#">About</a>
+</div>
+        <button class="mobile-menu-btn" id="menuBtn">☰</button>
+    </div>
+</div>
+
+<!-- 移动端侧边栏 -->
+<div class="mobile-sidebar" id="sidebar">
+    <a href="list.html">Order Now</a>
+    <a href="#">Service</a>
+    <a href="#">Trade-In</a>
+    <a href="#">About</a>
+    <a href="#">Support</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- Terms 内容 -->
+<div class="terms-container">
+    <div class="terms-header">
+        <h1>Terms of Use</h1>
+        <div class="terms-divider"></div>
+        <p>Last Updated: April 2026</p>
+    </div>
+    
+    <div class="terms-section">
+        <p><strong>PLEASE READ THE TERMS OF USE CAREFULLY BEFORE USING OUR SITES.</strong></p>
+        <p>Your access and use of any of our websites, online platforms and/or mobile applications (collectively "our Sites"), which is made available to you by Coway (Malaysia) Sdn. Bhd. ("Coway", "we", "our" or "us") is subject to this Terms of Use and all other terms and conditions/policies/notices which you may find throughout our Sites in connection to the services and features provided by or through our Sites, all of which is deemed a part of and included within this Terms of Use (collectively, "Terms and Conditions").</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 1. Acknowledgment & Acceptance of Terms of Use</h2>
+        <p>By accessing or using our Sites, you acknowledge that you have read, understood and agreed, without any limitation or qualification, to be bound by this Terms of Use, which may be amended by Coway at any time and from time to time.</p>
+        <p>You represent that you are legally able to accept this Terms of Use, and affirm that you are of the capacity to form a binding contract. If you do not agree to this Terms of Use, you must discontinue your use of our Sites.</p>
+        <p>Coway reserves the right to amend, update or vary this Terms of Use at any time. Notification of such revision shall be posted on our Sites and/or other means of communication deemed suitable by Coway. It is your responsibility to check our Sites from time to time to stay informed of any revisions to this Terms of Use. Your continued use of and/or access to our Sites following the posting of any such revision constitutes acceptance of the revision.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 2. General Conditions</h2>
+        <p>Access and/or use of the services and features on our Sites shall be subject to additional terms and conditions/policies/notices referred herein and/or made available by hyperlink.</p>
+        <p>You understand that your information (not including credit/debit card information and bank account details), may be transferred unencrypted and involve (a) transmissions over various networks; and (b) changes to conform and adapt to technical requirements of connecting networks or devices. For the avoidance of doubt, credit/debit card information and bank account details shall always be encrypted during transfer over networks.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 3. Products and Services</h2>
+        <p><strong>Information</strong> - Purchase of any products or services on our Sites shall be subject to additional terms and conditions/policies/notices referred herein and/or made available by hyperlink. All photos, images and videos of products and services used and displayed on our Sites are solely for illustration purposes only; actual item/colour may vary. If you are not based in Malaysia i.e. being an international visitor to our Sites, you should not rely on information contained in our Sites, including without limitation specifications or pricing.</p>
+        <p><strong>Quantity & Quality</strong> - Certain products or services may be available exclusively through our Sites. These products or services may have limited quantities. Coway reserves the right to limit the quantities of any products or services that Coway offers. We do not warrant the quality of any products or services purchased by you will meet your expectations.</p>
+        <p><strong>Modification</strong> - We reserve the right at any time to modify or discontinue our products or services (or any part thereof) without notice at any time. Prices for our products and services are subject to change without notice. Coway shall not be liable to you or to any third party for any modification, price change, suspension or discontinuance of the products and the services.</p>
+        <p><strong>Refusal</strong> - Coway reserves the right to refuse providing the products and services available in our Sites to anyone for any reason at any time.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 4. Third Party Links</h2>
+        <p>Our Sites may contain links to other websites, online platforms and/or resources that are not affiliated with us ("Third Party Links"). You acknowledge and agree that Coway is not responsible for the contents of any such Third Party Links. Your use of any of the Third Party Links is at your own risk. Coway does not warrant the offerings of such Third Party Links, nor does Coway assume any responsibility or liability for the actions, contents, products, or services of such Third Party Links, including, without limitation, its privacy policies, terms of use and other terms and conditions. You should carefully review and understand the privacy policies, terms of use and other terms and conditions of all such Third Party Links that you visit before you engage in any transaction.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 5. Personal Information</h2>
+        <p>Coway recognises that your privacy and your personal information are very important to you. Your submission of personal information through our Sites is governed by our Privacy Notice and the same is detailed in this link <a href="#">coway.com.my/privacy-notice</a>.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 6. Intellectual Property</h2>
+        <p>All information and content available on our Sites and its "look and feel", including but not limited to the logos, service marks, texts, graphics, button icons, images, audio clips, data compilations and software, and the compilation and organisation (collectively, the "Content") are the intellectual property of Coway and the same are protected under applicable copyrights, trademarks, registered trademarks and other proprietary (including but not limited to intellectual property) rights. The copying, redistribution, use or publication by you of any such Content or any part of our Sites is strictly prohibited.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 7. Your Obligations and Responsibilities</h2>
+        <p><strong>Use of our Sites</strong> - In the access or use of our Sites, you shall comply with the Terms and Conditions and the special warnings or instructions for access or use posted on our Sites. You shall always act in accordance with the law, custom and in good faith. You shall not make any changes or alterations to our Sites or any Content, services or features that may appear on our Sites and shall not impair in any way the integrity or operation of our Sites.</p>
+        <p><strong>Payments</strong> - You represent and warrant that if you make any payment transaction on our Sites for the purchase or rental of any products or services from Coway that (i) any credit/debit card information or bank account details you supply is true, correct, complete and current, (ii) charges incurred by you will be honoured by your credit/debit card provider, and (iii) you will pay the charges incurred by you as stated on our Sites, including any applicable taxes.</p>
+        <p><strong>Your Account</strong> - You may choose to create an account on our Sites if you are eighteen (18) years of age and above wherein you will have a username and password for your account. You are responsible for maintaining the confidentiality of your account, username and password and for restricting access to your mobile device and account.</p>
+        <p><strong>Your Information</strong> - You are responsible for keeping your account information current, complete accurate and truthful. Please note that your account may be terminated without notice if Coway determines that false or misleading information has been provided.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 8. User Content</h2>
+        <p>When you transmit, upload, post, email or otherwise make available data, text, software, music, sound, photographs, graphics, images, videos, messages or other materials (collectively, "User Content") on our Sites, you are entirely responsible for such User Content. You acknowledge and agree that Coway will not be responsible for any User Content.</p>
+        <p>You agree not to engage in or assist or encourage others to engage in transmitting, uploading, posting, emailing or otherwise making available on our Sites any User Content that (a) is unlawful, harmful, threatening, abusive, harassing, tortious, defamatory, vulgar, obscene, pornographic, libellous, invasive of another's privacy, hateful, or racially, ethnically or otherwise objectionable; (b) you do not have a right to make available under any law or under contractual or fiduciary relationships; (c) is known by you to be false, inaccurate or misleading; (d) you were compensated for or granted any consideration by any third party; or (e) infringes any patent, trademark, trade secret, copyright or other proprietary rights of any party.</p>
+        <p>You acknowledge that Coway has the right (but not the obligation) in its sole discretion to refuse to post or remove any User Content and Coway reserves the right to change, condense, or delete any User Content.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 9. Consent to Receive Notices</h2>
+        <p>You consent to receiving any agreements, notices, disclosures and other communications (collectively, "Notices") to which this Terms of Use refer from Coway electronically including without limitation by email or by notices posted on our Sites. You agree that all Notices that Coway provides to you electronically satisfy any legal requirement that such communications be in writing.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 10. Disclaimer</h2>
+        <p>The information on our Sites are presented "as is", "as available," and all warranties of any kind whatsoever, express or implied, are disclaimed (including but not limited to the disclaimer of any implied warranties of merchantability and fitness for a particular purpose).</p>
+        <p>The information, services and features on our Sites may contain bugs, errors, problems or other limitations. Coway shall owe no liability whatsoever for your use of any such information, services or features.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 11. Indemnification</h2>
+        <p>You agree to defend, indemnify and hold Coway, its parent company, affiliates, partners, licensors, officers, directors, employees, and agents (the "Indemnified Parties") harmless for any losses, damages or costs, including reasonable attorneys' fees, resulting from any third party claims, actions, or demands arising from your use of our Sites or the Content in violation of any law, rule, regulation or the Terms and Conditions.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 12. Limitation of Liability</h2>
+        <p>To the fullest extent permitted by law, you agree that Coway shall not be responsible or liable in contract, warranty or in tort (including negligence) for any (a) interruption of business; (b) access delays or access interruptions to our Sites; (c) non-delivery, misdelivery, corruption, destruction or other modification of data; (d) loss or damages of any sort incurred as a result of dealings with the presence of any Third Party Links on our Sites; (e) computer viruses, system failures or malfunctions which may occur in connection with your use of our Sites, including during use of any Third Party Links; (f) any inaccuracies or omissions in the Content; or (g) any event beyond Coway's reasonable control.</p>
+        <p>Coway shall not be liable for any indirect or consequential losses under the Terms and Conditions or the use of our Sites.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 13. Termination</h2>
+        <p>Coway reserves the right to upgrade, modify, suspend or discontinue the provision of or remove, whether wholly or partly, the Platform, from time to time and without giving any reason or prior notice. You agree that Coway shall not be liable to you or any third party if any such upgrade, modification, suspension, discontinuation or removal prevents you from accessing the Platform and/or the services and features contained in the Platform.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 14. Disputes and Liability</h2>
+        <p>With respect to any dispute, claim, or controversy regarding our Sites, all rights and obligations and all actions contemplated by the Terms and Conditions shall be governed by the laws of Malaysia. The courts of Malaysia shall have exclusive jurisdiction over any disputes arising out of the Terms and Conditions or the use of our Sites.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 15. Entire Agreement</h2>
+        <p>You acknowledge and agree that this Terms of Use constitute the complete and exclusive agreement with Coway concerning your use of our Sites, and supersedes all prior proposals, agreements, or other communications.</p>
+    </div>
+    
+    <div class="terms-section">
+        <h2>SECTION 16. Miscellaneous</h2>
+        <p>Nothing contained in this Terms of Use shall be construed as creating any agency, partnership, or other form of joint enterprise with Coway. Coway's failure to require your performance of any provision hereof shall not affect its full right to require such performance at any time thereafter, nor shall Coway's waiver of a breach of any provision hereof be taken or held to be a waiver of the provision itself.</p>
+    </div>
+    
+    <a href="index.html" class="back-link">← Back to Home</a>
+</div>
+
+<!-- 页脚 -->
+<footer>
+    <div>
+        <a href="terms.html">Terms of Use</a> • 
+        <a href="#">Privacy Notice</a> • 
+        <a href="#">Faq</a>
+    </div>
+    <div class="footer-divider"></div>
+    <div>COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
+</footer>
+
+<script>
+    // 移动端菜单
+    document.getElementById('menuBtn')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('overlay').classList.add('show');
+    });
+    document.getElementById('overlay')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+    });
+</script>
+
+</body>
+</html>

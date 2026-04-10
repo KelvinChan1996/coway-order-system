@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Coway Malaysia | 在线下单</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #464646;
+            background-color: #f5f5f5;
+            padding-top: 60px;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+            z-index: 1000;
+            padding: 15px 20px;
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo img { height: 28px; transition: transform 0.3s; }
+        .logo img:hover { transform: scale(1.02); }
+        .nav-menu {
+            display: flex;
+            gap: 35px;
+        }
+        .nav-menu a {
+            text-decoration: none;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+        .nav-menu a:hover { color: #80abce; }
+        .btn-order-nav {
+            background: #80abce;
+            color: #fff !important;
+            padding: 8px 24px;
+            border-radius: 40px;
+            transition: all 0.3s;
+        }
+        .btn-order-nav:hover {
+            background: #6a9ab8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128,171,206,0.3);
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #555;
+        }
+        
+        /* 移动端菜单 */
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: #fff;
+            z-index: 1001;
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 70px 25px;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+        }
+        .mobile-sidebar.open { right: 0; }
+        .mobile-sidebar a {
+            display: block;
+            padding: 14px 0;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            transition: color 0.3s;
+        }
+        .mobile-sidebar a:hover { color: #80abce; }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+        }
+        .overlay.show { display: block; }
+        
+        /* 轮播广告牌 */
+        .carousel-banner {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+        .carousel-slides { width: 100%; height: 100%; position: relative; }
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+        }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.3));
+        }
+        .carousel-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 20px;
+            animation: fadeInUp 0.8s ease;
+        }
+        .carousel-content h2 { font-size: 48px; margin-bottom: 20px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
+        .carousel-content p { font-size: 18px; margin-bottom: 30px; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); }
+        .carousel-content a {
+            background: #fff;
+            color: #464646;
+            padding: 10px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .carousel-content a:hover {
+            background: #80abce;
+            color: #fff;
+            transform: translateY(-3px);
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 10;
+        }
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .carousel-dot.active { background: #fff; width: 28px; border-radius: 5px; }
+        .carousel-prev, .carousel-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+        .carousel-prev:hover, .carousel-next:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-50%) scale(1.05);
+        }
+        .carousel-prev { left: 20px; }
+        .carousel-next { right: 20px; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 主内容布局 */
+        .main-layout {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: flex;
+            gap: 30px;
+        }
+        
+        /* 左侧分类栏 */
+        .category-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        .category-header {
+            background: #80abce;
+            color: #fff;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .category-list { list-style: none; }
+        .category-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+        .category-item:hover { background: #f5f5f5; }
+        .category-item.active {
+            background: #e8f0f8;
+            color: #80abce;
+            border-left: 3px solid #80abce;
+            font-weight: 600;
+        }
+        
+        /* 右侧产品网格 */
+        .products-area { flex: 1; }
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .current-category {
+            font-size: 24px;
+            font-weight: bold;
+            border-left: 4px solid #80abce;
+            padding-left: 15px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        .product-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: #80abce;
+        }
+        .product-card img { width: 100%; height: 180px; object-fit: cover; }
+        .product-card .info { padding: 15px; }
+        .product-card h4 { font-size: 16px; margin-bottom: 5px; color: #333; }
+        .product-card p { font-size: 12px; color: #7f8c8d; margin-bottom: 5px; }
+        .product-card .price { color: #80abce; font-weight: bold; font-size: 14px; }
+        
+        /* 详情弹窗 */
+        .detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .detail-modal.active { display: flex; }
+        .detail-content {
+            background: #fff;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+        }
+        .detail-carousel img { width: 100%; border-radius: 12px; }
+        .detail-title { font-size: 24px; margin: 15px 0 10px; color: #333; }
+        .detail-price { color: #80abce; font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+        .detail-desc { color: #666; line-height: 1.6; margin-bottom: 20px; }
+        .btn-translate {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+        .btn-translate:hover { background: #e0e0e0; }
+        .btn-order-detail, .btn-contact-detail {
+            padding: 12px 24px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+            transition: all 0.3s;
+        }
+        .btn-order-detail { background: #80abce; color: #fff; }
+        .btn-order-detail:hover { background: #6a9ab8; transform: translateY(-2px); }
+        .btn-contact-detail { background: #fff; border: 1px solid #80abce; color: #80abce; }
+        .btn-contact-detail:hover { background: #80abce; color: #fff; }
+        
+        /* 订单表单弹窗 */
+        .order-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2001;
+            justify-content: center;
+            align-items: center;
+        }
+        .order-modal.active { display: flex; }
+        .order-content {
+            background: #fff;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+        }
+        .order-content h3 { margin-bottom: 15px; color: #80abce; }
+        .selected-product-info {
+            background: #e8f0f8;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: border 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #80abce; }
+        .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-group label { margin: 0; cursor: pointer; }
+        .delivery-address { display: none; }
+        .delivery-address.show { display: block; }
+        .btn-submit {
+            background: #80abce;
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover { background: #6a9ab8; transform: translateY(-2px); }
+        
+        /* 成功弹窗 */
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2002;
+            justify-content: center;
+            align-items: center;
+        }
+        .success-modal.active { display: flex; }
+        .success-content {
+            background: #fff;
+            max-width: 450px;
+            width: 90%;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+        .success-content i { font-size: 60px; color: #27ae60; margin-bottom: 20px; }
+        .btn-ok {
+            background: #80abce;
+            color: #fff;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 40px;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-ok:hover { background: #6a9ab8; }
+        
+        /* 页脚 */
+        footer {
+            background: #2c3e50;
+            color: #ccc;
+            padding: 50px 20px 30px;
+            text-align: center;
+            margin-top: 60px;
+        }
+        footer a {
+            color: #aaa;
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #80abce;
+        }
+        .footer-divider {
+            width: 60px;
+            height: 2px;
+            background: #80abce;
+            margin: 20px auto;
+            border-radius: 2px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-layout { flex-direction: column; }
+            .category-sidebar { width: 100%; position: static; }
+            .category-list { display: flex; flex-wrap: wrap; }
+            .category-item { flex: 1; min-width: 100px; text-align: center; justify-content: center; }
+            .carousel-content h2 { font-size: 28px; }
+            .carousel-banner { height: 300px; }
+        }
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .mobile-menu-btn { display: block; }
+            body { padding-top: 60px; }
+            .form-row2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<div class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo">
+            <img src="https://www.coway.com.my/img/coway-malaysia-logo.png" alt="Coway Malaysia">
+        </a>
+        <div class="nav-menu">
+            <a href="list.html" class="btn-order-nav">Order Now</a>
+            <a href="location.html">Locations</a>
+            <a href="support.html">Support</a>
+            <a href="#">Trade-In</a>
+            <a href="#">About</a>
+        </div>
+        <button class="mobile-menu-btn" id="menuBtn">☰</button>
+    </div>
+</div>
+
+<!-- 移动端侧边栏 -->
+<div class="mobile-sidebar" id="sidebar">
+    <a href="list.html">Order Now</a>
+    <a href="location.html">Locations</a>
+    <a href="support.html">Support</a>
+    <a href="#">Trade-In</a>
+    <a href="#">About</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- 轮播广告牌 -->
+<div class="carousel-banner">
+    <div class="carousel-slides" id="carouselSlides"></div>
+    <button class="carousel-prev" id="carouselPrev">‹</button>
+    <button class="carousel-next" id="carouselNext">›</button>
+    <div class="carousel-dots" id="carouselDots"></div>
+</div>
+
+<!-- 主内容 -->
+<div class="main-layout">
+    <div class="category-sidebar">
+        <div class="category-header">产品分类</div>
+        <ul class="category-list" id="categoryList"></ul>
+    </div>
+    <div class="products-area">
+        <div class="products-header">
+            <div class="current-category" id="currentCategory">全部产品</div>
+        </div>
+        <div id="productsGrid" class="products-grid"></div>
+    </div>
+</div>
+
+<!-- 产品详情弹窗 -->
+<div id="detailModal" class="detail-modal">
+    <div class="detail-content">
+        <span class="modal-close" onclick="closeDetailModal()">&times;</span>
+        <div id="detailCarousel" class="detail-carousel"></div>
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-price" id="detailPrice"></div>
+        <div class="detail-desc" id="detailDesc"></div>
+        <button id="translateBtn" class="btn-translate">🌐 Translate to English</button>
+        <div>
+            <button id="orderFromDetailBtn" class="btn-order-detail">📦 Order Now</button>
+            <button id="contactFromDetailBtn" class="btn-contact-detail">📞 Contact Agent</button>
+        </div>
+    </div>
+</div>
+
+<!-- 订单表单弹窗 -->
+<div id="orderModal" class="order-modal">
+    <div class="order-content">
+        <span class="modal-close" onclick="closeOrderModal()">&times;</span>
+        <h3>📝 Complete Your Order</h3>
+        <div class="selected-product-info" id="selectedProductInfo"></div>
+        <p style="background:#e8f5e9; padding:12px; border-radius:8px; margin-bottom:20px;">Thank you for your order! To proceed with the online registration, kindly provide the following details:</p>
+        <form id="orderForm">
+            <div class="form-group"><label>📎 IC (front copy) *</label><input type="file" id="icUpload" accept="image/*"></div>
+            <div class="form-row2">
+                <div class="form-group"><label>📞 Contact #1 *</label><input type="tel" id="contact1" required></div>
+                <div class="form-group"><label>📞 Contact #2</label><input type="tel" id="contact2"></div>
+            </div>
+            
+            <div class="form-group">
+                <label>🏠 Installation Address *</label>
+                <textarea id="address" rows="2" required></textarea>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="differentDelivery">
+                <label for="differentDelivery">📦 if delivery address different</label>
+            </div>
+            
+            <div class="form-group delivery-address" id="deliveryAddressGroup">
+                <label>🚚 Delivery Address</label>
+                <textarea id="deliveryAddress" rows="2" placeholder="Enter delivery address if different from installation address"></textarea>
+            </div>
+            
+            <div class="form-group"><label>📧 Email Address *</label><input type="email" id="email" required></div>
+            <div class="form-row2">
+                <div class="form-group"><label>💳 Card (First 6)</label><input type="text" id="cardFirst6" placeholder="123456" maxlength="6"></div>
+                <div class="form-group"><label>💳 Card (Last 4)</label><input type="text" id="cardLast4" placeholder="7890" maxlength="4"></div>
+            </div>
+            <button type="submit" class="btn-submit">✅ Submit Order</button>
+        </form>
+    </div>
+</div>
+
+<!-- 成功弹窗 -->
+<div id="successModal" class="success-modal">
+    <div class="success-content">
+        <i>✓</i>
+        <p>Thank you for your submit detail.<br><br>Once I've submitted your details into the system, I'll send you a PDF file for your signature.<br><br>Kindly sign and return the file to complete the registration process.<br><br>Appreciate your prompt response! 😊<br><br>Best regards by coway agent</p>
+        <button class="btn-ok" onclick="closeSuccessModal()">OK</button>
+    </div>
+</div>
+
+<!-- 页脚 -->
+<footer>
+    <div>
+        <a href="terms.html">Terms of Use</a> • 
+        <a href="privacy.html">Privacy Notice</a> • 
+        <a href="#">Faq</a>
+    </div>
+    <div class="footer-divider"></div>
+    <div>COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
+</footer>
+
+<script>
+    // ========== 从 localStorage 加载商品数据 ==========
+    let productsData = {
+        all: [],
+        water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: []
+    };
+    
+    let carouselData = [];
+    let currentCategory = "all";
+    let currentProduct = null;
+    let currentLang = 'zh';
+    let slideInterval = null;
+    let carouselInterval = null;
+    let currentCarouselSlide = 0;
+    
+    // ========== Agent 数据 ==========
+    let agentList = [];
+    
+    function loadAgents() {
+        let saved = localStorage.getItem('coway_agents');
+        if (saved && JSON.parse(saved).length > 0) {
+            agentList = JSON.parse(saved);
+        } else {
+            // 默认 Agent 数据
+            agentList = [
+                { id: 1, name: "Ali Rehman", position: "HP", hp_code: "ALI01", contact: "60123456789", receipt: 0, email: "ali@coway.com" },
+                { id: 2, name: "Siti Nuraini", position: "SM", hp_code: "SITI02", contact: "60129876543", receipt: 0, email: "siti@coway.com" },
+                { id: 3, name: "Chong Wei", position: "HP", hp_code: "CHONG03", contact: "60115551234", receipt: 1, email: "chong@coway.com" }
+            ];
+            localStorage.setItem('coway_agents', JSON.stringify(agentList));
+        }
+        console.log('Agents loaded:', agentList.length);
+    }
+    
+    function getLeastBusyAgent() {
+        if (!agentList || agentList.length === 0) {
+            console.warn('No agents available, loading defaults');
+            loadAgents();
+        }
+        if (agentList.length === 0) {
+            return null;
+        }
+        let min = Math.min(...agentList.map(a => a.receipt));
+        return agentList.find(a => a.receipt === min);
+    }
+    
+    function incrementAgentReceipt(agent) {
+        if (agent) {
+            agent.receipt++;
+            localStorage.setItem('coway_agents', JSON.stringify(agentList));
+            console.log(`Agent ${agent.name} now has ${agent.receipt} orders`);
+        }
+    }
+    
+    // 分类定义
+    const categories = [
+        { id: "all", name: "全部产品" },
+        { id: "water", name: "水机" },
+        { id: "air", name: "空气净化器" },
+        { id: "ac", name: "冷气机" },
+        { id: "washer", name: "洗衣机" },
+        { id: "toilet", name: "马桶" },
+        { id: "massageChair", name: "按摩椅" },
+        { id: "massageBed", name: "按摩床" },
+        { id: "bed", name: "床" }
+    ];
+    
+    // ========== 加载数据 ==========
+    function loadProducts() {
+        let saved = localStorage.getItem('coway_products');
+        if (saved) {
+            const productsArray = JSON.parse(saved);
+            productsData = {
+                all: productsArray,
+                water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: []
+            };
+            productsArray.forEach(p => {
+                if (productsData[p.category]) productsData[p.category].push(p);
+            });
+        } else {
+            const defaultProducts = [
+                { id: 1, name: "Coway Omba", category: "water", desc_zh: "淨水與冰水一體，現代廚房首選。", desc_en: "Integrated water purifier with cold water.", price: "RM 3,999", images: ["https://placehold.co/800x400/80abce/white?text=Omba"] },
+                { id: 2, name: "Coway Neon", category: "water", desc_zh: "時尚設計，過濾重金屬。", desc_en: "Stylish design, removes heavy metals.", price: "RM 2,899", images: ["https://placehold.co/800x400/80abce/white?text=Neon"] },
+                { id: 3, name: "Coway Inline", category: "water", desc_zh: "櫥下式節省空間。", desc_en: "Under-sink space saving.", price: "RM 1,999", images: ["https://placehold.co/800x400/80abce/white?text=Inline"] },
+                { id: 4, name: "Coway Storm", category: "air", desc_zh: "強力淨化PM2.5與過敏原。", desc_en: "Powerful purification for PM2.5.", price: "RM 2,499", images: ["https://placehold.co/800x400/80abce/white?text=Storm"] },
+                { id: 5, name: "Coway Breeze", category: "air", desc_zh: "靜音節能，適合臥室。", desc_en: "Silent energy saving for bedroom.", price: "RM 1,599", images: ["https://placehold.co/800x400/80abce/white?text=Breeze"] },
+                { id: 6, name: "Coway Arctic", category: "ac", desc_zh: "節能冷氣，快速製冷。", desc_en: "Energy-saving AC.", price: "RM 2,199", images: ["https://placehold.co/800x400/80abce/white?text=Arctic"] },
+                { id: 7, name: "Coway Washing Mate", category: "washer", desc_zh: "智能洗衣，呵護衣物。", desc_en: "Smart washing.", price: "RM 3,499", images: ["https://placehold.co/800x400/80abce/white?text=WashingMate"] },
+                { id: 8, name: "Coway Bidet Plus", category: "toilet", desc_zh: "智能馬桶蓋，潔淨舒適。", desc_en: "Smart bidet.", price: "RM 1,299", images: ["https://placehold.co/800x400/80abce/white?text=Bidet"] },
+                { id: 9, name: "Coway Relax Pro", category: "massageChair", desc_zh: "全身按摩，緩解疲勞。", desc_en: "Full body massage.", price: "RM 8,999", images: ["https://placehold.co/800x400/80abce/white?text=RelaxPro"] },
+                { id: 10, name: "Coway Dream Massage", category: "massageBed", desc_zh: "睡眠與按摩結合。", desc_en: "Sleep & massage.", price: "RM 12,999", images: ["https://placehold.co/800x400/80abce/white?text=DreamMassage"] },
+                { id: 11, name: "Coway Ergo Bed", category: "bed", desc_zh: "人體工學電動床。", desc_en: "Ergonomic bed.", price: "RM 5,999", images: ["https://placehold.co/800x400/80abce/white?text=ErgoBed"] }
+            ];
+            productsData = {
+                all: defaultProducts,
+                water: defaultProducts.filter(p => p.category === 'water'),
+                air: defaultProducts.filter(p => p.category === 'air'),
+                ac: defaultProducts.filter(p => p.category === 'ac'),
+                washer: defaultProducts.filter(p => p.category === 'washer'),
+                toilet: defaultProducts.filter(p => p.category === 'toilet'),
+                massageChair: defaultProducts.filter(p => p.category === 'massageChair'),
+                massageBed: defaultProducts.filter(p => p.category === 'massageBed'),
+                bed: defaultProducts.filter(p => p.category === 'bed')
+            };
+            localStorage.setItem('coway_products', JSON.stringify(defaultProducts));
+        }
+    }
+    
+    function loadCarousel() {
+        let saved = localStorage.getItem('coway_carousel');
+        if (saved) {
+            carouselData = JSON.parse(saved);
+        } else {
+            carouselData = [
+                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", title: "纯净空气，健康生活", desc: "Coway 空气净化器", link: "list.html" },
+                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", title: "健康饮水，从Coway开始", desc: "净水器系列", link: "list.html" },
+                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", title: "Coway 虚拟展厅", desc: "360° 体验", link: "list.html" }
+            ];
+            localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
+        }
+        renderCarousel();
+    }
+    
+    function renderCarousel() {
+        const container = document.getElementById('carouselSlides');
+        const dotsContainer = document.getElementById('carouselDots');
+        if (!container || carouselData.length === 0) return;
+        
+        container.innerHTML = '';
+        carouselData.forEach((item, idx) => {
+            const slide = document.createElement('div');
+            slide.className = `carousel-slide ${idx === currentCarouselSlide ? 'active' : ''}`;
+            slide.style.backgroundImage = `url(${item.image})`;
+            slide.innerHTML = `
+                <div class="carousel-content">
+                    <h2>${escapeHtml(item.title)}</h2>
+                    <p>${escapeHtml(item.desc)}</p>
+                    <a href="${item.link || '#'}">了解更多 →</a>
+                </div>
+            `;
+            container.appendChild(slide);
+        });
+        
+        dotsContainer.innerHTML = '';
+        carouselData.forEach((_, idx) => {
+            const dot = document.createElement('div');
+            dot.className = `carousel-dot ${idx === currentCarouselSlide ? 'active' : ''}`;
+            dot.onclick = () => { goToCarouselSlide(idx); resetCarouselAutoPlay(); };
+            dotsContainer.appendChild(dot);
+        });
+        
+        if (carouselInterval) clearInterval(carouselInterval);
+        carouselInterval = setInterval(() => { nextCarouselSlide(); }, 5000);
+    }
+    
+    function updateCarouselDisplay() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.carousel-dot');
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentCarouselSlide));
+        dots.forEach((d, i) => d.classList.toggle('active', i === currentCarouselSlide));
+    }
+    
+    function nextCarouselSlide() {
+        if (carouselData.length === 0) return;
+        currentCarouselSlide = (currentCarouselSlide + 1) % carouselData.length;
+        updateCarouselDisplay();
+    }
+    
+    function prevCarouselSlide() {
+        if (carouselData.length === 0) return;
+        currentCarouselSlide = (currentCarouselSlide - 1 + carouselData.length) % carouselData.length;
+        updateCarouselDisplay();
+    }
+    
+    function goToCarouselSlide(idx) {
+        currentCarouselSlide = idx;
+        updateCarouselDisplay();
+    }
+    
+    function resetCarouselAutoPlay() {
+        if (carouselInterval) clearInterval(carouselInterval);
+        carouselInterval = setInterval(() => { nextCarouselSlide(); }, 5000);
+    }
+    
+    // ========== 渲染分类 ==========
+    function renderCategoryList() {
+        const container = document.getElementById('categoryList');
+        container.innerHTML = '';
+        categories.forEach(cat => {
+            const li = document.createElement('li');
+            li.className = `category-item ${currentCategory === cat.id ? 'active' : ''}`;
+            li.innerHTML = cat.name;
+            li.onclick = () => {
+                currentCategory = cat.id;
+                renderCategoryList();
+                renderProducts();
+                document.getElementById('currentCategory').innerText = cat.name;
+            };
+            container.appendChild(li);
+        });
+    }
+    
+    // ========== 渲染产品 ==========
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        const list = productsData[currentCategory] || [];
+        if (list.length === 0) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px;">暂无产品</div>';
+            return;
+        }
+        list.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            const firstImage = p.images && p.images[0] ? p.images[0] : 'https://placehold.co/800x400/80abce/white?text=Product';
+            card.innerHTML = `
+                <img src="${firstImage}" alt="${p.name}">
+                <div class="info">
+                    <h4>${escapeHtml(p.name)}</h4>
+                    <p>${escapeHtml(p.desc_zh.substring(0, 50))}...</p>
+                    <div class="price">💰 ${p.price}</div>
+                </div>
+            `;
+            card.onclick = () => openDetailModal(p);
+            grid.appendChild(card);
+        });
+    }
+    
+    // ========== 详情弹窗 ==========
+    function openDetailModal(product) {
+        currentProduct = product;
+        document.getElementById('detailTitle').innerText = product.name;
+        document.getElementById('detailPrice').innerText = product.price;
+        document.getElementById('detailDesc').innerText = product.desc_zh;
+        currentLang = 'zh';
+        
+        let html = '';
+        const images = product.images && product.images.length ? product.images : ['https://placehold.co/800x400/80abce/white?text=Product'];
+        images.forEach(img => { html += `<div><img src="${img}"></div>`; });
+        document.getElementById('detailCarousel').innerHTML = html;
+        
+        let idx = 0;
+        const imgs = document.querySelectorAll('#detailCarousel div');
+        if (imgs.length > 1) {
+            if (slideInterval) clearInterval(slideInterval);
+            imgs.forEach((img, i) => img.style.display = i === 0 ? 'block' : 'none');
+            slideInterval = setInterval(() => {
+                imgs.forEach(img => img.style.display = 'none');
+                idx = (idx + 1) % imgs.length;
+                imgs[idx].style.display = 'block';
+            }, 3000);
+        }
+        document.getElementById('detailModal').classList.add('active');
+    }
+    
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.remove('active');
+        if (slideInterval) { clearInterval(slideInterval); slideInterval = null; }
+    }
+    
+    // 翻译
+    document.getElementById('translateBtn')?.addEventListener('click', () => {
+        if (!currentProduct) return;
+        const el = document.getElementById('detailDesc');
+        if (currentLang === 'zh') {
+            el.innerText = currentProduct.desc_en;
+            currentLang = 'en';
+        } else {
+            el.innerText = currentProduct.desc_zh;
+            currentLang = 'zh';
+        }
+    });
+    
+    // Order 按钮
+    document.getElementById('orderFromDetailBtn')?.addEventListener('click', () => {
+        closeDetailModal();
+        document.getElementById('selectedProductInfo').innerHTML = `<span>📦 产品: <strong>${currentProduct.name}</strong></span><span>💰 ${currentProduct.price}</span>`;
+        document.getElementById('orderModal').classList.add('active');
+    });
+    
+    // Contact 按钮
+    document.getElementById('contactFromDetailBtn')?.addEventListener('click', () => {
+        const agent = getLeastBusyAgent();
+        if (agent) {
+            window.open(`https://wa.me/${agent.contact}?text=${encodeURIComponent(`Hello ${agent.name}, I am interested in ${currentProduct?.name}.`)}`, '_blank');
+        } else {
+            alert('No agent available. Please try again later.');
+        }
+    });
+    
+    // 地址勾选逻辑
+    const differentCheckbox = document.getElementById('differentDelivery');
+    const deliveryGroup = document.getElementById('deliveryAddressGroup');
+    if (differentCheckbox) {
+        differentCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                deliveryGroup.classList.add('show');
+            } else {
+                deliveryGroup.classList.remove('show');
+                document.getElementById('deliveryAddress').value = '';
+            }
+        });
+    }
+    
+    function closeOrderModal() {
+        document.getElementById('orderModal').classList.remove('active');
+        document.getElementById('orderForm').reset();
+        if (differentCheckbox) differentCheckbox.checked = false;
+        deliveryGroup.classList.remove('show');
+    }
+    
+    function closeSuccessModal() { document.getElementById('successModal').classList.remove('active'); }
+    
+  
+   // 订单提交
+document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentProduct) { alert("Please select a product first"); return; }
+    if (!document.getElementById('contact1').value) { alert("Contact Number #1 is required"); return; }
+    if (!document.getElementById('address').value) { alert("Installation Address is required"); return; }
+    if (!document.getElementById('email').value) { alert("Email Address is required"); return; }
+    
+    function formatPhoneNumber(phone) {
+        let cleaned = phone.replace(/\D/g, '');
+        if (cleaned.startsWith('0')) cleaned = '60' + cleaned.substring(1);
+        if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
+        return cleaned;
+    }
+    
+    function compressImage(file, maxSizeMB = 1) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width, height = img.height;
+                    const maxWidth = 1024;
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    let quality = 0.8;
+                    let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    while (dataUrl.length > maxSizeMB * 1024 * 1024 && quality > 0.1) {
+                        quality -= 0.1;
+                        dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    }
+                    resolve(dataUrl.split(',')[1]);
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    }
+    
+    const productName = currentProduct.name;
+    const contact1 = formatPhoneNumber(document.getElementById('contact1').value);
+    const contact2Raw = document.getElementById('contact2').value;
+    const contact2 = contact2Raw ? formatPhoneNumber(contact2Raw) : '';
+    const address = document.getElementById('address').value;
+    const cardFirst6 = document.getElementById('cardFirst6').value || '';
+    const cardLast4 = document.getElementById('cardLast4').value || '';
+    const isDifferent = differentCheckbox?.checked || false;
+    const deliveryAddr = isDifferent ? document.getElementById('deliveryAddress').value : '';
+    
+    const submitBtn = e.target.querySelector('.btn-submit');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = '⏳ 上传图片中...';
+    submitBtn.disabled = true;
+    
+    let icImageUrl = '';
+    const icFile = document.getElementById('icUpload').files[0];
+    
+    if (icFile) {
+        try {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(icFile.type)) {
+                icImageUrl = 'Please upload JPG/PNG format';
+            } else {
+                const base64Data = await compressImage(icFile, 1);
+                const IGBB_API_KEY = '978bac3cd6a29001be02dd36d08c192e';
+                const params = new URLSearchParams();
+                params.append('key', IGBB_API_KEY);
+                params.append('image', base64Data);
+                const response = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params
+                });
+                const result = await response.json();
+                if (result.success) {
+                    icImageUrl = result.data.url;
+                } else {
+                    icImageUrl = `Upload failed: ${result.error?.message || 'Unknown error'}`;
+                }
+            }
+        } catch (error) {
+            icImageUrl = `Upload error: ${error.message}`;
+        }
+    } else {
+        icImageUrl = 'No IC uploaded';
+    }
+    
+    const orderId = 'COW' + Date.now();
+    const agent = getLeastBusyAgent();
+    if (!agent) {
+        alert('No agent available. Please try again later.');
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+        return;
+    }
+    
+    // ========== 修复：使用 \n 然后 encodeURIComponent ==========
+    let whatsappMsg = `Name: ${productName}\n`;
+whatsappMsg += `Contact#1: ${contact1}\n`;
+if (contact2) whatsappMsg += `Contact#2: ${contact2}\n`;
+whatsappMsg += `Address: ${address}\n`;
+if (isDifferent && deliveryAddr) {
+    whatsappMsg += `Delivery address: ${deliveryAddr}\n`;
+}
+if (cardFirst6 || cardLast4) {
+    whatsappMsg += `Credit card number: ${cardFirst6}xxxxxx${cardLast4}\n`;
+}
+whatsappMsg += `IC Link: ${icImageUrl}\n`;
+whatsappMsg += `Order ID: ${orderId}`;
+    
+    const encodedMsg = encodeURIComponent(whatsappMsg);
+    
+    // 保存订单
+    let orders = localStorage.getItem('coway_orders');
+    orders = orders ? JSON.parse(orders) : [];
+    orders.unshift({
+        orderId: orderId, date: new Date().toISOString(), product: productName,
+        contact1: contact1, contact2: contact2, address: address,
+        deliveryAddress: deliveryAddr, cardFirst6: cardFirst6, cardLast4: cardLast4,
+        icImageUrl: icImageUrl, assignedAgent: agent.name, agentContact: agent.contact, status: 'pending'
+    });
+    localStorage.setItem('coway_orders', JSON.stringify(orders));
+    
+    incrementAgentReceipt(agent);
+    window.open(`https://wa.me/${agent.contact}?text=${encodedMsg}`, '_blank');
+    
+    submitBtn.innerText = originalText;
+    submitBtn.disabled = false;
+    closeOrderModal();
+    document.getElementById('successModal').classList.add('active');
+    currentProduct = null;
+});
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // 移动端菜单
+    document.getElementById('menuBtn')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('overlay').classList.add('show');
+    });
+    document.getElementById('overlay')?.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+    });
+    
+    document.getElementById('carouselPrev')?.addEventListener('click', () => { prevCarouselSlide(); resetCarouselAutoPlay(); });
+    document.getElementById('carouselNext')?.addEventListener('click', () => { nextCarouselSlide(); resetCarouselAutoPlay(); });
+    
+    // ========== 初始化 ==========
+    loadProducts();
+    loadCarousel();
+    loadAgents();           // 加载 Agent 数据
+    renderCategoryList();
+    renderProducts();
+</script>
+
+</body>
+</html>
