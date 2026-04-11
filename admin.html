@@ -794,4 +794,41 @@
             
             const newItem = {
                 id: isEdit ? parseInt(id) : Date.now(),
-                name: document.getElementById('
+                name: document.getElementById('locationName').value,
+                image: image,
+                address: document.getElementById('locationAddress').value,
+                hours: document.getElementById('locationHours').value,
+                phone: document.getElementById('locationPhone').value,
+                wazeLink: document.getElementById('locationWaze').value
+            };
+            if (isEdit) {
+                const index = locationsData.findIndex(i => i.id == id);
+                if (index !== -1) locationsData[index] = newItem;
+            } else locationsData.push(newItem);
+            localStorage.setItem('coway_locations', JSON.stringify(locationsData));
+            renderLocations();
+        }
+        closeModal();
+    }
+    
+    function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+    }
+    
+    // Tab 切换
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${tab}Panel`).classList.add('active');
+        });
+    });
+</script>
+
+</body>
+</html>
