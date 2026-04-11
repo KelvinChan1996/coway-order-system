@@ -153,8 +153,10 @@
         .modal.active { display: flex; }
         .modal-content {
             background: #fff;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
             border-radius: 16px;
             padding: 25px;
             position: relative;
@@ -172,6 +174,34 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+        }
+        .image-upload-area {
+            margin-bottom: 15px;
+        }
+        .image-upload-area label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .image-preview {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .image-preview img {
+            max-width: 100px;
+            max-height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .current-image-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
         .modal-buttons button { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; }
@@ -270,10 +300,17 @@
             <input type="text" id="productPrice" placeholder="价格 (如: RM 3,999)">
             <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
             <textarea id="productDescEn" placeholder="英文描述" rows="3"></textarea>
-            <input type="text" id="productImages" placeholder="图片URL (多张用 | 分隔)">
+            
+            <!-- 商品图片上传（多图） -->
+            <div class="image-upload-area">
+                <label>📷 商品图片</label>
+                <input type="file" id="productImagesInput" accept="image/*" multiple>
+                <div id="productImagesPreview" class="image-preview"></div>
+                <div class="current-image-info" id="productImagesInfo"></div>
+            </div>
         </div>
         
-        <!-- Agent 字段（新格式） -->
+        <!-- Agent 字段 -->
         <div id="agentFields">
             <input type="text" id="agentName" placeholder="姓名 *">
             <input type="text" id="agentHpCode" placeholder="HP CODE *">
@@ -291,7 +328,14 @@
         <div id="carouselFields">
             <input type="text" id="carouselTitle" placeholder="广告标题">
             <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
-            <input type="text" id="carouselImage" placeholder="图片URL">
+            
+            <!-- 广告图片上传 -->
+            <div class="image-upload-area">
+                <label>📷 广告图片</label>
+                <input type="file" id="carouselImageInput" accept="image/*">
+                <div id="carouselImagePreview" class="image-preview"></div>
+            </div>
+            
             <input type="text" id="carouselLink" placeholder="链接">
         </div>
         
@@ -299,14 +343,28 @@
         <div id="noticeFields">
             <input type="text" id="noticeTitle" placeholder="公告标题">
             <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
-            <input type="text" id="noticeImage" placeholder="图片URL">
+            
+            <!-- 公告图片上传 -->
+            <div class="image-upload-area">
+                <label>📷 公告图片</label>
+                <input type="file" id="noticeImageInput" accept="image/*">
+                <div id="noticeImagePreview" class="image-preview"></div>
+            </div>
+            
             <input type="date" id="noticeDate">
         </div>
         
         <!-- 门店字段 -->
         <div id="locationFields">
             <input type="text" id="locationName" placeholder="门店名称">
-            <input type="text" id="locationImage" placeholder="图片URL">
+            
+            <!-- 门店图片上传 -->
+            <div class="image-upload-area">
+                <label>📷 门店图片</label>
+                <input type="file" id="locationImageInput" accept="image/*">
+                <div id="locationImagePreview" class="image-preview"></div>
+            </div>
+            
             <textarea id="locationAddress" placeholder="地址" rows="2"></textarea>
             <input type="text" id="locationHours" placeholder="营业时间">
             <input type="text" id="locationPhone" placeholder="电话">
@@ -325,7 +383,26 @@
     const ADMIN_PASSWORD = "Coway2026!";
     
     let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
-    let currentTab = "products";
+    
+    // 辅助函数：将图片文件转为 Base64
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    }
+    
+    // 多图转 Base64 数组
+    async function filesToBase64Array(files) {
+        const results = [];
+        for (let i = 0; i < files.length; i++) {
+            const base64 = await fileToBase64(files[i]);
+            results.push(base64);
+        }
+        return results;
+    }
     
     function doLogin() {
         const id = document.getElementById('adminId').value;
@@ -348,27 +425,24 @@
     }
     
     function loadAllData() {
-        // 商品
         let saved = localStorage.getItem('coway_products');
         productsData = saved ? JSON.parse(saved) : [];
-        // 轮播
+        
         saved = localStorage.getItem('coway_carousel');
         carouselData = saved ? JSON.parse(saved) : [];
-        // 公告
+        
         saved = localStorage.getItem('coway_notices');
         noticeData = saved ? JSON.parse(saved) : [];
-        // Agent（新格式）
+        
         saved = localStorage.getItem('coway_agents');
         agentsData = saved ? JSON.parse(saved) : [
             { id: 1, name: "Ali Rehman", hp_code: "HP001", contact: "60123456789", position: "HP", receipt: 0, email: "ali@coway.com" },
             { id: 2, name: "Siti Nuraini", hp_code: "HP002", contact: "60129876543", position: "SM", receipt: 0, email: "siti@coway.com" },
             { id: 3, name: "Chong Wei", hp_code: "HP003", contact: "60115551234", position: "GSM", receipt: 1, email: "chong@coway.com" }
         ];
-        // 门店
+        
         saved = localStorage.getItem('coway_locations');
-        locationsData = saved ? JSON.parse(saved) : [
-            { id: 1, name: "Coway Experience Centre KL", image: "https://placehold.co/600x400/80abce/white?text=KL+Centre", address: "Wisma UOA II, Jalan Pinang, Kuala Lumpur", hours: "Mon-Fri: 10am-7pm, Sat: 10am-2pm", phone: "1800-888-111", wazeLink: "https://waze.com/ul?ll=3.1585,101.7156&navigate=yes" }
-        ];
+        locationsData = saved ? JSON.parse(saved) : [];
         
         renderProducts();
         renderCarousel();
@@ -377,7 +451,7 @@
         renderLocations();
     }
     
-    // ========== 商品 ==========
+    // ========== 渲染函数 ==========
     function renderProducts() {
         const container = document.getElementById('productsList');
         if (!productsData.length) { container.innerHTML = '<div class="empty-msg">暂无商品</div>'; return; }
@@ -385,17 +459,16 @@
         productsData.forEach(p => {
             const div = document.createElement('div');
             div.className = 'item-row';
-            div.innerHTML = `<div class="info"><h4>${escapeHtml(p.name)}</h4><p>${p.price}</p><small>${p.category}</small></div>
-                <div class="actions"><button class="btn-edit" onclick="editProduct(${p.id})">编辑</button><button class="btn-delete" onclick="deleteProduct(${p.id})">删除</button></div>`;
+            const firstImage = p.images && p.images[0] ? `<img class="preview-img" src="${p.images[0]}">` : '<div class="preview-img" style="background:#ddd; display:flex;align-items:center;justify-content:center;">无图</div>';
+            div.innerHTML = `
+                ${firstImage}
+                <div class="info"><h4>${escapeHtml(p.name)}</h4><p>${p.price}</p><small>${p.category}</small></div>
+                <div class="actions"><button class="btn-edit" onclick="editProduct(${p.id})">编辑</button><button class="btn-delete" onclick="deleteProduct(${p.id})">删除</button></div>
+            `;
             container.appendChild(div);
         });
     }
     
-    function editProduct(id) { openModal('product', productsData.find(i => i.id === id)); }
-    function deleteProduct(id) { if(confirm('确定删除？')){ productsData = productsData.filter(i => i.id !== id); localStorage.setItem('coway_products', JSON.stringify(productsData)); renderProducts(); } }
-    function openProductModal() { openModal('product', null); }
-    
-    // ========== 轮播 ==========
     function renderCarousel() {
         const container = document.getElementById('carouselList');
         if (!carouselData.length) { container.innerHTML = '<div class="empty-msg">暂无广告</div>'; return; }
@@ -403,16 +476,16 @@
         carouselData.forEach(c => {
             const div = document.createElement('div');
             div.className = 'item-row';
-            div.innerHTML = `<div class="info"><h4>${escapeHtml(c.title)}</h4><p>${escapeHtml(c.desc)}</p></div>
-                <div class="actions"><button class="btn-edit" onclick="editCarousel(${c.id})">编辑</button><button class="btn-delete" onclick="deleteCarousel(${c.id})">删除</button></div>`;
+            const imgHtml = c.image ? `<img class="preview-img" src="${c.image}">` : '<div class="preview-img" style="background:#ddd;">无图</div>';
+            div.innerHTML = `
+                ${imgHtml}
+                <div class="info"><h4>${escapeHtml(c.title)}</h4><p>${escapeHtml(c.desc)}</p></div>
+                <div class="actions"><button class="btn-edit" onclick="editCarousel(${c.id})">编辑</button><button class="btn-delete" onclick="deleteCarousel(${c.id})">删除</button></div>
+            `;
             container.appendChild(div);
         });
     }
-    function editCarousel(id) { openModal('carousel', carouselData.find(i => i.id === id)); }
-    function deleteCarousel(id) { if(confirm('确定删除？')){ carouselData = carouselData.filter(i => i.id !== id); localStorage.setItem('coway_carousel', JSON.stringify(carouselData)); renderCarousel(); } }
-    function openCarouselModal() { openModal('carousel', null); }
     
-    // ========== 公告 ==========
     function renderNotices() {
         const container = document.getElementById('noticeList');
         if (!noticeData.length) { container.innerHTML = '<div class="empty-msg">暂无公告</div>'; return; }
@@ -420,16 +493,16 @@
         noticeData.forEach(n => {
             const div = document.createElement('div');
             div.className = 'item-row';
-            div.innerHTML = `<div class="info"><h4>${escapeHtml(n.title)}</h4><p>${escapeHtml(n.description)}</p><small>${n.date}</small></div>
-                <div class="actions"><button class="btn-edit" onclick="editNotice(${n.id})">编辑</button><button class="btn-delete" onclick="deleteNotice(${n.id})">删除</button></div>`;
+            const imgHtml = n.image ? `<img class="preview-img" src="${n.image}">` : '<div class="preview-img" style="background:#ddd;">无图</div>';
+            div.innerHTML = `
+                ${imgHtml}
+                <div class="info"><h4>${escapeHtml(n.title)}</h4><p>${escapeHtml(n.description)}</p><small>${n.date}</small></div>
+                <div class="actions"><button class="btn-edit" onclick="editNotice(${n.id})">编辑</button><button class="btn-delete" onclick="deleteNotice(${n.id})">删除</button></div>
+            `;
             container.appendChild(div);
         });
     }
-    function editNotice(id) { openModal('notice', noticeData.find(i => i.id === id)); }
-    function deleteNotice(id) { if(confirm('确定删除？')){ noticeData = noticeData.filter(i => i.id !== id); localStorage.setItem('coway_notices', JSON.stringify(noticeData)); renderNotices(); } }
-    function openNoticeModal() { openModal('notice', null); }
     
-    // ========== Agent（新格式） ==========
     function renderAgents() {
         const container = document.getElementById('agentsList');
         if (!agentsData.length) { container.innerHTML = '<div class="empty-msg">暂无 Agent</div>'; return; }
@@ -443,20 +516,12 @@
                     <p>📞 ${a.contact} | 📧 ${a.email || '-'}</p>
                     <p>💼 ${a.position} | 📊 DO: ${a.receipt}</p>
                 </div>
-                <div class="actions">
-                    <button class="btn-edit" onclick="editAgent(${a.id})">编辑</button>
-                    <button class="btn-delete" onclick="deleteAgent(${a.id})">删除</button>
-                </div>
+                <div class="actions"><button class="btn-edit" onclick="editAgent(${a.id})">编辑</button><button class="btn-delete" onclick="deleteAgent(${a.id})">删除</button></div>
             `;
             container.appendChild(div);
         });
     }
     
-    function editAgent(id) { openModal('agent', agentsData.find(i => i.id === id)); }
-    function deleteAgent(id) { if(confirm('确定删除？')){ agentsData = agentsData.filter(i => i.id !== id); localStorage.setItem('coway_agents', JSON.stringify(agentsData)); renderAgents(); } }
-    function openAgentModal() { openModal('agent', null); }
-    
-    // ========== 门店 ==========
     function renderLocations() {
         const container = document.getElementById('locationsList');
         if (!locationsData.length) { container.innerHTML = '<div class="empty-msg">暂无门店</div>'; return; }
@@ -464,16 +529,62 @@
         locationsData.forEach(l => {
             const div = document.createElement('div');
             div.className = 'item-row';
-            div.innerHTML = `<div class="info"><h4>${escapeHtml(l.name)}</h4><p>${escapeHtml(l.address)}</p><small>${l.hours}</small></div>
-                <div class="actions"><button class="btn-edit" onclick="editLocation(${l.id})">编辑</button><button class="btn-delete" onclick="deleteLocation(${l.id})">删除</button></div>`;
+            const imgHtml = l.image ? `<img class="preview-img" src="${l.image}">` : '<div class="preview-img" style="background:#ddd;">无图</div>';
+            div.innerHTML = `
+                ${imgHtml}
+                <div class="info"><h4>${escapeHtml(l.name)}</h4><p>${escapeHtml(l.address)}</p><small>${l.hours}</small></div>
+                <div class="actions"><button class="btn-edit" onclick="editLocation(${l.id})">编辑</button><button class="btn-delete" onclick="deleteLocation(${l.id})">删除</button></div>
+            `;
             container.appendChild(div);
         });
     }
+    
+    // ========== 编辑函数 ==========
+    function editProduct(id) { openModal('product', productsData.find(i => i.id === id)); }
+    function deleteProduct(id) { if(confirm('确定删除？')){ productsData = productsData.filter(i => i.id !== id); localStorage.setItem('coway_products', JSON.stringify(productsData)); renderProducts(); } }
+    function openProductModal() { openModal('product', null); }
+    
+    function editCarousel(id) { openModal('carousel', carouselData.find(i => i.id === id)); }
+    function deleteCarousel(id) { if(confirm('确定删除？')){ carouselData = carouselData.filter(i => i.id !== id); localStorage.setItem('coway_carousel', JSON.stringify(carouselData)); renderCarousel(); } }
+    function openCarouselModal() { openModal('carousel', null); }
+    
+    function editNotice(id) { openModal('notice', noticeData.find(i => i.id === id)); }
+    function deleteNotice(id) { if(confirm('确定删除？')){ noticeData = noticeData.filter(i => i.id !== id); localStorage.setItem('coway_notices', JSON.stringify(noticeData)); renderNotices(); } }
+    function openNoticeModal() { openModal('notice', null); }
+    
+    function editAgent(id) { openModal('agent', agentsData.find(i => i.id === id)); }
+    function deleteAgent(id) { if(confirm('确定删除？')){ agentsData = agentsData.filter(i => i.id !== id); localStorage.setItem('coway_agents', JSON.stringify(agentsData)); renderAgents(); } }
+    function openAgentModal() { openModal('agent', null); }
+    
     function editLocation(id) { openModal('location', locationsData.find(i => i.id === id)); }
     function deleteLocation(id) { if(confirm('确定删除？')){ locationsData = locationsData.filter(i => i.id !== id); localStorage.setItem('coway_locations', JSON.stringify(locationsData)); renderLocations(); } }
     function openLocationModal() { openModal('location', null); }
     
-    // ========== 通用弹窗 ==========
+    // ========== 预览图片 ==========
+    function setupImagePreview(fileInputId, previewId, isMultiple = false) {
+        const input = document.getElementById(fileInputId);
+        const preview = document.getElementById(previewId);
+        if (!input) return;
+        
+        input.addEventListener('change', async function() {
+            preview.innerHTML = '';
+            if (isMultiple) {
+                for (let file of this.files) {
+                    const base64 = await fileToBase64(file);
+                    const img = document.createElement('img');
+                    img.src = base64;
+                    preview.appendChild(img);
+                }
+            } else if (this.files[0]) {
+                const base64 = await fileToBase64(this.files[0]);
+                const img = document.createElement('img');
+                img.src = base64;
+                preview.appendChild(img);
+            }
+        });
+    }
+    
+    // ========== 打开弹窗 ==========
     function openModal(type, item) {
         document.getElementById('editType').value = type;
         document.getElementById('editId').value = item ? item.id : '';
@@ -493,7 +604,23 @@
             document.getElementById('productPrice').value = item ? item.price : '';
             document.getElementById('productDescZh').value = item ? item.desc_zh : '';
             document.getElementById('productDescEn').value = item ? item.desc_en : '';
-            document.getElementById('productImages').value = item && item.images ? item.images.join('|') : '';
+            
+            // 显示已有图片预览
+            const previewDiv = document.getElementById('productImagesPreview');
+            const infoDiv = document.getElementById('productImagesInfo');
+            previewDiv.innerHTML = '';
+            if (item && item.images && item.images.length) {
+                item.images.forEach(img => {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = img;
+                    previewDiv.appendChild(imgEl);
+                });
+                infoDiv.innerHTML = `当前有 ${item.images.length} 张图片，重新上传将替换`;
+            } else {
+                infoDiv.innerHTML = '暂无图片，请上传';
+            }
+            setupImagePreview('productImagesInput', 'productImagesPreview', true);
+            
         } else if (type === 'agent') {
             document.getElementById('agentFields').style.display = 'block';
             document.getElementById('modalTitle').innerText = item ? '编辑 Agent' : '新增 Agent';
@@ -503,39 +630,77 @@
             document.getElementById('agentPosition').value = item ? item.position : 'HP';
             document.getElementById('agentReceipt').value = item ? item.receipt : 0;
             document.getElementById('agentEmail').value = item ? item.email : '';
+            
         } else if (type === 'carousel') {
             document.getElementById('carouselFields').style.display = 'block';
             document.getElementById('modalTitle').innerText = item ? '编辑广告' : '新增广告';
             document.getElementById('carouselTitle').value = item ? item.title : '';
             document.getElementById('carouselDesc').value = item ? item.desc : '';
-            document.getElementById('carouselImage').value = item ? item.image : '';
             document.getElementById('carouselLink').value = item ? item.link : '';
+            
+            const previewDiv = document.getElementById('carouselImagePreview');
+            previewDiv.innerHTML = '';
+            if (item && item.image) {
+                const imgEl = document.createElement('img');
+                imgEl.src = item.image;
+                previewDiv.appendChild(imgEl);
+            }
+            setupImagePreview('carouselImageInput', 'carouselImagePreview', false);
+            
         } else if (type === 'notice') {
             document.getElementById('noticeFields').style.display = 'block';
             document.getElementById('modalTitle').innerText = item ? '编辑公告' : '新增公告';
             document.getElementById('noticeTitle').value = item ? item.title : '';
             document.getElementById('noticeDesc').value = item ? item.description : '';
-            document.getElementById('noticeImage').value = item ? item.image : '';
             document.getElementById('noticeDate').value = item ? item.date : new Date().toISOString().split('T')[0];
+            
+            const previewDiv = document.getElementById('noticeImagePreview');
+            previewDiv.innerHTML = '';
+            if (item && item.image) {
+                const imgEl = document.createElement('img');
+                imgEl.src = item.image;
+                previewDiv.appendChild(imgEl);
+            }
+            setupImagePreview('noticeImageInput', 'noticeImagePreview', false);
+            
         } else if (type === 'location') {
             document.getElementById('locationFields').style.display = 'block';
             document.getElementById('modalTitle').innerText = item ? '编辑门店' : '新增门店';
             document.getElementById('locationName').value = item ? item.name : '';
-            document.getElementById('locationImage').value = item ? item.image : '';
             document.getElementById('locationAddress').value = item ? item.address : '';
             document.getElementById('locationHours').value = item ? item.hours : '';
             document.getElementById('locationPhone').value = item ? item.phone : '';
             document.getElementById('locationWaze').value = item ? item.wazeLink : '';
+            
+            const previewDiv = document.getElementById('locationImagePreview');
+            previewDiv.innerHTML = '';
+            if (item && item.image) {
+                const imgEl = document.createElement('img');
+                imgEl.src = item.image;
+                previewDiv.appendChild(imgEl);
+            }
+            setupImagePreview('locationImageInput', 'locationImagePreview', false);
         }
         document.getElementById('editModal').classList.add('active');
     }
     
-    function saveItem() {
+    // ========== 保存 ==========
+    async function saveItem() {
         const type = document.getElementById('editType').value;
         const id = document.getElementById('editId').value;
         const isEdit = id !== '';
         
         if (type === 'product') {
+            // 处理多图上传
+            const imageInput = document.getElementById('productImagesInput');
+            let images = [];
+            if (imageInput.files.length > 0) {
+                images = await filesToBase64Array(imageInput.files);
+            } else if (isEdit) {
+                const existing = productsData.find(i => i.id == id);
+                images = existing ? existing.images : [];
+            }
+            
             const newItem = {
                 id: isEdit ? parseInt(id) : Date.now(),
                 name: document.getElementById('productName').value,
@@ -543,7 +708,7 @@
                 price: document.getElementById('productPrice').value,
                 desc_zh: document.getElementById('productDescZh').value,
                 desc_en: document.getElementById('productDescEn').value,
-                images: document.getElementById('productImages').value.split('|').filter(s => s.trim())
+                images: images
             };
             if (isEdit) {
                 const index = productsData.findIndex(i => i.id == id);
@@ -551,6 +716,7 @@
             } else productsData.push(newItem);
             localStorage.setItem('coway_products', JSON.stringify(productsData));
             renderProducts();
+            
         } else if (type === 'agent') {
             const newItem = {
                 id: isEdit ? parseInt(id) : Date.now(),
@@ -567,12 +733,22 @@
             } else agentsData.push(newItem);
             localStorage.setItem('coway_agents', JSON.stringify(agentsData));
             renderAgents();
+            
         } else if (type === 'carousel') {
+            const imageInput = document.getElementById('carouselImageInput');
+            let image = '';
+            if (imageInput.files.length > 0) {
+                image = await fileToBase64(imageInput.files[0]);
+            } else if (isEdit) {
+                const existing = carouselData.find(i => i.id == id);
+                image = existing ? existing.image : '';
+            }
+            
             const newItem = {
                 id: isEdit ? parseInt(id) : Date.now(),
                 title: document.getElementById('carouselTitle').value,
                 desc: document.getElementById('carouselDesc').value,
-                image: document.getElementById('carouselImage').value,
+                image: image,
                 link: document.getElementById('carouselLink').value
             };
             if (isEdit) {
@@ -581,12 +757,22 @@
             } else carouselData.push(newItem);
             localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
             renderCarousel();
+            
         } else if (type === 'notice') {
+            const imageInput = document.getElementById('noticeImageInput');
+            let image = '';
+            if (imageInput.files.length > 0) {
+                image = await fileToBase64(imageInput.files[0]);
+            } else if (isEdit) {
+                const existing = noticeData.find(i => i.id == id);
+                image = existing ? existing.image : '';
+            }
+            
             const newItem = {
                 id: isEdit ? parseInt(id) : Date.now(),
                 title: document.getElementById('noticeTitle').value,
                 description: document.getElementById('noticeDesc').value,
-                image: document.getElementById('noticeImage').value,
+                image: image,
                 date: document.getElementById('noticeDate').value
             };
             if (isEdit) {
@@ -595,50 +781,17 @@
             } else noticeData.unshift(newItem);
             localStorage.setItem('coway_notices', JSON.stringify(noticeData));
             renderNotices();
+            
         } else if (type === 'location') {
+            const imageInput = document.getElementById('locationImageInput');
+            let image = '';
+            if (imageInput.files.length > 0) {
+                image = await fileToBase64(imageInput.files[0]);
+            } else if (isEdit) {
+                const existing = locationsData.find(i => i.id == id);
+                image = existing ? existing.image : '';
+            }
+            
             const newItem = {
                 id: isEdit ? parseInt(id) : Date.now(),
-                name: document.getElementById('locationName').value,
-                image: document.getElementById('locationImage').value,
-                address: document.getElementById('locationAddress').value,
-                hours: document.getElementById('locationHours').value,
-                phone: document.getElementById('locationPhone').value,
-                wazeLink: document.getElementById('locationWaze').value
-            };
-            if (isEdit) {
-                const index = locationsData.findIndex(i => i.id == id);
-                if (index !== -1) locationsData[index] = newItem;
-            } else locationsData.push(newItem);
-            localStorage.setItem('coway_locations', JSON.stringify(locationsData));
-            renderLocations();
-        }
-        closeModal();
-    }
-    
-    function closeModal() { document.getElementById('editModal').classList.remove('active'); }
-    
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-    
-    // Tab 切换
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.dataset.tab;
-            currentTab = tab;
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(`${tab}Panel`).classList.add('active');
-        });
-    });
-</script>
-
-</body>
-</html>
+                name: document.getElementById('
