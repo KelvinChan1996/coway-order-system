@@ -637,15 +637,46 @@
     let carouselInterval = null;
     let currentCarouselSlide = 0;
     
-    // ========== Agent 数据 ==========
-    let agentList = [];
-
-    function loadAgents() {
-        let saved = localStorage.getItem('coway_agents');
-        if (saved && JSON.parse(saved).length > 0) {
-            agentList = JSON.parse(saved);
+   // ========== 从 Google Sheets 加载 Agent 数据 ==========
+async function loadAgents() {
+    try {
+        // Google Sheets CSV 导出链接
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/1uYkUTabIRRDhVh_eDfBOZUjwe8Qlv-L6eTwN2FroIAY/export?format=csv';
+        
+        const response = await fetch(csvUrl);
+        const csvText = await response.text();
+        
+        // 解析 CSV
+        const rows = csvText.trim().split('\n');
+        const headers = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
+        
+        agentList = [];
+        for (let i = 1; i < rows.length; i++) {
+            const values = rows[i].split(',').map(v => v.replace(/"/g, '').trim());
+            agentList.push({
+                id: parseInt(values[0]),
+                name: values[1],
+                hp_code: values[2],
+                contact: values[3],
+                position: values[4],
+                receipt: parseInt(values[5]) || 0,
+                email: values[6]
+            });
+        }
+        
+        // 同时保存到 localStorage 作为缓存
+        localStorage.setItem('coway_agents', JSON.stringify(agentList));
+        console.log('✅ Agents loaded from Google Sheets:', agentList.length);
+        
+    } catch (error) {
+        console.error('❌ Failed to load from Google Sheets:', error);
+        // 如果网络失败，使用 localStorage 缓存
+        let cached = localStorage.getItem('coway_agents');
+        if (cached) {
+            agentList = JSON.parse(cached);
+            console.log('📦 Using cached agents:', agentList.length);
         } else {
-            // 默认 Agent 数据（新格式）
+            // 默认数据
             agentList = [
                 { id: 1, name: "Ali Rehman", hp_code: "HP001", contact: "60123456789", position: "HP", receipt: 0, email: "ali@coway.com" },
                 { id: 2, name: "Siti Nuraini", hp_code: "HP002", contact: "60129876543", position: "SM", receipt: 0, email: "siti@coway.com" },
@@ -653,28 +684,8 @@
             ];
             localStorage.setItem('coway_agents', JSON.stringify(agentList));
         }
-        console.log('Agents loaded:', agentList.length);
     }
-    
-    function getLeastBusyAgent() {
-        if (!agentList || agentList.length === 0) {
-            console.warn('No agents available, loading defaults');
-            loadAgents();
-        }
-        if (agentList.length === 0) {
-            return null;
-        }
-        let min = Math.min(...agentList.map(a => a.receipt));
-        return agentList.find(a => a.receipt === min);
-    }
-
-    function incrementAgentReceipt(agent) {
-        if (agent) {
-            agent.receipt++;
-            localStorage.setItem('coway_agents', JSON.stringify(agentList));
-            console.log(`Agent ${agent.name} (${agent.hp_code}) now has ${agent.receipt} orders`);
-        }
-    }
+}
     
     // 分类定义
     const categories = [
