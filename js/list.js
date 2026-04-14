@@ -230,4 +230,22 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
         
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: 'Markdown' }) });
         
-        const ic = document.getElementById('icUpload').files[0
+        const ic = document.getElementById('icUpload').files[0];
+        if (ic) { const fd = new FormData(); fd.append('chat_id', CHAT_ID); fd.append('photo', ic); await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }); }
+        
+        const orders = JSON.parse(localStorage.getItem('coway_orders') || '[]');
+        orders.unshift({ orderId, date: new Date().toISOString(), product: currentProduct.name, status: 'pending' });
+        localStorage.setItem('coway_orders', JSON.stringify(orders));
+        incrementAgentReceipt(agent);
+        
+        closeOrderModal();
+        document.getElementById('successModal').classList.add('active');
+    } catch { alert('提交失败'); } finally { btn.innerText = '✅ 提交订单'; btn.disabled = false; }
+});
+
+// ========== 初始化 ==========
+document.addEventListener('DOMContentLoaded', () => {
+    loadProducts(); loadCarousel(); loadAgents(); renderCategoryList(); renderProducts();
+    document.getElementById('carouselPrev')?.addEventListener('click', () => { prevSlide(); resetAutoPlay(); });
+    document.getElementById('carouselNext')?.addEventListener('click', () => { nextSlide(); resetAutoPlay(); });
+});
