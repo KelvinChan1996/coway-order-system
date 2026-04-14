@@ -12,7 +12,6 @@
             min-height: 100vh;
         }
         
-        /* 登录页 */
         .login-container {
             max-width: 400px;
             margin: 100px auto;
@@ -43,7 +42,6 @@
         }
         .error-msg { color: #e74c3c; margin-top: 15px; font-size: 14px; }
         
-        /* 管理页面 */
         .admin-container {
             max-width: 1400px;
             margin: 30px auto;
@@ -67,7 +65,6 @@
             cursor: pointer;
         }
         
-        /* Tab 切换 */
         .tabs {
             display: flex;
             gap: 10px;
@@ -100,7 +97,6 @@
             margin-bottom: 20px;
         }
         
-        /* 列表样式 */
         .item-list {
             background: #fff;
             border-radius: 16px;
@@ -137,7 +133,6 @@
         .btn-edit { background: #3498db; color: #fff; }
         .btn-delete { background: #e74c3c; color: #fff; }
         
-        /* 弹窗 */
         .modal {
             display: none;
             position: fixed;
@@ -217,7 +212,6 @@
         }
         .empty-msg { text-align: center; padding: 50px; color: #999; }
         
-        /* 上传状态提示 */
         .upload-status {
             font-size: 12px;
             margin-top: 5px;
@@ -259,31 +253,26 @@
             <button class="tab-btn" data-tab="locations">📍 门店管理</button>
         </div>
         
-        <!-- 商品管理 -->
         <div id="productsPanel" class="panel">
             <button class="btn-add" onclick="openProductModal()">+ 新增商品</button>
             <div id="productsList" class="item-list"></div>
         </div>
         
-        <!-- 轮播广告管理 -->
         <div id="carouselPanel" class="panel">
             <button class="btn-add" onclick="openCarouselModal()">+ 新增广告</button>
             <div id="carouselList" class="item-list"></div>
         </div>
         
-        <!-- 公告管理 -->
         <div id="noticePanel" class="panel">
             <button class="btn-add" onclick="openNoticeModal()">+ 新增公告</button>
             <div id="noticeList" class="item-list"></div>
         </div>
         
-        <!-- Agent 管理 -->
         <div id="agentsPanel" class="panel">
             <button class="btn-add" onclick="openAgentModal()">+ 新增 Agent</button>
             <div id="agentsList" class="item-list"></div>
         </div>
         
-        <!-- 门店管理 -->
         <div id="locationsPanel" class="panel">
             <button class="btn-add" onclick="openLocationModal()">+ 新增门店</button>
             <div id="locationsList" class="item-list"></div>
@@ -291,7 +280,6 @@
     </div>
 </div>
 
-<!-- 通用弹窗 -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" onclick="closeModal()">&times;</span>
@@ -299,7 +287,6 @@
         <input type="hidden" id="editId">
         <input type="hidden" id="editType">
         
-        <!-- 商品字段 -->
         <div id="productFields">
             <input type="text" id="productName" placeholder="商品名称">
             <select id="productCategory">
@@ -312,7 +299,6 @@
             <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
             <textarea id="productDescEn" placeholder="英文描述" rows="3"></textarea>
             
-            <!-- 商品图片上传（多图） -->
             <div class="image-upload-area">
                 <label>📷 商品图片</label>
                 <input type="file" id="productImagesInput" accept="image/*" multiple>
@@ -322,7 +308,6 @@
             </div>
         </div>
         
-        <!-- Agent 字段 -->
         <div id="agentFields">
             <input type="text" id="agentName" placeholder="姓名 *">
             <input type="text" id="agentHpCode" placeholder="HP CODE *">
@@ -336,12 +321,10 @@
             <input type="email" id="agentEmail" placeholder="Email">
         </div>
         
-        <!-- 广告字段 -->
         <div id="carouselFields">
             <input type="text" id="carouselTitle" placeholder="广告标题">
             <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
             
-            <!-- 广告图片上传 -->
             <div class="image-upload-area">
                 <label>📷 广告图片</label>
                 <input type="file" id="carouselImageInput" accept="image/*">
@@ -352,12 +335,10 @@
             <input type="text" id="carouselLink" placeholder="链接">
         </div>
         
-        <!-- 公告字段 -->
         <div id="noticeFields">
             <input type="text" id="noticeTitle" placeholder="公告标题">
             <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
             
-            <!-- 公告图片上传 -->
             <div class="image-upload-area">
                 <label>📷 公告图片</label>
                 <input type="file" id="noticeImageInput" accept="image/*">
@@ -368,11 +349,9 @@
             <input type="date" id="noticeDate">
         </div>
         
-        <!-- 门店字段 -->
         <div id="locationFields">
             <input type="text" id="locationName" placeholder="门店名称">
             
-            <!-- 门店图片上传 -->
             <div class="image-upload-area">
                 <label>📷 门店图片</label>
                 <input type="file" id="locationImageInput" accept="image/*">
@@ -397,7 +376,6 @@
     const ADMIN_ID = "coway_admin";
     const ADMIN_PASSWORD = "Coway2026!";
     
-    // GitHub 签名 Worker URL
     const GITHUB_SIGN_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
     
     let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
@@ -416,7 +394,6 @@
         try {
             updateStatus('⏳ 准备上传...', 'uploading');
             
-            // 1. 从 Worker 获取上传签名
             const signResponse = await fetch(GITHUB_SIGN_WORKER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -434,7 +411,6 @@
             
             updateStatus('⏳ 上传中...', 'uploading');
             
-            // 2. 将文件转为 Base64
             const base64Content = await new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -445,7 +421,6 @@
                 reader.readAsDataURL(file);
             });
             
-            // 3. 直接上传到 GitHub API
             const githubResponse = await fetch(signResult.uploadUrl, {
                 method: 'PUT',
                 headers: {
@@ -497,6 +472,12 @@
                 }
                 throw error;
             }
+        }
+        if (statusElementId) {
+            const statusEl = document.getElementById(statusElementId);
+            statusEl.textContent = `✅ 全部上传成功 (${urls.length} 张)`;
+            statusEl.className = 'upload-status success';
+            setTimeout(() => statusEl.textContent = '', 3000);
         }
         return urls;
     }
@@ -557,7 +538,6 @@
         renderLocations();
     }
     
-    // ========== 渲染函数 ==========
     function renderProducts() {
         const container = document.getElementById('productsList');
         if (!productsData.length) { container.innerHTML = '<div class="empty-msg">暂无商品</div>'; return; }
@@ -645,7 +625,6 @@
         });
     }
     
-    // ========== 编辑函数 ==========
     function editProduct(id) { openModal('product', productsData.find(i => i.id === id)); }
     function deleteProduct(id) { if(confirm('确定删除？')){ productsData = productsData.filter(i => i.id !== id); localStorage.setItem('coway_products', JSON.stringify(productsData)); renderProducts(); } }
     function openProductModal() { openModal('product', null); }
@@ -666,13 +645,11 @@
     function deleteLocation(id) { if(confirm('确定删除？')){ locationsData = locationsData.filter(i => i.id !== id); localStorage.setItem('coway_locations', JSON.stringify(locationsData)); renderLocations(); } }
     function openLocationModal() { openModal('location', null); }
     
-    // ========== 预览图片 ==========
     function setupImagePreview(fileInputId, previewId, isMultiple = false) {
         const input = document.getElementById(fileInputId);
         const preview = document.getElementById(previewId);
         if (!input) return;
         
-        // 移除旧的监听器，添加新的
         const newInput = input.cloneNode(true);
         input.parentNode.replaceChild(newInput, input);
         
@@ -694,12 +671,10 @@
         });
     }
     
-    // ========== 打开弹窗 ==========
     function openModal(type, item) {
         document.getElementById('editType').value = type;
         document.getElementById('editId').value = item ? item.id : '';
         
-        // 隐藏所有字段组
         document.getElementById('productFields').style.display = 'none';
         document.getElementById('agentFields').style.display = 'none';
         document.getElementById('carouselFields').style.display = 'none';
@@ -715,7 +690,6 @@
             document.getElementById('productDescZh').value = item ? item.desc_zh : '';
             document.getElementById('productDescEn').value = item ? item.desc_en : '';
             
-            // 显示已有图片预览
             const previewDiv = document.getElementById('productImagesPreview');
             const infoDiv = document.getElementById('productImagesInfo');
             const statusDiv = document.getElementById('productUploadStatus');
@@ -802,7 +776,6 @@
         document.getElementById('editModal').classList.add('active');
     }
     
-    // ========== 保存 ==========
     async function saveItem() {
         const type = document.getElementById('editType').value;
         const id = document.getElementById('editId').value;
@@ -815,12 +788,10 @@
         
         try {
             if (type === 'product') {
-                // 处理多图上传
                 const imageInput = document.getElementById('productImagesInput');
                 let images = [];
                 
                 if (imageInput.files.length > 0) {
-                    // 有新图片，上传到 GitHub
                     images = await uploadMultipleImagesToGitHub(imageInput.files, 'productUploadStatus');
                 } else if (isEdit) {
                     const existing = productsData.find(i => i.id == id);
@@ -956,7 +927,6 @@
         return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
     }
     
-    // Tab 切换
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
