@@ -12,6 +12,7 @@ body {
     color: #2c3e50;
     background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
     padding-top: 70px;
+    min-height: 100vh;
 }
 
 /* ========== 导航栏 ========== */
@@ -33,6 +34,7 @@ body {
     display: flex;
     align-items: center;
 }
+
 .logo {
     display: flex;
     align-items: center;
@@ -42,8 +44,9 @@ body {
     color: #80abce;
     text-decoration: none;
     margin-right: auto;
-   } 
-    .logo i {
+}
+
+.logo i {
     font-size: 28px;
 }
 
@@ -56,6 +59,7 @@ body {
 .logo img:hover {
     transform: scale(1.02);
 }
+
 .nav-menu {
     display: flex;
     gap: 25px;
@@ -73,6 +77,7 @@ body {
     transition: color 0.3s;
     padding: 8px 0;
     border-bottom: 2px solid transparent;
+    white-space: nowrap;
 }
 
 .nav-menu a:hover,
@@ -170,25 +175,6 @@ body {
 
 .overlay.show {
     display: block;
-}
-
-/* ========== 响应式 ========== */
-@media (max-width: 768px) {
-    .nav-menu {
-        display: none;
-    }
-
-    .mobile-menu-btn {
-        display: block;
-    }
-
-    .admin-icon {
-        margin-left: 0;
-    }
-
-    body {
-        padding-top: 60px;
-    }
 }
 
 /* ========== 页面标题 ========== */
@@ -307,7 +293,7 @@ body {
 }
 
 .btn-danger:hover {
-    background: #c0392b;
+    background: #8e1e1e;
 }
 
 /* ========== 表单样式 ========== */
