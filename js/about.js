@@ -1,12 +1,5 @@
 // ========== 关于我们数据 ==========
-let aboutData = {
-    sections: []
-};
-
-// 默认数据（空状态展示）
-const DEFAULT_ABOUT_DATA = {
-    sections: []
-};
+let aboutData = { sections: [] };
 
 // ========== 加载数据 ==========
 function loadAboutData() {
@@ -15,10 +8,10 @@ function loadAboutData() {
         try {
             aboutData = JSON.parse(saved);
         } catch (e) {
-            aboutData = DEFAULT_ABOUT_DATA;
+            aboutData = { sections: [] };
         }
     } else {
-        aboutData = DEFAULT_ABOUT_DATA;
+        aboutData = { sections: [] };
     }
     renderAboutPage();
 }
@@ -28,21 +21,20 @@ function renderAboutPage() {
     const container = document.getElementById('aboutContainer');
     
     if (!aboutData.sections || aboutData.sections.length === 0) {
-        // 空状态 - 提示管理员编辑
         container.innerHTML = `
             <div class="empty-about">
-                <i>📄</i>
-                <h3>内容正在筹备中</h3>
-                <p>我们的团队正在准备精彩的内容，请稍后再来。</p>
-                <a href="admin.html" class="admin-link">🔐 管理员编辑</a>
+                <h3 data-i18n="about.empty.title">内容正在筹备中</h3>
+                <p data-i18n="about.empty.desc">我们的团队正在准备精彩的内容，请稍后再来。</p>
+                <a href="admin.html" class="admin-link" data-i18n="about.adminEdit">管理员编辑</a>
             </div>
         `;
+        I18N.updatePage();
         return;
     }
     
     let html = '';
     
-    aboutData.sections.forEach((section, index) => {
+    aboutData.sections.forEach((section) => {
         switch (section.type) {
             case 'text':
                 html += renderTextSection(section);
@@ -59,23 +51,21 @@ function renderAboutPage() {
             case 'image':
                 html += renderImageSection(section);
                 break;
-            default:
-                html += renderTextSection(section);
         }
     });
     
     container.innerHTML = html;
+    I18N.updatePage();
 }
 
 function renderTextSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
-                <i>${section.icon || '📝'}</i>
                 <span>${escapeHtml(section.title || '')}</span>
             </div>
             <div class="section-content">
-                ${escapeHtml(section.content || '')}
+                ${escapeHtml(section.content || '').replace(/\n/g, '<br>')}
             </div>
         </div>
     `;
@@ -101,7 +91,6 @@ function renderTeamSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
-                <i>${section.icon || '👥'}</i>
                 <span>${escapeHtml(section.title || '团队介绍')}</span>
             </div>
             <div class="team-grid">
@@ -128,7 +117,6 @@ function renderTimelineSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
-                <i>${section.icon || '📅'}</i>
                 <span>${escapeHtml(section.title || '发展历程')}</span>
             </div>
             <div class="timeline">
@@ -154,7 +142,6 @@ function renderStatsSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
-                <i>${section.icon || '📊'}</i>
                 <span>${escapeHtml(section.title || '数据统计')}</span>
             </div>
             <div class="stats-grid">
@@ -169,7 +156,6 @@ function renderImageSection(section) {
         <div class="about-section">
             ${section.title ? `
                 <div class="section-title">
-                    <i>${section.icon || '🖼️'}</i>
                     <span>${escapeHtml(section.title)}</span>
                 </div>
             ` : ''}
@@ -181,35 +167,15 @@ function renderImageSection(section) {
     `;
 }
 
-// ========== 辅助函数 ==========
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
 }
 
-// ========== 移动端菜单 ==========
-function initMobileMenu() {
-    const menuBtn = document.getElementById('menuBtn');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('overlay');
-    
-    if (menuBtn) {
-        menuBtn.addEventListener('click', () => {
-            sidebar.classList.add('open');
-            overlay.classList.add('show');
-        });
-    }
-    
-    if (overlay) {
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            overlay.classList.remove('show');
-        });
-    }
-}
+window.addEventListener('languageChanged', () => {
+    renderAboutPage();
+});
 
-// ========== 初始化 ==========
 document.addEventListener('DOMContentLoaded', () => {
     loadAboutData();
-    initMobileMenu();
 });
