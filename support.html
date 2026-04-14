@@ -112,47 +112,48 @@
     </div>
 
     <div class="blank-section">
-        <h2>💬 客户支持中心</h2>
-        <p>我们致力于为您提供最优质的服务。如有任何疑问，请随时联系我们或填写以下表格，我们的客服团队会尽快回复您。</p>
+        <h2 data-i18n="support.title">💬 客户支持中心</h2>
+        <p data-i18n="support.subtitle">我们致力于为您提供最优质的服务。如有任何疑问，请随时联系我们或填写以下表格，我们的客服团队会尽快回复您。</p>
     </div>
 
     <div class="feedback-section">
         <div class="feedback-header">
-            <h2>📝 意见反馈</h2>
+            <h2 data-i18n="support.feedback.title">📝 意见反馈</h2>
             <div class="feedback-divider"></div>
-            <p>告诉我们您的问题或建议，我们会尽快回复</p>
+            <p data-i18n="support.feedback.subtitle">告诉我们您的问题或建议，我们会尽快回复</p>
         </div>
         
         <form id="feedbackForm" class="feedback-form">
             <div class="form-group">
-                <label>📱 手机号码 *</label>
-                <input type="tel" id="feedbackPhone" placeholder="例如: 0123456789" required>
+                <label data-i18n="support.phone">📱 手机号码 *</label>
+                <input type="tel" id="feedbackPhone" data-i18n-placeholder="support.phone.placeholder" placeholder="例如: 0123456789" required>
             </div>
             <div class="form-group">
-                <label>📦 选择产品 *</label>
+                <label data-i18n="support.product">📦 选择产品 *</label>
                 <select id="feedbackProduct" required>
-                    <option value="">请选择产品</option>
-                    <option value="水机">💧 水机</option>
-                    <option value="空气净化器">🌬️ 空气净化器</option>
-                    <option value="冷气机">❄️ 冷气机</option>
-                    <option value="洗衣机">🧺 洗衣机</option>
-                    <option value="马桶">🚽 马桶</option>
-                    <option value="按摩椅">💆 按摩椅</option>
-                    <option value="按摩床">🛏️ 按摩床</option>
-                    <option value="床">🛌 床</option>
-                    <option value="其他">其他</option>
+                    <option value="" data-i18n="support.selectProduct">请选择产品</option>
+                    <option value="water" data-i18n="support.product.water">💧 水机</option>
+                    <option value="air" data-i18n="support.product.air">🌬️ 空气净化器</option>
+                    <option value="ac" data-i18n="support.product.ac">❄️ 冷气机</option>
+                    <option value="washer" data-i18n="support.product.washer">🧺 洗衣机</option>
+                    <option value="toilet" data-i18n="support.product.toilet">🚽 马桶</option>
+                    <option value="massageChair" data-i18n="support.product.massageChair">💆 按摩椅</option>
+                    <option value="massageBed" data-i18n="support.product.massageBed">🛏️ 按摩床</option>
+                    <option value="bed" data-i18n="support.product.bed">🛌 床</option>
+                    <option value="other" data-i18n="support.product.other">其他</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>💬 您的反馈/问题 *</label>
-                <textarea id="feedbackMessage" placeholder="请详细描述您的问题或建议..." required></textarea>
+                <label data-i18n="support.message">💬 您的反馈/问题 *</label>
+                <textarea id="feedbackMessage" data-i18n-placeholder="support.message.placeholder" placeholder="请详细描述您的问题或建议..." required></textarea>
             </div>
-            <button type="submit" class="btn-submit">✉️ 提交反馈</button>
+            <button type="submit" class="btn-submit" data-i18n="support.submit">✉️ 提交反馈</button>
         </form>
     </div>
 
-    <div id="successToast" class="success-toast">✅ 反馈已提交，我们会尽快回复您！</div>
+    <div id="successToast" class="success-toast" data-i18n="support.success">✅ 反馈已提交，我们会尽快回复您！</div>
 
+    <script src="js/i18n.js"></script>
     <script src="js/layout2.js"></script>
     <script>
         let carouselData = [];
@@ -167,9 +168,9 @@
         function loadCarousel() {
             let saved = localStorage.getItem('coway_carousel');
             carouselData = saved ? JSON.parse(saved) : [
-                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", title: "纯净空气，健康生活", desc: "Coway 空气净化器，为您的家庭提供最纯净的空气", link: "list.html" },
-                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", title: "健康饮水，从Coway开始", desc: "荣获国际设计大奖的净水器系列", link: "list.html" },
-                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", title: "Coway 虚拟展厅", desc: "360° 体验我们的创新产品", link: "list.html" }
+                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", titleKey: "home.carousel1.title", descKey: "home.carousel1.desc", link: "list.html" },
+                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", titleKey: "home.carousel2.title", descKey: "home.carousel2.desc", link: "list.html" },
+                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", titleKey: "home.carousel3.title", descKey: "home.carousel3.desc", link: "list.html" }
             ];
             if (!saved) localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
             renderCarousel();
@@ -184,7 +185,7 @@
                 const slide = document.createElement('div');
                 slide.className = `carousel-slide ${i === currentCarouselSlide ? 'active' : ''}`;
                 slide.style.backgroundImage = `url(${item.image})`;
-                slide.innerHTML = `<div class="carousel-content"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.desc)}</p><a href="${item.link || '#'}">了解更多 →</a></div>`;
+                slide.innerHTML = `<div class="carousel-content"><h2>${I18N.t(item.titleKey)}</h2><p>${I18N.t(item.descKey)}</p><a href="${item.link || '#'}" data-i18n="home.carousel.learnMore">了解更多 →</a></div>`;
                 container.appendChild(slide);
             });
             dots.innerHTML = '';
@@ -196,6 +197,7 @@
             });
             if (carouselInterval) clearInterval(carouselInterval);
             carouselInterval = setInterval(nextSlide, 5000);
+            I18N.updatePage();
         }
         
         function updateCarouselDisplay() {
@@ -215,13 +217,17 @@
             const phone = document.getElementById('feedbackPhone').value;
             const product = document.getElementById('feedbackProduct').value;
             const message = document.getElementById('feedbackMessage').value;
-            if (!phone || !product || !message) { alert('请填写所有必填字段'); return; }
+            if (!phone || !product || !message) { alert(I18N.t('support.fillRequired')); return; }
             let feedbacks = JSON.parse(localStorage.getItem('coway_feedbacks') || '[]');
             feedbacks.unshift({ id: Date.now(), phone, product, message, status: 'pending', createdAt: new Date().toISOString() });
             localStorage.setItem('coway_feedbacks', JSON.stringify(feedbacks));
             successToast.classList.add('show');
             setTimeout(() => successToast.classList.remove('show'), 3000);
             feedbackForm.reset();
+        });
+        
+        window.addEventListener('languageChanged', () => {
+            renderCarousel();
         });
         
         document.addEventListener('DOMContentLoaded', () => {
