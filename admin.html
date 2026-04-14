@@ -397,12 +397,12 @@
     const ADMIN_ID = "coway_admin";
     const ADMIN_PASSWORD = "Coway2026!";
     
-    // GitHub 上传 Worker URL
-    const GITHUB_UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
+    // GitHub 签名 Worker URL
+    const GITHUB_SIGN_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
     
     let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
     
-    // ========== GitHub 图片上传函数 ==========
+    // ========== 前端直接上传到 GitHub ==========
     async function uploadImageToGitHub(file, statusElementId = null) {
         const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
         
@@ -414,30 +414,63 @@
         };
         
         try {
-            updateStatus('⏳ 上传中...', 'uploading');
+            updateStatus('⏳ 准备上传...', 'uploading');
             
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            const response = await fetch(GITHUB_UPLOAD_WORKER, {
+            // 1. 从 Worker 获取上传签名
+            const signResponse = await fetch(GITHUB_SIGN_WORKER, {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    contentType: file.type,
+                }),
             });
             
-            const result = await response.json();
+            const signResult = await signResponse.json();
             
-            if (!response.ok) {
-                throw new Error(result.error || result.message || 'Upload failed');
+            if (!signResult.success) {
+                throw new Error(signResult.error || 'Failed to get upload signature');
             }
             
-            if (result.success && result.url) {
-                updateStatus('✅ 上传成功', 'success');
-                // 3秒后清除状态提示
-                setTimeout(() => updateStatus('', ''), 3000);
-                return result.url;
-            } else {
-                throw new Error('Invalid response from server');
+            updateStatus('⏳ 上传中...', 'uploading');
+            
+            // 2. 将文件转为 Base64
+            const base64Content = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            
+            // 3. 直接上传到 GitHub API
+            const githubResponse = await fetch(signResult.uploadUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${signResult.token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: `Upload ${file.name}`,
+                    content: base64Content,
+                    branch: 'main',
+                }),
+            });
+            
+            const githubResult = await githubResponse.json();
+            
+            if (!githubResponse.ok) {
+                console.error('GitHub API error:', githubResult);
+                throw new Error(githubResult.message || 'GitHub upload failed');
             }
+            
+            updateStatus('✅ 上传成功', 'success');
+            setTimeout(() => updateStatus('', ''), 3000);
+            
+            return signResult.publicUrl;
+            
         } catch (error) {
             console.error('Upload error:', error);
             updateStatus(`❌ 上传失败: ${error.message}`, 'error');
@@ -445,7 +478,6 @@
         }
     }
     
-    // 批量上传图片
     async function uploadMultipleImagesToGitHub(files, statusElementId = null) {
         const urls = [];
         for (let i = 0; i < files.length; i++) {
@@ -469,7 +501,6 @@
         return urls;
     }
     
-    // 保留原有的 Base64 预览功能（仅用于预览）
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
