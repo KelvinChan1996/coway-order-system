@@ -53,6 +53,7 @@ body {
     display: flex;
     gap: 15px;
     align-items: center;
+    margin-right: 5px;    /* 新增，让菜单与人形图标靠近 */
 }
 
 .nav-menu a {
