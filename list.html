@@ -6,9 +6,7 @@
     <title>Coway Malaysia | 在线下单</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css">
     <style>
-        /* ========== 轮播广告牌 ========== */
         .carousel-banner {
             width: 100%;
             height: 380px;
@@ -19,70 +17,50 @@
         }
         .carousel-slides { width: 100%; height: 100%; position: relative; }
         .carousel-slide {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            opacity: 0;
-            transition: opacity 0.8s ease;
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: #fff;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; transition: opacity 0.8s;
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; color: #fff;
         }
         .carousel-slide.active { opacity: 1; }
         .carousel-slide::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(0,0,0,0.2));
         }
-        .carousel-content {
-            position: relative;
-            z-index: 2;
-            max-width: 800px;
-            padding: 20px;
-            animation: fadeInUp 0.8s ease;
-        }
+        .carousel-content { position: relative; z-index: 2; max-width: 800px; padding: 20px; }
         .carousel-content h2 { font-size: 48px; margin-bottom: 15px; text-shadow: 2px 2px 10px rgba(0,0,0,0.3); }
-        .carousel-content p { font-size: 18px; margin-bottom: 25px; text-shadow: 1px 1px 5px rgba(0,0,0,0.3); }
+        .carousel-content p { font-size: 18px; margin-bottom: 25px; }
         .carousel-content a {
             background: #fff; color: #2c3e50; padding: 12px 36px; border-radius: 40px;
-            text-decoration: none; font-weight: 600; transition: all 0.3s; display: inline-block;
+            text-decoration: none; font-weight: 600; display: inline-block;
         }
-        .carousel-content a:hover { background: #80abce; color: #fff; transform: translateY(-3px); }
         .carousel-dots {
             position: absolute; bottom: 25px; left: 0; right: 0;
             display: flex; justify-content: center; gap: 10px; z-index: 10;
         }
         .carousel-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            background: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s;
+            width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5);
+            cursor: pointer; transition: all 0.3s;
         }
         .carousel-dot.active { background: #fff; width: 28px; border-radius: 5px; }
         .carousel-prev, .carousel-next {
             position: absolute; top: 50%; transform: translateY(-50%);
             width: 44px; height: 44px; background: rgba(255,255,255,0.2);
             backdrop-filter: blur(5px); color: #fff; border: none; border-radius: 50%;
-            cursor: pointer; font-size: 24px; z-index: 10; transition: all 0.3s;
+            cursor: pointer; font-size: 24px; z-index: 10;
         }
-        .carousel-prev:hover, .carousel-next:hover { background: rgba(255,255,255,0.4); transform: translateY(-50%) scale(1.05); }
         .carousel-prev { left: 25px; }
         .carousel-next { right: 25px; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* ========== 主内容布局 ========== */
         .main-layout {
             max-width: 1400px; margin: 40px auto; padding: 0 20px;
             display: flex; gap: 30px;
         }
         .category-sidebar {
-            width: 280px; flex-shrink: 0; background: #fff; border-radius: 20px;
+            width: 280px; background: #fff; border-radius: 20px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.05); overflow: hidden;
-            height: fit-content; position: sticky; top: 85px;
-            border: 1px solid rgba(128,171,206,0.1);
+            position: sticky; top: 85px; height: fit-content;
         }
         .category-header {
             background: linear-gradient(135deg, #80abce, #a8d0e6); color: #fff;
@@ -92,15 +70,12 @@
         .category-list { list-style: none; }
         .category-item {
             padding: 15px 20px; border-bottom: 1px solid #f0f0f0; cursor: pointer;
-            display: flex; align-items: center; gap: 12px; transition: all 0.25s;
-            font-weight: 500; color: #555;
+            display: flex; align-items: center; gap: 12px; font-weight: 500; color: #555;
         }
-        .category-item:hover { background: #f8fafc; color: #80abce; }
         .category-item.active {
-            background: linear-gradient(90deg, #e8f0f8 0%, #fff 100%);
+            background: linear-gradient(90deg, #e8f0f8, #fff);
             color: #80abce; border-left: 4px solid #80abce; font-weight: 600;
         }
-        .category-item i { font-size: 20px; width: 24px; }
         .products-area { flex: 1; }
         .products-header {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
@@ -114,78 +89,67 @@
         }
         .product-card {
             background: #fff; border-radius: 20px; overflow: hidden; cursor: pointer;
-            transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border: 1px solid rgba(128,171,206,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); transition: all 0.3s;
         }
-        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); border-color: #80abce; }
-        .product-card img { width: 100%; height: 200px; object-fit: cover; transition: transform 0.5s; }
-        .product-card:hover img { transform: scale(1.05); }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; }
         .product-card .info { padding: 20px; }
-        .product-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #2c3e50; }
-        .product-card p { font-size: 13px; color: #7f8c8d; margin-bottom: 12px; line-height: 1.5; }
-        .product-card .price { color: #80abce; font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 5px; }
+        .product-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .product-card .price { color: #80abce; font-weight: 700; font-size: 18px; }
         
-        /* ========== 弹窗样式 ========== */
         .detail-modal, .order-modal, .success-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000;
             justify-content: center; align-items: center;
         }
         .detail-modal.active, .order-modal.active, .success-modal.active { display: flex; }
-        .order-modal { z-index: 2001; }
-        .success-modal { z-index: 2002; }
         .detail-content, .order-content, .success-content {
-            background: #fff; border-radius: 24px; padding: 30px; position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3); max-height: 85vh; overflow-y: auto;
+            background: #fff; border-radius: 24px; padding: 30px;
+            max-height: 85vh; overflow-y: auto; position: relative;
         }
         .detail-content { max-width: 750px; width: 90%; }
         .order-content { max-width: 650px; width: 90%; }
-        .success-content { max-width: 450px; width: 90%; text-align: center; padding: 35px; }
-        .modal-close { position: absolute; top: 20px; right: 25px; font-size: 28px; cursor: pointer; color: #999; z-index: 10; }
-        .modal-close:hover { color: #e74c3c; }
-        .detail-carousel img { width: 100%; border-radius: 16px; }
-        .detail-title { font-size: 28px; font-weight: 700; margin: 20px 0 10px; color: #2c3e50; }
+        .success-content { max-width: 450px; width: 90%; text-align: center; }
+        .modal-close {
+            position: absolute; top: 20px; right: 25px; font-size: 28px;
+            cursor: pointer; color: #999; z-index: 10;
+        }
+        .detail-title { font-size: 28px; font-weight: 700; margin: 20px 0 10px; }
         .detail-price { color: #80abce; font-size: 24px; font-weight: 700; margin-bottom: 15px; }
         .detail-desc { color: #666; line-height: 1.7; margin-bottom: 25px; padding: 15px; background: #f8fafc; border-radius: 12px; }
-        .btn-translate { background: #f0f0f0; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; margin-bottom: 20px; }
-        .detail-actions { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn-translate { background: #f0f0f0; border: none; padding: 10px 20px; border-radius: 30px; cursor: pointer; }
+        .detail-actions { display: flex; gap: 15px; }
         .btn-order-detail, .btn-contact-detail {
-            padding: 14px 28px; border-radius: 40px; border: none; font-weight: 600;
-            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 16px;
+            padding: 14px 28px; border-radius: 40px; border: none; font-weight: 600; cursor: pointer;
         }
         .btn-order-detail { background: #80abce; color: #fff; }
-        .btn-order-detail:hover { background: #6a9ab8; }
         .btn-contact-detail { background: #fff; border: 2px solid #80abce; color: #80abce; }
-        .btn-contact-detail:hover { background: #80abce; color: #fff; }
-        .order-content h3 { font-size: 24px; color: #80abce; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .order-content h3 { font-size: 24px; color: #80abce; margin-bottom: 20px; }
         .selected-product-info {
-            background: linear-gradient(135deg, #e8f0f8, #f0f6fa); padding: 18px; border-radius: 16px;
-            margin-bottom: 25px; display: flex; justify-content: space-between; border-left: 4px solid #80abce;
+            background: linear-gradient(135deg, #e8f0f8, #f0f6fa); padding: 18px;
+            border-radius: 16px; margin-bottom: 25px; display: flex; justify-content: space-between;
         }
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #2c3e50; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; }
         .form-group input, .form-group textarea {
             width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 12px;
-            font-size: 15px; background: #fafbfc;
         }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #80abce; }
         .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .checkbox-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .checkbox-group input { width: 20px; height: 20px; accent-color: #80abce; }
         .delivery-address { display: none; }
         .delivery-address.show { display: block; }
         .btn-submit {
-            background: #80abce; color: #fff; border: none; padding: 16px; border-radius: 40px;
-            width: 100%; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px;
+            background: #80abce; color: #fff; border: none; padding: 16px;
+            border-radius: 40px; width: 100%; font-size: 16px; font-weight: 700; cursor: pointer;
         }
-        .btn-submit:hover { background: #6a9ab8; }
         .success-icon {
             width: 80px; height: 80px; background: #27ae60; color: #fff; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px;
         }
-        .success-content h3 { font-size: 24px; margin-bottom: 15px; color: #2c3e50; }
-        .success-content p { color: #666; margin-bottom: 25px; }
-        .btn-ok { background: #80abce; color: #fff; border: none; padding: 12px 40px; border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .btn-ok {
+            background: #80abce; color: #fff; border: none; padding: 12px 40px;
+            border-radius: 40px; font-weight: 600; cursor: pointer;
+        }
         
         @media (max-width: 900px) {
             .main-layout { flex-direction: column; }
@@ -240,11 +204,8 @@
     <div id="orderModal" class="order-modal">
         <div class="order-content">
             <span class="modal-close" onclick="closeOrderModal()">&times;</span>
-            <h3><i>📝</i> 填写订单信息</h3>
+            <h3>📝 填写订单信息</h3>
             <div class="selected-product-info" id="selectedProductInfo"></div>
-            <p style="background:#e8f5e9; padding:14px; border-radius:12px; margin-bottom:25px; color:#27ae60;">
-                <i>✅</i> 感谢您的订购！请填写以下信息完成注册。
-            </p>
             <form id="orderForm">
                 <div class="form-group"><label>📎 IC 照片 (正面) *</label><input type="file" id="icUpload" accept="image/*"></div>
                 <div class="form-row2">
@@ -277,7 +238,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-    <script src="js/layout.js"></script>
+    <script src="js/layout2.js"></script>
     <script src="js/list.js"></script>
 </body>
 </html>
