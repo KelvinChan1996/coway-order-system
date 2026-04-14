@@ -40,16 +40,18 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 22px;
-    font-weight: 700;
-    color: #80abce;
     text-decoration: none;
 }
 
-.logo i {
-    font-size: 28px;
+.logo img {
+    height: 28px;
+    width: auto;
+    transition: transform 0.3s;
 }
 
+.logo img:hover {
+    transform: scale(1.02);
+}
 .nav-menu {
     display: flex;
     gap: 15px;
