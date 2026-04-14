@@ -373,15 +373,15 @@
 </div>
 
 <script>
-    const ADMIN_ID = "coway_admin";
+      const ADMIN_ID = "coway_admin";
     const ADMIN_PASSWORD = "Coway2026!";
     
-    const GITHUB_SIGN_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
+    const UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
     
     let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
     
-    // ========== 前端直接上传到 GitHub ==========
-    async function uploadImageToGitHub(file, statusElementId = null) {
+    // 直接上传到 Worker
+    async function uploadImage(file, statusElementId = null) {
         const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
         
         const updateStatus = (message, type) => {
@@ -392,59 +392,26 @@
         };
         
         try {
-            updateStatus('⏳ 准备上传...', 'uploading');
-            
-            const signResponse = await fetch(GITHUB_SIGN_WORKER, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fileName: file.name,
-                    contentType: file.type,
-                }),
-            });
-            
-            const signResult = await signResponse.json();
-            
-            if (!signResult.success) {
-                throw new Error(signResult.error || 'Failed to get upload signature');
-            }
-            
             updateStatus('⏳ 上传中...', 'uploading');
             
-            const base64Content = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch(UPLOAD_WORKER, {
+                method: 'POST',
+                body: formData,
             });
             
-            const githubResponse = await fetch(signResult.uploadUrl, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${signResult.token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: `Upload ${file.name}`,
-                    content: base64Content,
-                    branch: 'main',
-                }),
-            });
+            const result = await response.json();
             
-            const githubResult = await githubResponse.json();
-            
-            if (!githubResponse.ok) {
-                console.error('GitHub API error:', githubResult);
-                throw new Error(githubResult.message || 'GitHub upload failed');
+            if (!response.ok) {
+                throw new Error(result.error || 'Upload failed');
             }
             
             updateStatus('✅ 上传成功', 'success');
             setTimeout(() => updateStatus('', ''), 3000);
             
-            return signResult.publicUrl;
+            return result.url;
             
         } catch (error) {
             console.error('Upload error:', error);
@@ -453,7 +420,7 @@
         }
     }
     
-    async function uploadMultipleImagesToGitHub(files, statusElementId = null) {
+    async function uploadMultipleImages(files, statusElementId = null) {
         const urls = [];
         for (let i = 0; i < files.length; i++) {
             const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
@@ -463,7 +430,7 @@
             }
             
             try {
-                const url = await uploadImageToGitHub(files[i], null);
+                const url = await uploadImage(files[i], null);
                 urls.push(url);
             } catch (error) {
                 if (statusEl) {
@@ -792,7 +759,7 @@
                 let images = [];
                 
                 if (imageInput.files.length > 0) {
-                    images = await uploadMultipleImagesToGitHub(imageInput.files, 'productUploadStatus');
+                    images = await uploadMultipleImages(imageInput.files, 'productUploadStatus');
                 } else if (isEdit) {
                     const existing = productsData.find(i => i.id == id);
                     images = existing ? existing.images : [];
@@ -836,7 +803,7 @@
                 let image = '';
                 
                 if (imageInput.files.length > 0) {
-                    image = await uploadImageToGitHub(imageInput.files[0], 'carouselUploadStatus');
+                    image = await uploadImage(imageInput.files[0], 'carouselUploadStatus');
                 } else if (isEdit) {
                     const existing = carouselData.find(i => i.id == id);
                     image = existing ? existing.image : '';
@@ -861,7 +828,7 @@
                 let image = '';
                 
                 if (imageInput.files.length > 0) {
-                    image = await uploadImageToGitHub(imageInput.files[0], 'noticeUploadStatus');
+                    image = await uploadImage(imageInput.files[0], 'noticeUploadStatus');
                 } else if (isEdit) {
                     const existing = noticeData.find(i => i.id == id);
                     image = existing ? existing.image : '';
@@ -886,7 +853,7 @@
                 let image = '';
                 
                 if (imageInput.files.length > 0) {
-                    image = await uploadImageToGitHub(imageInput.files[0], 'locationUploadStatus');
+                    image = await uploadImage(imageInput.files[0], 'locationUploadStatus');
                 } else if (isEdit) {
                     const existing = locationsData.find(i => i.id == id);
                     image = existing ? existing.image : '';
