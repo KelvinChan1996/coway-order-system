@@ -34,7 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(`${tab}Panel`).classList.add('active');
         });
     });
+    // 在 admin.js 的 DOMContentLoaded 中添加
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, binding events...');
     
+    // 登录
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', doLogin);
+    }
+    
+    // 登出
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    // ... 其他事件绑定
+});
     // 检查是否已登录（可选）
     // if (localStorage.getItem('admin_logged_in') === 'true') { ... }
 });
