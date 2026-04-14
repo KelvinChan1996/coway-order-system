@@ -25,7 +25,6 @@ function renderAboutPage() {
             <div class="empty-about">
                 <h3 data-i18n="about.empty.title">内容正在筹备中</h3>
                 <p data-i18n="about.empty.desc">我们的团队正在准备精彩的内容，请稍后再来。</p>
-                <a href="admin.html" class="admin-link" data-i18n="about.adminEdit">管理员编辑</a>
             </div>
         `;
         I18N.updatePage();
