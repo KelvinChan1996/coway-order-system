@@ -118,8 +118,9 @@
 .product-image-wrapper img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;      /* 改为 contain，完整显示图片 */
     transition: transform 0.5s;
+    padding: 10px;             /* 添加内边距，图片不贴边 */
 }
 
 .product-card:hover .product-image-wrapper img {
