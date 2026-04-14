@@ -3,7 +3,6 @@ const VALID_ID = "coway";
 const VALID_PASS = "A888888";
 const VALID_PIN = "168888";
 
-let currentStep = 'account';
 let puzzleCompleted = false;
 let sliderDragging = false;
 let sliderStartX = 0;
@@ -21,7 +20,6 @@ function showStep(step) {
     document.getElementById('stepPin').classList.add('hidden');
     document.getElementById('stepCaptcha').classList.add('hidden');
     document.getElementById(`step${step.charAt(0).toUpperCase() + step.slice(1)}`).classList.remove('hidden');
-    currentStep = step;
     document.getElementById('loginError').innerText = '';
     document.getElementById('pinError').innerText = '';
     document.getElementById('captchaError').innerText = '';
@@ -42,15 +40,11 @@ function setupPinInputs() {
     const inputs = document.querySelectorAll('.pin-input');
     inputs.forEach((input, index) => {
         input.addEventListener('input', (e) => {
-            if (e.target.value.length === 1 && index < 5) {
-                inputs[index + 1].focus();
-            }
+            if (e.target.value.length === 1 && index < 5) inputs[index + 1].focus();
             checkPinComplete();
         });
         input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                inputs[index - 1].focus();
-            }
+            if (e.key === 'Backspace' && !e.target.value && index > 0) inputs[index - 1].focus();
         });
         input.addEventListener('paste', (e) => {
             e.preventDefault();
@@ -69,8 +63,7 @@ function getPinValue() {
 
 function checkPinComplete() {
     const pin = getPinValue();
-    const btn = document.getElementById('goToCaptchaBtn');
-    btn.disabled = pin.length !== 6;
+    document.getElementById('goToCaptchaBtn').disabled = pin.length !== 6;
 }
 
 function validatePin() {
