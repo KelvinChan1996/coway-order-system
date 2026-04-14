@@ -147,7 +147,16 @@ function renderProducts() {
     list.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card';
-        card.innerHTML = `<img src="${p.images?.[0] || 'https://placehold.co/800x400/80abce/white?text=Product'}"><div class="info"><h4>${escapeHtml(p.name)}</h4><p>${escapeHtml(p.desc_zh?.substring(0, 60))}...</p><div class="price">${p.price}</div></div>`;
+        card.innerHTML = `
+            <div class="product-image-wrapper">
+                <img src="${p.images?.[0] || 'https://placehold.co/800x400/80abce/white?text=Product'}" alt="${escapeHtml(p.name)}">
+            </div>
+            <div class="info">
+                <h4>${escapeHtml(p.name)}</h4>
+                <p>${escapeHtml(p.desc_zh?.substring(0, 60))}...</p>
+                <div class="price">${p.price}</div>
+            </div>
+        `;
         card.onclick = () => openDetailModal(p);
         grid.appendChild(card);
     });
