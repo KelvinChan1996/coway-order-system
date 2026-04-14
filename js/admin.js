@@ -12,7 +12,8 @@ let sliderMaxWidth = 0;
 const UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
 
 // ==================== 全局数据 ====================
-let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
+let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [], aboutData = { sections: [] };
+let currentAboutSectionType = 'text';
 
 // ==================== 登录流程控制 ====================
 function showStep(step) {
@@ -249,7 +250,15 @@ function loadAllData() {
         { id: 3, name: "Chong Wei", hp_code: "HP003", contact: "60115551234", position: "GSM", receipt: 1, email: "chong@coway.com" }
     ]));
     locationsData = JSON.parse(localStorage.getItem('coway_locations') || '[]');
-    renderProducts(); renderCarousel(); renderNotices(); renderAgents(); renderLocations();
+    
+    const savedAbout = localStorage.getItem('coway_about');
+    if (savedAbout) {
+        try { aboutData = JSON.parse(savedAbout); } catch (e) { aboutData = { sections: [] }; }
+    } else {
+        aboutData = { sections: [] };
+    }
+    
+    renderProducts(); renderCarousel(); renderNotices(); renderAgents(); renderLocations(); renderAboutSections();
 }
 
 // ==================== 渲染函数 ====================
@@ -319,6 +328,36 @@ function renderLocations() {
     bindItemEvents(container);
 }
 
+function renderAboutSections() {
+    const container = document.getElementById('aboutSectionsList');
+    if (!aboutData.sections || aboutData.sections.length === 0) {
+        container.innerHTML = '<div class="empty-msg">暂无区块，点击"新增区块"开始编辑</div>';
+        return;
+    }
+    container.innerHTML = '';
+    aboutData.sections.forEach((section, index) => {
+        const div = document.createElement('div');
+        div.className = 'item-row';
+        const typeNames = { text: '📝 文本', stats: '📊 统计', team: '👥 团队', timeline: '📅 时间线', image: '🖼️ 图片' };
+        const typeName = typeNames[section.type] || section.type;
+        div.innerHTML = `
+            <div class="info">
+                <h4>${section.icon || '📄'} ${escapeHtml(section.title || '未命名区块')}</h4>
+                <p>类型: ${typeName}</p>
+                ${section.type === 'text' ? `<small>${escapeHtml((section.content || '').substring(0, 50))}...</small>` : ''}
+            </div>
+            <div class="actions">
+                <button class="btn-edit" data-index="${index}">编辑</button>
+                ${index > 0 ? `<button class="btn-move" data-index="${index}" data-direction="up">⬆ 上移</button>` : ''}
+                ${index < aboutData.sections.length - 1 ? `<button class="btn-move" data-index="${index}" data-direction="down">⬇ 下移</button>` : ''}
+                <button class="btn-delete" data-index="${index}">删除</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    bindAboutEvents(container);
+}
+
 function bindItemEvents(container) {
     container.querySelectorAll('.btn-edit').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -345,7 +384,35 @@ function bindItemEvents(container) {
     });
 }
 
-// ==================== 弹窗管理 ====================
+function bindAboutEvents(container) {
+    container.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => openAboutModal(parseInt(btn.dataset.index)));
+    });
+    container.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!confirm('确定删除？')) return;
+            const index = parseInt(btn.dataset.index);
+            aboutData.sections.splice(index, 1);
+            localStorage.setItem('coway_about', JSON.stringify(aboutData));
+            renderAboutSections();
+        });
+    });
+    container.querySelectorAll('.btn-move').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.dataset.index);
+            const direction = btn.dataset.direction;
+            if (direction === 'up' && index > 0) {
+                [aboutData.sections[index - 1], aboutData.sections[index]] = [aboutData.sections[index], aboutData.sections[index - 1]];
+            } else if (direction === 'down' && index < aboutData.sections.length - 1) {
+                [aboutData.sections[index], aboutData.sections[index + 1]] = [aboutData.sections[index + 1], aboutData.sections[index]];
+            }
+            localStorage.setItem('coway_about', JSON.stringify(aboutData));
+            renderAboutSections();
+        });
+    });
+}
+
+// ==================== 弹窗管理（商品等） ====================
 function closeModal() { document.getElementById('editModal').classList.remove('active'); }
 
 function setupImagePreview(fileInputId, previewId, isMultiple = false) {
@@ -449,6 +516,193 @@ function openNoticeModal() { openModal('notice', null); }
 function openAgentModal() { openModal('agent', null); }
 function openLocationModal() { openModal('location', null); }
 
+// ==================== 关于我们弹窗 ====================
+function openAboutModal(index = -1) {
+    currentAboutSectionType = 'text';
+    const isEdit = index >= 0;
+    document.getElementById('aboutEditIndex').value = index;
+    document.getElementById('aboutModalTitle').innerText = isEdit ? '编辑区块' : '新增区块';
+    
+    // 重置表单
+    document.getElementById('aboutSectionTitle').value = '';
+    document.getElementById('aboutSectionIcon').value = '📝';
+    document.getElementById('aboutTextContent').value = '';
+    document.getElementById('aboutImageUrl').value = '';
+    document.getElementById('aboutImageCaption').value = '';
+    document.getElementById('aboutImagePreview').innerHTML = '';
+    document.getElementById('aboutImageUploadStatus').innerHTML = '';
+    
+    // 清空动态容器
+    document.getElementById('statsFieldsContainer').innerHTML = '';
+    document.getElementById('teamFieldsContainer').innerHTML = '';
+    document.getElementById('timelineFieldsContainer').innerHTML = '';
+    
+    if (isEdit) {
+        const section = aboutData.sections[index];
+        document.getElementById('aboutSectionTitle').value = section.title || '';
+        document.getElementById('aboutSectionIcon').value = section.icon || '📝';
+        currentAboutSectionType = section.type;
+        
+        if (section.type === 'text') {
+            document.getElementById('aboutTextContent').value = section.content || '';
+        } else if (section.type === 'stats') {
+            if (section.stats) {
+                section.stats.forEach(stat => addStatField(stat.number, stat.label));
+            }
+        } else if (section.type === 'team') {
+            if (section.members) {
+                section.members.forEach(m => addTeamMemberField(m.name, m.role, m.bio, m.avatar));
+            }
+        } else if (section.type === 'timeline') {
+            if (section.items) {
+                section.items.forEach(item => addTimelineItemField(item.year, item.title, item.desc));
+            }
+        } else if (section.type === 'image') {
+            document.getElementById('aboutImageUrl').value = section.image || '';
+            document.getElementById('aboutImageCaption').value = section.caption || '';
+            if (section.image) {
+                const img = document.createElement('img');
+                img.src = section.image;
+                document.getElementById('aboutImagePreview').appendChild(img);
+            }
+        }
+    }
+    
+    updateAboutFieldsVisibility();
+    document.querySelectorAll('.section-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === currentAboutSectionType);
+    });
+    
+    setupImagePreview('aboutImageInput', 'aboutImagePreview', false);
+    document.getElementById('aboutSectionModal').classList.add('active');
+}
+
+function updateAboutFieldsVisibility() {
+    document.getElementById('aboutTextFields').style.display = currentAboutSectionType === 'text' ? 'block' : 'none';
+    document.getElementById('aboutStatsFields').style.display = currentAboutSectionType === 'stats' ? 'block' : 'none';
+    document.getElementById('aboutTeamFields').style.display = currentAboutSectionType === 'team' ? 'block' : 'none';
+    document.getElementById('aboutTimelineFields').style.display = currentAboutSectionType === 'timeline' ? 'block' : 'none';
+    document.getElementById('aboutImageFields').style.display = currentAboutSectionType === 'image' ? 'block' : 'none';
+}
+
+function addStatField(number = '', label = '') {
+    const container = document.getElementById('statsFieldsContainer');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'field-item';
+    div.innerHTML = `
+        <div class="field-header"><h4>统计项 #${index + 1}</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div>
+        <input type="text" class="stat-number" placeholder="数值 (如: 500万+)" value="${escapeHtml(number)}" style="margin-bottom:10px;">
+        <input type="text" class="stat-label" placeholder="标签 (如: 全球用户)" value="${escapeHtml(label)}">
+    `;
+    container.appendChild(div);
+}
+
+function addTeamMemberField(name = '', role = '', bio = '', avatar = '') {
+    const container = document.getElementById('teamFieldsContainer');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'field-item';
+    div.innerHTML = `
+        <div class="field-header"><h4>成员 #${index + 1}</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div>
+        <input type="text" class="member-name" placeholder="姓名" value="${escapeHtml(name)}" style="margin-bottom:10px;">
+        <input type="text" class="member-role" placeholder="职位" value="${escapeHtml(role)}" style="margin-bottom:10px;">
+        <textarea class="member-bio" placeholder="简介" rows="2" style="margin-bottom:10px;">${escapeHtml(bio)}</textarea>
+        <input type="text" class="member-avatar" placeholder="头像 URL" value="${escapeHtml(avatar)}">
+    `;
+    container.appendChild(div);
+}
+
+function addTimelineItemField(year = '', title = '', desc = '') {
+    const container = document.getElementById('timelineFieldsContainer');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'field-item';
+    div.innerHTML = `
+        <div class="field-header"><h4>事件 #${index + 1}</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div>
+        <input type="text" class="timeline-year" placeholder="年份 (如: 1989)" value="${escapeHtml(year)}" style="margin-bottom:10px;">
+        <input type="text" class="timeline-title" placeholder="标题" value="${escapeHtml(title)}" style="margin-bottom:10px;">
+        <textarea class="timeline-desc" placeholder="描述" rows="2">${escapeHtml(desc)}</textarea>
+    `;
+    container.appendChild(div);
+}
+
+function closeAboutModal() { document.getElementById('aboutSectionModal').classList.remove('active'); }
+
+async function saveAboutSection() {
+    const index = document.getElementById('aboutEditIndex').value;
+    const isEdit = index !== '' && index !== '-1';
+    
+    const title = document.getElementById('aboutSectionTitle').value;
+    const icon = document.getElementById('aboutSectionIcon').value;
+    const type = currentAboutSectionType;
+    
+    let section = { type, title, icon };
+    
+    if (type === 'text') {
+        section.content = document.getElementById('aboutTextContent').value;
+    } else if (type === 'stats') {
+        section.stats = [];
+        document.querySelectorAll('#statsFieldsContainer .field-item').forEach(item => {
+            section.stats.push({
+                number: item.querySelector('.stat-number').value,
+                label: item.querySelector('.stat-label').value
+            });
+        });
+    } else if (type === 'team') {
+        section.members = [];
+        document.querySelectorAll('#teamFieldsContainer .field-item').forEach(item => {
+            section.members.push({
+                name: item.querySelector('.member-name').value,
+                role: item.querySelector('.member-role').value,
+                bio: item.querySelector('.member-bio').value,
+                avatar: item.querySelector('.member-avatar').value
+            });
+        });
+    } else if (type === 'timeline') {
+        section.items = [];
+        document.querySelectorAll('#timelineFieldsContainer .field-item').forEach(item => {
+            section.items.push({
+                year: item.querySelector('.timeline-year').value,
+                title: item.querySelector('.timeline-title').value,
+                desc: item.querySelector('.timeline-desc').value
+            });
+        });
+    } else if (type === 'image') {
+        const imageInput = document.getElementById('aboutImageInput');
+        if (imageInput.files.length > 0) {
+            section.image = await uploadImage(imageInput.files[0], 'aboutImageUploadStatus');
+        } else {
+            section.image = document.getElementById('aboutImageUrl').value;
+        }
+        section.caption = document.getElementById('aboutImageCaption').value;
+    }
+    
+    if (isEdit) {
+        aboutData.sections[parseInt(index)] = section;
+    } else {
+        aboutData.sections.push(section);
+    }
+    
+    localStorage.setItem('coway_about', JSON.stringify(aboutData));
+    renderAboutSections();
+    closeAboutModal();
+}
+
+function resetAboutData() {
+    if (!confirm('确定重置为默认内容吗？当前编辑的内容将丢失。')) return;
+    aboutData = {
+        sections: [
+            { type: 'text', icon: '📝', title: '我们的故事', content: 'Coway 成立于 1989 年，致力于为全球家庭提供健康、舒适的生活解决方案。' },
+            { type: 'stats', icon: '📊', title: '我们的成就', stats: [{ number: '500万+', label: '全球用户' }, { number: '45+', label: '国家和地区' }] },
+            { type: 'team', icon: '👥', title: '核心团队', members: [{ name: 'John Doe', role: 'CEO', bio: '拥有20年行业经验', avatar: '' }] },
+            { type: 'timeline', icon: '📅', title: '发展历程', items: [{ year: '1989', title: '公司成立', desc: 'Coway 在韩国成立' }, { year: '2000', title: '进入马来西亚', desc: '开设第一家海外分公司' }] }
+        ]
+    };
+    localStorage.setItem('coway_about', JSON.stringify(aboutData));
+    renderAboutSections();
+}
+
 // ==================== 保存逻辑 ====================
 async function saveItem() {
     const type = document.getElementById('editType').value;
@@ -541,6 +795,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addNoticeBtn').addEventListener('click', openNoticeModal);
     document.getElementById('addAgentBtn').addEventListener('click', openAgentModal);
     document.getElementById('addLocationBtn').addEventListener('click', openLocationModal);
+    
+    // 关于我们
+    document.getElementById('addAboutSectionBtn')?.addEventListener('click', () => openAboutModal(-1));
+    document.getElementById('resetAboutBtn')?.addEventListener('click', resetAboutData);
+    document.getElementById('closeAboutModalBtn')?.addEventListener('click', closeAboutModal);
+    document.getElementById('cancelAboutModalBtn')?.addEventListener('click', closeAboutModal);
+    document.getElementById('saveAboutSectionBtn')?.addEventListener('click', saveAboutSection);
+    
+    document.querySelectorAll('.section-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.section-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentAboutSectionType = btn.dataset.type;
+            updateAboutFieldsVisibility();
+        });
+    });
+    
+    document.getElementById('addStatFieldBtn')?.addEventListener('click', () => addStatField());
+    document.getElementById('addTeamMemberBtn')?.addEventListener('click', () => addTeamMemberField());
+    document.getElementById('addTimelineItemBtn')?.addEventListener('click', () => addTimelineItemField());
     
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
