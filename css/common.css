@@ -51,7 +51,7 @@ body {
 
 .nav-menu {
     display: flex;
-    gap: 25px;
+    gap: 15px;
     align-items: center;
 }
 
@@ -93,7 +93,7 @@ body {
 .admin-icon {
     font-size: 22px;
     text-decoration: none;
-    margin-left: 15px;
+    margin-left: 5px;
     opacity: 0.5;
     transition: opacity 0.3s;
     display: flex;
