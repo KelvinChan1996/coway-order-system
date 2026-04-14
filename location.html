@@ -54,7 +54,6 @@
             font-size: 20px; font-weight: 700; color: #2c3e50;
             margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
         }
-        .location-name i { color: #80abce; }
         .location-address {
             color: #666; font-size: 14px; line-height: 1.5;
             margin-bottom: 12px; padding-left: 26px;
@@ -86,7 +85,7 @@
 <body>
 
 <div class="page-header">
-    <h1 data-i18n="locations.title">📍 Our Locations</h1>
+    <h1 data-i18n="locations.title">Our Locations</h1>
     <div class="header-divider"></div>
     <p data-i18n="locations.subtitle">Find the nearest Coway experience centre near you</p>
 </div>
@@ -97,62 +96,6 @@
 
 <script src="js/i18n.js"></script>
 <script src="js/layout2.js"></script>
-<script>
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]);
-    }
-    
-    let locationsData = [];
-    
-    function loadLocations() {
-        const container = document.getElementById('locationsContainer');
-        let saved = localStorage.getItem('coway_locations');
-        
-        if (saved) {
-            locationsData = JSON.parse(saved);
-        } else {
-            locationsData = [
-                { id: 1, name: "Coway Experience Centre KL", image: "https://placehold.co/600x400/80abce/white?text=KL+Centre", address: "Wisma UOA II, Jalan Pinang, Kuala Lumpur", hours: "Mon-Fri: 10am-7pm, Sat: 10am-2pm", phone: "1800-888-111", wazeLink: "https://waze.com/ul?ll=3.1585,101.7156&navigate=yes" },
-                { id: 2, name: "Coway PJ Showroom", image: "https://placehold.co/600x400/80abce/white?text=PJ+Showroom", address: "Lot 1-03, Jalan SS2/72, Petaling Jaya, Selangor", hours: "Mon-Sat: 10am-6pm, Sun: Closed", phone: "1800-888-111", wazeLink: "https://waze.com/ul?ll=3.1185,101.6245&navigate=yes" },
-                { id: 3, name: "Coway JB Branch", image: "https://placehold.co/600x400/80abce/white?text=JB+Branch", address: "No 15, Jalan Bestari 1/5, Taman Bestari Indah, Johor Bahru", hours: "Mon-Fri: 9am-6pm, Sat: 9am-1pm", phone: "1800-888-111", wazeLink: "https://waze.com/ul?ll=1.4927,103.7413&navigate=yes" }
-            ];
-            localStorage.setItem('coway_locations', JSON.stringify(locationsData));
-        }
-        renderLocationCards();
-    }
-    
-    function renderLocationCards() {
-        const container = document.getElementById('locationsContainer');
-        if (!locationsData.length) {
-            container.innerHTML = '<div class="empty-locations" data-i18n="locations.noLocations">暂无门店信息，请稍后再来</div>';
-            I18N.updatePage();
-            return;
-        }
-        container.innerHTML = '';
-        locationsData.forEach(loc => {
-            const card = document.createElement('div');
-            card.className = 'location-card';
-            card.innerHTML = `
-                <img class="location-image" src="${loc.image}" alt="${escapeHtml(loc.name)}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'">
-                <div class="location-info">
-                    <div class="location-name"><i>📍</i> ${escapeHtml(loc.name)}</div>
-                    <div class="location-address"><i>🏠</i> ${escapeHtml(loc.address)}</div>
-                    <div class="location-hours"><i>⏰</i> ${escapeHtml(loc.hours)}</div>
-                    <div class="location-phone"><i>📞</i> <a href="tel:${loc.phone}">${loc.phone}</a></div>
-                    <a href="${loc.wazeLink}" target="_blank" class="waze-link"><i>🗺️</i> <span data-i18n="locations.navigate">Navigate with Waze</span></a>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-        I18N.updatePage();
-    }
-    
-    window.addEventListener('languageChanged', () => {
-        I18N.updatePage();
-    });
-    
-    loadLocations();
-</script>
+<script src="js/location.js"></script>
 </body>
 </html>
