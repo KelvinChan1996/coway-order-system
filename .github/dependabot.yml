@@ -1,9 +1,5 @@
-# Dependabot 配置文件
-# 自动检测依赖更新并创建 Pull Request
-
 version: 2
 updates:
-  # 检测 GitHub Actions 依赖
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -18,7 +14,6 @@ updates:
     reviewers:
       - "KelvinChan1996"
 
-  # 检测 JavaScript (npm) 依赖（如果有 package.json）
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -37,7 +32,3 @@ updates:
     versioning-strategy: "auto"
     reviewers:
       - "KelvinChan1996"
-    ignore:
-      # 忽略特定依赖的更新（如果需要）
-      # - dependency-name: "jquery"
-      #   versions: ["4.x"]
