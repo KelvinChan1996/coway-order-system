@@ -31,16 +31,20 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 10px;
 }
-
 .logo {
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #80abce;
     text-decoration: none;
+    margin-right: auto;
+   } 
+    .logo i {
+    font-size: 28px;
 }
 
 .logo img {
@@ -54,9 +58,9 @@ body {
 }
 .nav-menu {
     display: flex;
-    gap: 15px;
+    gap: 25px;
     align-items: center;
-    margin-right: 0px;    /* 新增，让菜单与人形图标靠近 */
+    margin-right: 8px;
 }
 
 .nav-menu a {
@@ -93,16 +97,15 @@ body {
     color: #fff !important;
 }
 
-/* 管理员图标 */
 .admin-icon {
     font-size: 22px;
     text-decoration: none;
-    margin-left: 0px;
     opacity: 0.5;
     transition: opacity 0.3s;
     display: flex;
     align-items: center;
     color: #555;
+    margin-left: 0;
 }
 
 .admin-icon:hover {
@@ -110,7 +113,6 @@ body {
     color: #80abce;
 }
 
-/* 移动端菜单按钮 */
 .mobile-menu-btn {
     display: none;
     background: none;
@@ -118,6 +120,7 @@ body {
     font-size: 24px;
     cursor: pointer;
     color: #555;
+    margin-left: 12px;
 }
 
 /* 移动端侧边栏 */
@@ -167,6 +170,25 @@ body {
 
 .overlay.show {
     display: block;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+    .nav-menu {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .admin-icon {
+        margin-left: 0;
+    }
+
+    body {
+        padding-top: 60px;
+    }
 }
 
 /* ========== 页面标题 ========== */
