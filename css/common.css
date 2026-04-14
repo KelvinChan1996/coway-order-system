@@ -453,3 +453,14 @@ footer a:hover {
         padding: 40px 20px 30px;
     }
 }
+
+/* ========== 页面主体 ========== */
+body {
+    padding-top: 70px;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+}
