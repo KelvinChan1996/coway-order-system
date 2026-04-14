@@ -3,11 +3,6 @@ const VALID_ID = "coway";
 const VALID_PASS = "A888888";
 const VALID_PIN = "168888";
 
-let puzzleCompleted = false;
-let sliderDragging = false;
-let sliderStartX = 0;
-let sliderMaxWidth = 0;
-
 // ==================== 后台配置 ====================
 const UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
 
@@ -19,11 +14,9 @@ let currentAboutSectionType = 'text';
 function showStep(step) {
     document.getElementById('stepAccount').classList.add('hidden');
     document.getElementById('stepPin').classList.add('hidden');
-    document.getElementById('stepCaptcha').classList.add('hidden');
     document.getElementById(`step${step.charAt(0).toUpperCase() + step.slice(1)}`).classList.remove('hidden');
     document.getElementById('loginError').innerText = '';
     document.getElementById('pinError').innerText = '';
-    document.getElementById('captchaError').innerText = '';
 }
 
 function validateAccount() {
@@ -64,109 +57,20 @@ function getPinValue() {
 
 function checkPinComplete() {
     const pin = getPinValue();
-    document.getElementById('goToCaptchaBtn').disabled = pin.length !== 6;
+    document.getElementById('loginWithPinBtn').disabled = pin.length !== 6;
 }
 
 function validatePin() {
     const pin = getPinValue();
     if (pin === VALID_PIN) {
-        showStep('captcha');
-        initCaptcha();
-    } else {
-        document.getElementById('pinError').innerText = '安全码错误';
-        document.querySelectorAll('.pin-input').forEach(i => i.value = '');
-        document.getElementById('goToCaptchaBtn').disabled = true;
-        document.querySelector('.pin-input').focus();
-    }
-}
-
-function initCaptcha() {
-    puzzleCompleted = false;
-    sliderDragging = false;
-    document.getElementById('sliderTrack').style.width = '0%';
-    document.getElementById('sliderThumb').style.left = '0px';
-    document.getElementById('sliderText').innerText = '向右滑动完成验证';
-    document.getElementById('verifyCaptchaBtn').disabled = true;
-    document.querySelectorAll('.puzzle-piece').forEach(p => p.classList.remove('selected'));
-    
-    const wrapper = document.querySelector('.slider-wrapper');
-    const thumb = document.getElementById('sliderThumb');
-    sliderMaxWidth = wrapper.clientWidth - thumb.clientWidth - 10;
-    
-    thumb.removeEventListener('mousedown', startDrag);
-    thumb.removeEventListener('touchstart', startDrag);
-    thumb.addEventListener('mousedown', startDrag);
-    thumb.addEventListener('touchstart', startDrag);
-    
-    document.querySelectorAll('.puzzle-piece').forEach(p => {
-        p.removeEventListener('click', handlePuzzleClick);
-        p.addEventListener('click', handlePuzzleClick);
-    });
-}
-
-function handlePuzzleClick(e) {
-    if (!puzzleCompleted) {
-        e.target.classList.add('selected');
-        checkPuzzleComplete();
-    }
-}
-
-function startDrag(e) {
-    e.preventDefault();
-    sliderDragging = true;
-    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-    sliderStartX = clientX - document.getElementById('sliderThumb').offsetLeft;
-}
-
-function onDrag(e) {
-    if (!sliderDragging) return;
-    e.preventDefault();
-    const thumb = document.getElementById('sliderThumb');
-    const track = document.getElementById('sliderTrack');
-    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    
-    let left = clientX - sliderStartX;
-    left = Math.max(0, Math.min(left, sliderMaxWidth));
-    
-    thumb.style.left = left + 'px';
-    track.style.width = (left / sliderMaxWidth * 100) + '%';
-    
-    if (left >= sliderMaxWidth - 5) {
-        stopDrag();
-        document.getElementById('sliderText').innerText = '验证通过';
-        checkPuzzleComplete();
-    }
-}
-
-function stopDrag() {
-    sliderDragging = false;
-    const thumb = document.getElementById('sliderThumb');
-    const track = document.getElementById('sliderTrack');
-    if (thumb.offsetLeft < sliderMaxWidth - 5) {
-        thumb.style.left = '0px';
-        track.style.width = '0%';
-    }
-}
-
-function checkPuzzleComplete() {
-    const thumb = document.getElementById('sliderThumb');
-    const selectedPieces = document.querySelectorAll('.puzzle-piece.selected').length;
-    const sliderDone = thumb.offsetLeft >= sliderMaxWidth - 5;
-    
-    if (selectedPieces === 3 && sliderDone) {
-        puzzleCompleted = true;
-        document.getElementById('verifyCaptchaBtn').disabled = false;
-        document.getElementById('captchaError').innerText = '';
-    }
-}
-
-function finalLogin() {
-    if (puzzleCompleted) {
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('adminPage').style.display = 'block';
         loadAllData();
     } else {
-        document.getElementById('captchaError').innerText = '请完成拼图验证';
+        document.getElementById('pinError').innerText = '安全码错误';
+        document.querySelectorAll('.pin-input').forEach(i => i.value = '');
+        document.getElementById('loginWithPinBtn').disabled = true;
+        document.querySelector('.pin-input').focus();
     }
 }
 
@@ -176,7 +80,7 @@ function logout() {
     document.getElementById('loginId').value = '';
     document.getElementById('loginPass').value = '';
     document.querySelectorAll('.pin-input').forEach(i => i.value = '');
-    document.getElementById('goToCaptchaBtn').disabled = true;
+    document.getElementById('loginWithPinBtn').disabled = true;
     showStep('account');
 }
 
@@ -710,16 +614,10 @@ async function saveItem() {
 // ==================== 事件绑定 ====================
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('goToPinBtn').addEventListener('click', validateAccount);
-    document.getElementById('goToCaptchaBtn').addEventListener('click', validatePin);
-    document.getElementById('verifyCaptchaBtn').addEventListener('click', finalLogin);
+    document.getElementById('loginWithPinBtn').addEventListener('click', validatePin);
     document.getElementById('backToAccountBtn').addEventListener('click', () => showStep('account'));
-    document.getElementById('backToPinBtn').addEventListener('click', () => showStep('pin'));
     
     setupPinInputs();
-    window.addEventListener('mousemove', onDrag);
-    window.addEventListener('touchmove', onDrag);
-    window.addEventListener('mouseup', stopDrag);
-    window.addEventListener('touchend', stopDrag);
     
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
