@@ -133,7 +133,7 @@ function onDrag(e) {
     
     if (left >= sliderMaxWidth - 5) {
         stopDrag();
-        document.getElementById('sliderText').innerText = '✓ 验证通过';
+        document.getElementById('sliderText').innerText = '验证通过';
         checkPuzzleComplete();
     }
 }
@@ -202,18 +202,18 @@ async function uploadImage(file, statusElementId = null) {
         if (statusEl) { statusEl.textContent = msg; statusEl.className = `upload-status ${type}`; }
     };
     try {
-        updateStatus('⏳ 上传中...', 'uploading');
+        updateStatus('上传中...', 'uploading');
         const formData = new FormData();
         formData.append('file', file);
         const response = await fetch(UPLOAD_WORKER, { method: 'POST', body: formData });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Upload failed');
-        updateStatus('✅ 上传成功', 'success');
+        updateStatus('上传成功', 'success');
         setTimeout(() => updateStatus('', ''), 3000);
         return result.url;
     } catch (error) {
         console.error('Upload error:', error);
-        updateStatus(`❌ 上传失败: ${error.message}`, 'error');
+        updateStatus(`上传失败: ${error.message}`, 'error');
         throw error;
     }
 }
@@ -222,17 +222,17 @@ async function uploadMultipleImages(files, statusElementId = null) {
     const urls = [];
     for (let i = 0; i < files.length; i++) {
         const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
-        if (statusEl) { statusEl.textContent = `⏳ 上传中 (${i + 1}/${files.length})...`; statusEl.className = 'upload-status uploading'; }
+        if (statusEl) { statusEl.textContent = `上传中 (${i + 1}/${files.length})...`; statusEl.className = 'upload-status uploading'; }
         try {
             urls.push(await uploadImage(files[i], null));
         } catch (error) {
-            if (statusEl) { statusEl.textContent = `❌ 第 ${i + 1} 张上传失败`; statusEl.className = 'upload-status error'; }
+            if (statusEl) { statusEl.textContent = `第 ${i + 1} 张上传失败`; statusEl.className = 'upload-status error'; }
             throw error;
         }
     }
     if (statusElementId) {
         const statusEl = document.getElementById(statusElementId);
-        statusEl.textContent = `✅ 全部上传成功 (${urls.length} 张)`;
+        statusEl.textContent = `全部上传成功 (${urls.length} 张)`;
         statusEl.className = 'upload-status success';
         setTimeout(() => statusEl.textContent = '', 3000);
     }
@@ -244,19 +244,11 @@ function loadAllData() {
     productsData = JSON.parse(localStorage.getItem('coway_products') || '[]');
     carouselData = JSON.parse(localStorage.getItem('coway_carousel') || '[]');
     noticeData = JSON.parse(localStorage.getItem('coway_notices') || '[]');
-    agentsData = JSON.parse(localStorage.getItem('coway_agents') || JSON.stringify([
-        { id: 1, name: "Ali Rehman", hp_code: "HP001", contact: "60123456789", position: "HP", receipt: 0, email: "ali@coway.com" },
-        { id: 2, name: "Siti Nuraini", hp_code: "HP002", contact: "60129876543", position: "SM", receipt: 0, email: "siti@coway.com" },
-        { id: 3, name: "Chong Wei", hp_code: "HP003", contact: "60115551234", position: "GSM", receipt: 1, email: "chong@coway.com" }
-    ]));
+    agentsData = JSON.parse(localStorage.getItem('coway_agents') || '[]');
     locationsData = JSON.parse(localStorage.getItem('coway_locations') || '[]');
     
     const savedAbout = localStorage.getItem('coway_about');
-    if (savedAbout) {
-        try { aboutData = JSON.parse(savedAbout); } catch (e) { aboutData = { sections: [] }; }
-    } else {
-        aboutData = { sections: [] };
-    }
+    aboutData = savedAbout ? JSON.parse(savedAbout) : { sections: [] };
     
     renderProducts(); renderCarousel(); renderNotices(); renderAgents(); renderLocations(); renderAboutSections();
 }
@@ -309,7 +301,7 @@ function renderAgents() {
     agentsData.forEach(a => {
         const div = document.createElement('div');
         div.className = 'item-row';
-        div.innerHTML = `<div class="info"><h4>${escapeHtml(a.name)} (${escapeHtml(a.hp_code)})</h4><p>📞 ${a.contact} | 📧 ${a.email || '-'}</p><p>💼 ${a.position} | 📊 DO: ${a.receipt}</p></div><div class="actions"><button class="btn-edit" data-id="${a.id}" data-type="agent">编辑</button><button class="btn-delete" data-id="${a.id}" data-type="agent">删除</button></div>`;
+        div.innerHTML = `<div class="info"><h4>${escapeHtml(a.name)} (${escapeHtml(a.hp_code)})</h4><p>${a.contact} | ${a.email || '-'}</p><p>${a.position} | DO: ${a.receipt}</p></div><div class="actions"><button class="btn-edit" data-id="${a.id}" data-type="agent">编辑</button><button class="btn-delete" data-id="${a.id}" data-type="agent">删除</button></div>`;
         container.appendChild(div);
     });
     bindItemEvents(container);
@@ -330,7 +322,7 @@ function renderLocations() {
 
 function renderAboutSections() {
     const container = document.getElementById('aboutSectionsList');
-    if (!aboutData.sections || aboutData.sections.length === 0) {
+    if (!aboutData.sections || !aboutData.sections.length) {
         container.innerHTML = '<div class="empty-msg">暂无区块，点击"新增区块"开始编辑</div>';
         return;
     }
@@ -338,18 +330,18 @@ function renderAboutSections() {
     aboutData.sections.forEach((section, index) => {
         const div = document.createElement('div');
         div.className = 'item-row';
-        const typeNames = { text: '📝 文本', stats: '📊 统计', team: '👥 团队', timeline: '📅 时间线', image: '🖼️ 图片' };
+        const typeNames = { text: '文本', stats: '统计', team: '团队', timeline: '时间线', image: '图片' };
         const typeName = typeNames[section.type] || section.type;
         div.innerHTML = `
             <div class="info">
-                <h4>${section.icon || '📄'} ${escapeHtml(section.title || '未命名区块')}</h4>
+                <h4>${section.icon || ''} ${escapeHtml(section.title || '未命名区块')}</h4>
                 <p>类型: ${typeName}</p>
                 ${section.type === 'text' ? `<small>${escapeHtml((section.content || '').substring(0, 50))}...</small>` : ''}
             </div>
             <div class="actions">
                 <button class="btn-edit" data-index="${index}">编辑</button>
-                ${index > 0 ? `<button class="btn-move" data-index="${index}" data-direction="up">⬆ 上移</button>` : ''}
-                ${index < aboutData.sections.length - 1 ? `<button class="btn-move" data-index="${index}" data-direction="down">⬇ 下移</button>` : ''}
+                ${index > 0 ? `<button class="btn-move" data-index="${index}" data-direction="up">上移</button>` : ''}
+                ${index < aboutData.sections.length - 1 ? `<button class="btn-move" data-index="${index}" data-direction="down">下移</button>` : ''}
                 <button class="btn-delete" data-index="${index}">删除</button>
             </div>
         `;
@@ -412,7 +404,7 @@ function bindAboutEvents(container) {
     });
 }
 
-// ==================== 弹窗管理（商品等） ====================
+// ==================== 弹窗管理 ====================
 function closeModal() { document.getElementById('editModal').classList.remove('active'); }
 
 function setupImagePreview(fileInputId, previewId, isMultiple = false) {
@@ -523,16 +515,14 @@ function openAboutModal(index = -1) {
     document.getElementById('aboutEditIndex').value = index;
     document.getElementById('aboutModalTitle').innerText = isEdit ? '编辑区块' : '新增区块';
     
-    // 重置表单
     document.getElementById('aboutSectionTitle').value = '';
-    document.getElementById('aboutSectionIcon').value = '📝';
+    document.getElementById('aboutSectionIcon').value = '';
     document.getElementById('aboutTextContent').value = '';
     document.getElementById('aboutImageUrl').value = '';
     document.getElementById('aboutImageCaption').value = '';
     document.getElementById('aboutImagePreview').innerHTML = '';
     document.getElementById('aboutImageUploadStatus').innerHTML = '';
     
-    // 清空动态容器
     document.getElementById('statsFieldsContainer').innerHTML = '';
     document.getElementById('teamFieldsContainer').innerHTML = '';
     document.getElementById('timelineFieldsContainer').innerHTML = '';
@@ -540,39 +530,26 @@ function openAboutModal(index = -1) {
     if (isEdit) {
         const section = aboutData.sections[index];
         document.getElementById('aboutSectionTitle').value = section.title || '';
-        document.getElementById('aboutSectionIcon').value = section.icon || '📝';
+        document.getElementById('aboutSectionIcon').value = section.icon || '';
         currentAboutSectionType = section.type;
         
         if (section.type === 'text') {
             document.getElementById('aboutTextContent').value = section.content || '';
         } else if (section.type === 'stats') {
-            if (section.stats) {
-                section.stats.forEach(stat => addStatField(stat.number, stat.label));
-            }
+            if (section.stats) section.stats.forEach(stat => addStatField(stat.number, stat.label));
         } else if (section.type === 'team') {
-            if (section.members) {
-                section.members.forEach(m => addTeamMemberField(m.name, m.role, m.bio, m.avatar));
-            }
+            if (section.members) section.members.forEach(m => addTeamMemberField(m.name, m.role, m.bio, m.avatar));
         } else if (section.type === 'timeline') {
-            if (section.items) {
-                section.items.forEach(item => addTimelineItemField(item.year, item.title, item.desc));
-            }
+            if (section.items) section.items.forEach(item => addTimelineItemField(item.year, item.title, item.desc));
         } else if (section.type === 'image') {
             document.getElementById('aboutImageUrl').value = section.image || '';
             document.getElementById('aboutImageCaption').value = section.caption || '';
-            if (section.image) {
-                const img = document.createElement('img');
-                img.src = section.image;
-                document.getElementById('aboutImagePreview').appendChild(img);
-            }
+            if (section.image) { const img = document.createElement('img'); img.src = section.image; document.getElementById('aboutImagePreview').appendChild(img); }
         }
     }
     
     updateAboutFieldsVisibility();
-    document.querySelectorAll('.section-type-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.type === currentAboutSectionType);
-    });
-    
+    document.querySelectorAll('.section-type-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === currentAboutSectionType));
     setupImagePreview('aboutImageInput', 'aboutImagePreview', false);
     document.getElementById('aboutSectionModal').classList.add('active');
 }
@@ -587,43 +564,25 @@ function updateAboutFieldsVisibility() {
 
 function addStatField(number = '', label = '') {
     const container = document.getElementById('statsFieldsContainer');
-    const index = container.children.length;
     const div = document.createElement('div');
     div.className = 'field-item';
-    div.innerHTML = `
-        <div class="field-header"><h4>统计项 #${index + 1}</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div>
-        <input type="text" class="stat-number" placeholder="数值 (如: 500万+)" value="${escapeHtml(number)}" style="margin-bottom:10px;">
-        <input type="text" class="stat-label" placeholder="标签 (如: 全球用户)" value="${escapeHtml(label)}">
-    `;
+    div.innerHTML = `<div class="field-header"><h4>统计项</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div><input type="text" class="stat-number" placeholder="数值" value="${escapeHtml(number)}" style="margin-bottom:10px;"><input type="text" class="stat-label" placeholder="标签" value="${escapeHtml(label)}">`;
     container.appendChild(div);
 }
 
 function addTeamMemberField(name = '', role = '', bio = '', avatar = '') {
     const container = document.getElementById('teamFieldsContainer');
-    const index = container.children.length;
     const div = document.createElement('div');
     div.className = 'field-item';
-    div.innerHTML = `
-        <div class="field-header"><h4>成员 #${index + 1}</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div>
-        <input type="text" class="member-name" placeholder="姓名" value="${escapeHtml(name)}" style="margin-bottom:10px;">
-        <input type="text" class="member-role" placeholder="职位" value="${escapeHtml(role)}" style="margin-bottom:10px;">
-        <textarea class="member-bio" placeholder="简介" rows="2" style="margin-bottom:10px;">${escapeHtml(bio)}</textarea>
-        <input type="text" class="member-avatar" placeholder="头像 URL" value="${escapeHtml(avatar)}">
-    `;
+    div.innerHTML = `<div class="field-header"><h4>成员</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div><input type="text" class="member-name" placeholder="姓名" value="${escapeHtml(name)}" style="margin-bottom:10px;"><input type="text" class="member-role" placeholder="职位" value="${escapeHtml(role)}" style="margin-bottom:10px;"><textarea class="member-bio" placeholder="简介" rows="2" style="margin-bottom:10px;">${escapeHtml(bio)}</textarea><input type="text" class="member-avatar" placeholder="头像 URL" value="${escapeHtml(avatar)}">`;
     container.appendChild(div);
 }
 
 function addTimelineItemField(year = '', title = '', desc = '') {
     const container = document.getElementById('timelineFieldsContainer');
-    const index = container.children.length;
     const div = document.createElement('div');
     div.className = 'field-item';
-    div.innerHTML = `
-        <div class="field-header"><h4>事件 #${index + 1}</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div>
-        <input type="text" class="timeline-year" placeholder="年份 (如: 1989)" value="${escapeHtml(year)}" style="margin-bottom:10px;">
-        <input type="text" class="timeline-title" placeholder="标题" value="${escapeHtml(title)}" style="margin-bottom:10px;">
-        <textarea class="timeline-desc" placeholder="描述" rows="2">${escapeHtml(desc)}</textarea>
-    `;
+    div.innerHTML = `<div class="field-header"><h4>事件</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div><input type="text" class="timeline-year" placeholder="年份" value="${escapeHtml(year)}" style="margin-bottom:10px;"><input type="text" class="timeline-title" placeholder="标题" value="${escapeHtml(title)}" style="margin-bottom:10px;"><textarea class="timeline-desc" placeholder="描述" rows="2">${escapeHtml(desc)}</textarea>`;
     container.appendChild(div);
 }
 
@@ -644,29 +603,17 @@ async function saveAboutSection() {
     } else if (type === 'stats') {
         section.stats = [];
         document.querySelectorAll('#statsFieldsContainer .field-item').forEach(item => {
-            section.stats.push({
-                number: item.querySelector('.stat-number').value,
-                label: item.querySelector('.stat-label').value
-            });
+            section.stats.push({ number: item.querySelector('.stat-number').value, label: item.querySelector('.stat-label').value });
         });
     } else if (type === 'team') {
         section.members = [];
         document.querySelectorAll('#teamFieldsContainer .field-item').forEach(item => {
-            section.members.push({
-                name: item.querySelector('.member-name').value,
-                role: item.querySelector('.member-role').value,
-                bio: item.querySelector('.member-bio').value,
-                avatar: item.querySelector('.member-avatar').value
-            });
+            section.members.push({ name: item.querySelector('.member-name').value, role: item.querySelector('.member-role').value, bio: item.querySelector('.member-bio').value, avatar: item.querySelector('.member-avatar').value });
         });
     } else if (type === 'timeline') {
         section.items = [];
         document.querySelectorAll('#timelineFieldsContainer .field-item').forEach(item => {
-            section.items.push({
-                year: item.querySelector('.timeline-year').value,
-                title: item.querySelector('.timeline-title').value,
-                desc: item.querySelector('.timeline-desc').value
-            });
+            section.items.push({ year: item.querySelector('.timeline-year').value, title: item.querySelector('.timeline-title').value, desc: item.querySelector('.timeline-desc').value });
         });
     } else if (type === 'image') {
         const imageInput = document.getElementById('aboutImageInput');
@@ -678,11 +625,8 @@ async function saveAboutSection() {
         section.caption = document.getElementById('aboutImageCaption').value;
     }
     
-    if (isEdit) {
-        aboutData.sections[parseInt(index)] = section;
-    } else {
-        aboutData.sections.push(section);
-    }
+    if (isEdit) aboutData.sections[parseInt(index)] = section;
+    else aboutData.sections.push(section);
     
     localStorage.setItem('coway_about', JSON.stringify(aboutData));
     renderAboutSections();
@@ -690,15 +634,8 @@ async function saveAboutSection() {
 }
 
 function resetAboutData() {
-    if (!confirm('确定重置为默认内容吗？当前编辑的内容将丢失。')) return;
-    aboutData = {
-        sections: [
-            { type: 'text', icon: '📝', title: '我们的故事', content: 'Coway 成立于 1989 年，致力于为全球家庭提供健康、舒适的生活解决方案。' },
-            { type: 'stats', icon: '📊', title: '我们的成就', stats: [{ number: '500万+', label: '全球用户' }, { number: '45+', label: '国家和地区' }] },
-            { type: 'team', icon: '👥', title: '核心团队', members: [{ name: 'John Doe', role: 'CEO', bio: '拥有20年行业经验', avatar: '' }] },
-            { type: 'timeline', icon: '📅', title: '发展历程', items: [{ year: '1989', title: '公司成立', desc: 'Coway 在韩国成立' }, { year: '2000', title: '进入马来西亚', desc: '开设第一家海外分公司' }] }
-        ]
-    };
+    if (!confirm('确定重置？')) return;
+    aboutData = { sections: [] };
     localStorage.setItem('coway_about', JSON.stringify(aboutData));
     renderAboutSections();
 }
@@ -710,7 +647,7 @@ async function saveItem() {
     const isEdit = id !== '';
     const saveBtn = document.getElementById('saveItemBtn');
     const originalText = saveBtn.innerText;
-    saveBtn.innerText = '⏳ 保存中...';
+    saveBtn.innerText = '保存中...';
     saveBtn.disabled = true;
 
     try {
@@ -772,7 +709,6 @@ async function saveItem() {
 
 // ==================== 事件绑定 ====================
 document.addEventListener('DOMContentLoaded', () => {
-    // 登录流程
     document.getElementById('goToPinBtn').addEventListener('click', validateAccount);
     document.getElementById('goToCaptchaBtn').addEventListener('click', validatePin);
     document.getElementById('verifyCaptchaBtn').addEventListener('click', finalLogin);
@@ -785,7 +721,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('mouseup', stopDrag);
     window.addEventListener('touchend', stopDrag);
     
-    // 管理功能
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
@@ -796,7 +731,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addAgentBtn').addEventListener('click', openAgentModal);
     document.getElementById('addLocationBtn').addEventListener('click', openLocationModal);
     
-    // 关于我们
     document.getElementById('addAboutSectionBtn')?.addEventListener('click', () => openAboutModal(-1));
     document.getElementById('resetAboutBtn')?.addEventListener('click', resetAboutData);
     document.getElementById('closeAboutModalBtn')?.addEventListener('click', closeAboutModal);
