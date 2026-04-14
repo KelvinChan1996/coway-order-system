@@ -1,0 +1,43 @@
+# Dependabot 配置文件
+# 自动检测依赖更新并创建 Pull Request
+
+version: 2
+updates:
+  # 检测 GitHub Actions 依赖
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "KelvinChan1996"
+
+  # 检测 JavaScript (npm) 依赖（如果有 package.json）
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Kuala_Lumpur"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "javascript"
+    open-pull-requests-limit: 10
+    versioning-strategy: "auto"
+    reviewers:
+      - "KelvinChan1996"
+    ignore:
+      # 忽略特定依赖的更新（如果需要）
+      # - dependency-name: "jquery"
+      #   versions: ["4.x"]
