@@ -1,4 +1,3 @@
-// ========== 通用布局（list/location/support/about/privacy/terms） ==========
 const LAYOUT = {
     navbar: `
         <nav class="navbar">
@@ -52,7 +51,7 @@ function generateMenu(isMobile) {
         const active = current === item.href ? 'active' : '';
         const text = I18N.t(item.key);
         if (item.isOrder && !isMobile) return `<a href="${item.href}" class="btn-order-nav ${active}">${text}</a>`;
-        return `<a href="${item.href}" class="${active}" data-i18n="${item.key}">${text}</a>`;
+        return `<a href="${item.href}" class="${active}">${text}</a>`;
     }).join('');
 }
 
