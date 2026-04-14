@@ -82,7 +82,7 @@
 
     <div class="notice-section">
         <div class="notice-header">
-            <h2 data-i18n="home.notice.title">🎉 最新优惠与公告</h2>
+            <h2 data-i18n="home.notice.title">最新优惠与公告</h2>
         </div>
         <div id="noticeContainer" class="notice-grid"><div class="empty-notice" data-i18n="common.loading">加载中...</div></div>
     </div>
@@ -111,25 +111,25 @@
         
         function loadCarousel() {
             let saved = localStorage.getItem('coway_carousel');
-            carouselData = saved ? JSON.parse(saved) : [
-                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", titleKey: "home.carousel1.title", descKey: "home.carousel1.desc", link: "list.html" },
-                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", titleKey: "home.carousel2.title", descKey: "home.carousel2.desc", link: "list.html" },
-                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", titleKey: "home.carousel3.title", descKey: "home.carousel3.desc", link: "list.html" }
-            ];
-            if (!saved) localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
+            carouselData = saved ? JSON.parse(saved) : [];
             renderCarousel();
         }
         
         function renderCarousel() {
             const container = document.getElementById('carouselSlides');
             const dotsContainer = document.getElementById('carouselDots');
-            if (!container || !carouselData.length) return;
+            if (!container) return;
             container.innerHTML = '';
+            if (!carouselData.length) {
+                container.innerHTML = '<div class="carousel-slide active" style="background-image:url(https://placehold.co/1600x550/80abce/white?text=Coway);"><div class="carousel-content"><h2>Coway Malaysia</h2><p>健康生活领导者</p></div></div>';
+                dotsContainer.innerHTML = '';
+                return;
+            }
             carouselData.forEach((item, idx) => {
                 const slide = document.createElement('div');
                 slide.className = `carousel-slide ${idx === currentCarouselSlide ? 'active' : ''}`;
                 slide.style.backgroundImage = `url(${item.image})`;
-                slide.innerHTML = `<div class="carousel-content"><h2>${I18N.t(item.titleKey)}</h2><p>${I18N.t(item.descKey)}</p><a href="${item.link || '#'}" data-i18n="home.carousel.learnMore">了解更多 →</a></div>`;
+                slide.innerHTML = `<div class="carousel-content"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.desc)}</p><a href="${item.link || '#'}" data-i18n="home.carousel.learnMore">了解更多 →</a></div>`;
                 container.appendChild(slide);
             });
             dotsContainer.innerHTML = '';
@@ -156,16 +156,12 @@
         function loadNotices() {
             const container = document.getElementById('noticeContainer');
             let notices = localStorage.getItem('coway_notices');
-            notices = notices ? JSON.parse(notices) : [
-                { id: 1, titleKey: "home.notice.raya", descKey: "home.notice.raya.desc", image: "https://placehold.co/600x400/80abce/white?text=Raya+Promo", date: "2026-04-01" },
-                { id: 2, titleKey: "home.notice.tradein", descKey: "home.notice.tradein.desc", image: "https://placehold.co/600x400/80abce/white?text=Trade+In", date: "2026-03-15" },
-                { id: 3, titleKey: "home.notice.trial", descKey: "home.notice.trial.desc", image: "https://placehold.co/600x400/80abce/white?text=Free+Trial", date: "2026-04-10" }
-            ];
-            if (!notices.length) { container.innerHTML = `<div class="empty-notice" data-i18n="home.emptyNotice">📢 暂无公告，请稍后再来</div>`; I18N.updatePage(); return; }
+            notices = notices ? JSON.parse(notices) : [];
+            if (!notices.length) { container.innerHTML = `<div class="empty-notice" data-i18n="home.emptyNotice">暂无公告，请稍后再来</div>`; I18N.updatePage(); return; }
             renderNoticeCards(notices);
             
             window.addEventListener('languageChanged', () => {
-                const currentNotices = JSON.parse(localStorage.getItem('coway_notices')) || notices;
+                const currentNotices = JSON.parse(localStorage.getItem('coway_notices')) || [];
                 renderNoticeCards(currentNotices);
             });
         }
@@ -176,7 +172,7 @@
             notices.forEach(n => {
                 const card = document.createElement('div');
                 card.className = 'notice-card';
-                card.innerHTML = `<img class="notice-img" src="${n.image}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'"><div class="notice-content"><div class="notice-title">${I18N.t(n.titleKey)}</div><div class="notice-desc">${I18N.t(n.descKey)}</div><div class="notice-date">📅 ${n.date}</div></div>`;
+                card.innerHTML = `<img class="notice-img" src="${n.image}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'"><div class="notice-content"><div class="notice-title">${escapeHtml(n.title)}</div><div class="notice-desc">${escapeHtml(n.description)}</div><div class="notice-date">${n.date}</div></div>`;
                 container.appendChild(card);
             });
         }
