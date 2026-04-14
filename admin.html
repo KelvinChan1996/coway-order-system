@@ -217,6 +217,17 @@
         }
         .empty-msg { text-align: center; padding: 50px; color: #999; }
         
+        /* 上传状态提示 */
+        .upload-status {
+            font-size: 12px;
+            margin-top: 5px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .upload-status.uploading { color: #f39c12; }
+        .upload-status.success { color: #27ae60; }
+        .upload-status.error { color: #e74c3c; }
+        
         @media (max-width: 700px) {
             .form-row2 { grid-template-columns: 1fr; }
             .item-row { flex-direction: column; align-items: flex-start; }
@@ -307,6 +318,7 @@
                 <input type="file" id="productImagesInput" accept="image/*" multiple>
                 <div id="productImagesPreview" class="image-preview"></div>
                 <div class="current-image-info" id="productImagesInfo"></div>
+                <div id="productUploadStatus" class="upload-status"></div>
             </div>
         </div>
         
@@ -334,6 +346,7 @@
                 <label>📷 广告图片</label>
                 <input type="file" id="carouselImageInput" accept="image/*">
                 <div id="carouselImagePreview" class="image-preview"></div>
+                <div id="carouselUploadStatus" class="upload-status"></div>
             </div>
             
             <input type="text" id="carouselLink" placeholder="链接">
@@ -349,6 +362,7 @@
                 <label>📷 公告图片</label>
                 <input type="file" id="noticeImageInput" accept="image/*">
                 <div id="noticeImagePreview" class="image-preview"></div>
+                <div id="noticeUploadStatus" class="upload-status"></div>
             </div>
             
             <input type="date" id="noticeDate">
@@ -363,6 +377,7 @@
                 <label>📷 门店图片</label>
                 <input type="file" id="locationImageInput" accept="image/*">
                 <div id="locationImagePreview" class="image-preview"></div>
+                <div id="locationUploadStatus" class="upload-status"></div>
             </div>
             
             <textarea id="locationAddress" placeholder="地址" rows="2"></textarea>
@@ -382,9 +397,79 @@
     const ADMIN_ID = "coway_admin";
     const ADMIN_PASSWORD = "Coway2026!";
     
+    // GitHub 上传 Worker URL
+    const GITHUB_UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
+    
     let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [];
     
-    // 辅助函数：将图片文件转为 Base64
+    // ========== GitHub 图片上传函数 ==========
+    async function uploadImageToGitHub(file, statusElementId = null) {
+        const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
+        
+        const updateStatus = (message, type) => {
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.className = `upload-status ${type}`;
+            }
+        };
+        
+        try {
+            updateStatus('⏳ 上传中...', 'uploading');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch(GITHUB_UPLOAD_WORKER, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(result.error || result.message || 'Upload failed');
+            }
+            
+            if (result.success && result.url) {
+                updateStatus('✅ 上传成功', 'success');
+                // 3秒后清除状态提示
+                setTimeout(() => updateStatus('', ''), 3000);
+                return result.url;
+            } else {
+                throw new Error('Invalid response from server');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            updateStatus(`❌ 上传失败: ${error.message}`, 'error');
+            throw error;
+        }
+    }
+    
+    // 批量上传图片
+    async function uploadMultipleImagesToGitHub(files, statusElementId = null) {
+        const urls = [];
+        for (let i = 0; i < files.length; i++) {
+            const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
+            if (statusEl) {
+                statusEl.textContent = `⏳ 上传中 (${i + 1}/${files.length})...`;
+                statusEl.className = 'upload-status uploading';
+            }
+            
+            try {
+                const url = await uploadImageToGitHub(files[i], null);
+                urls.push(url);
+            } catch (error) {
+                if (statusEl) {
+                    statusEl.textContent = `❌ 第 ${i + 1} 张上传失败`;
+                    statusEl.className = 'upload-status error';
+                }
+                throw error;
+            }
+        }
+        return urls;
+    }
+    
+    // 保留原有的 Base64 预览功能（仅用于预览）
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -392,16 +477,6 @@
             reader.onload = () => resolve(reader.result);
             reader.onerror = (error) => reject(error);
         });
-    }
-    
-    // 多图转 Base64 数组
-    async function filesToBase64Array(files) {
-        const results = [];
-        for (let i = 0; i < files.length; i++) {
-            const base64 = await fileToBase64(files[i]);
-            results.push(base64);
-        }
-        return results;
     }
     
     function doLogin() {
@@ -566,7 +641,11 @@
         const preview = document.getElementById(previewId);
         if (!input) return;
         
-        input.addEventListener('change', async function() {
+        // 移除旧的监听器，添加新的
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+        
+        newInput.addEventListener('change', async function() {
             preview.innerHTML = '';
             if (isMultiple) {
                 for (let file of this.files) {
@@ -608,7 +687,9 @@
             // 显示已有图片预览
             const previewDiv = document.getElementById('productImagesPreview');
             const infoDiv = document.getElementById('productImagesInfo');
+            const statusDiv = document.getElementById('productUploadStatus');
             previewDiv.innerHTML = '';
+            statusDiv.innerHTML = '';
             if (item && item.images && item.images.length) {
                 item.images.forEach(img => {
                     const imgEl = document.createElement('img');
@@ -639,7 +720,9 @@
             document.getElementById('carouselLink').value = item ? item.link : '';
             
             const previewDiv = document.getElementById('carouselImagePreview');
+            const statusDiv = document.getElementById('carouselUploadStatus');
             previewDiv.innerHTML = '';
+            statusDiv.innerHTML = '';
             if (item && item.image) {
                 const imgEl = document.createElement('img');
                 imgEl.src = item.image;
@@ -655,7 +738,9 @@
             document.getElementById('noticeDate').value = item ? item.date : new Date().toISOString().split('T')[0];
             
             const previewDiv = document.getElementById('noticeImagePreview');
+            const statusDiv = document.getElementById('noticeUploadStatus');
             previewDiv.innerHTML = '';
+            statusDiv.innerHTML = '';
             if (item && item.image) {
                 const imgEl = document.createElement('img');
                 imgEl.src = item.image;
@@ -673,7 +758,9 @@
             document.getElementById('locationWaze').value = item ? item.wazeLink : '';
             
             const previewDiv = document.getElementById('locationImagePreview');
+            const statusDiv = document.getElementById('locationUploadStatus');
             previewDiv.innerHTML = '';
+            statusDiv.innerHTML = '';
             if (item && item.image) {
                 const imgEl = document.createElement('img');
                 imgEl.src = item.image;
@@ -690,128 +777,148 @@
         const id = document.getElementById('editId').value;
         const isEdit = id !== '';
         
-        if (type === 'product') {
-            // 处理多图上传
-            const imageInput = document.getElementById('productImagesInput');
-            let images = [];
-            if (imageInput.files.length > 0) {
-                images = await filesToBase64Array(imageInput.files);
-            } else if (isEdit) {
-                const existing = productsData.find(i => i.id == id);
-                images = existing ? existing.images : [];
+        const saveBtn = document.querySelector('.btn-save');
+        const originalText = saveBtn.innerText;
+        saveBtn.innerText = '⏳ 保存中...';
+        saveBtn.disabled = true;
+        
+        try {
+            if (type === 'product') {
+                // 处理多图上传
+                const imageInput = document.getElementById('productImagesInput');
+                let images = [];
+                
+                if (imageInput.files.length > 0) {
+                    // 有新图片，上传到 GitHub
+                    images = await uploadMultipleImagesToGitHub(imageInput.files, 'productUploadStatus');
+                } else if (isEdit) {
+                    const existing = productsData.find(i => i.id == id);
+                    images = existing ? existing.images : [];
+                }
+                
+                const newItem = {
+                    id: isEdit ? parseInt(id) : Date.now(),
+                    name: document.getElementById('productName').value,
+                    category: document.getElementById('productCategory').value,
+                    price: document.getElementById('productPrice').value,
+                    desc_zh: document.getElementById('productDescZh').value,
+                    desc_en: document.getElementById('productDescEn').value,
+                    images: images
+                };
+                if (isEdit) {
+                    const index = productsData.findIndex(i => i.id == id);
+                    if (index !== -1) productsData[index] = newItem;
+                } else productsData.push(newItem);
+                localStorage.setItem('coway_products', JSON.stringify(productsData));
+                renderProducts();
+                
+            } else if (type === 'agent') {
+                const newItem = {
+                    id: isEdit ? parseInt(id) : Date.now(),
+                    name: document.getElementById('agentName').value,
+                    hp_code: document.getElementById('agentHpCode').value,
+                    contact: document.getElementById('agentContact').value,
+                    position: document.getElementById('agentPosition').value,
+                    receipt: parseInt(document.getElementById('agentReceipt').value) || 0,
+                    email: document.getElementById('agentEmail').value
+                };
+                if (isEdit) {
+                    const index = agentsData.findIndex(i => i.id == id);
+                    if (index !== -1) agentsData[index] = newItem;
+                } else agentsData.push(newItem);
+                localStorage.setItem('coway_agents', JSON.stringify(agentsData));
+                renderAgents();
+                
+            } else if (type === 'carousel') {
+                const imageInput = document.getElementById('carouselImageInput');
+                let image = '';
+                
+                if (imageInput.files.length > 0) {
+                    image = await uploadImageToGitHub(imageInput.files[0], 'carouselUploadStatus');
+                } else if (isEdit) {
+                    const existing = carouselData.find(i => i.id == id);
+                    image = existing ? existing.image : '';
+                }
+                
+                const newItem = {
+                    id: isEdit ? parseInt(id) : Date.now(),
+                    title: document.getElementById('carouselTitle').value,
+                    desc: document.getElementById('carouselDesc').value,
+                    image: image,
+                    link: document.getElementById('carouselLink').value
+                };
+                if (isEdit) {
+                    const index = carouselData.findIndex(i => i.id == id);
+                    if (index !== -1) carouselData[index] = newItem;
+                } else carouselData.push(newItem);
+                localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
+                renderCarousel();
+                
+            } else if (type === 'notice') {
+                const imageInput = document.getElementById('noticeImageInput');
+                let image = '';
+                
+                if (imageInput.files.length > 0) {
+                    image = await uploadImageToGitHub(imageInput.files[0], 'noticeUploadStatus');
+                } else if (isEdit) {
+                    const existing = noticeData.find(i => i.id == id);
+                    image = existing ? existing.image : '';
+                }
+                
+                const newItem = {
+                    id: isEdit ? parseInt(id) : Date.now(),
+                    title: document.getElementById('noticeTitle').value,
+                    description: document.getElementById('noticeDesc').value,
+                    image: image,
+                    date: document.getElementById('noticeDate').value
+                };
+                if (isEdit) {
+                    const index = noticeData.findIndex(i => i.id == id);
+                    if (index !== -1) noticeData[index] = newItem;
+                } else noticeData.unshift(newItem);
+                localStorage.setItem('coway_notices', JSON.stringify(noticeData));
+                renderNotices();
+                
+            } else if (type === 'location') {
+                const imageInput = document.getElementById('locationImageInput');
+                let image = '';
+                
+                if (imageInput.files.length > 0) {
+                    image = await uploadImageToGitHub(imageInput.files[0], 'locationUploadStatus');
+                } else if (isEdit) {
+                    const existing = locationsData.find(i => i.id == id);
+                    image = existing ? existing.image : '';
+                }
+                
+                const newItem = {
+                    id: isEdit ? parseInt(id) : Date.now(),
+                    name: document.getElementById('locationName').value,
+                    image: image,
+                    address: document.getElementById('locationAddress').value,
+                    hours: document.getElementById('locationHours').value,
+                    phone: document.getElementById('locationPhone').value,
+                    wazeLink: document.getElementById('locationWaze').value
+                };
+                if (isEdit) {
+                    const index = locationsData.findIndex(i => i.id == id);
+                    if (index !== -1) locationsData[index] = newItem;
+                } else locationsData.push(newItem);
+                localStorage.setItem('coway_locations', JSON.stringify(locationsData));
+                renderLocations();
             }
             
-            const newItem = {
-                id: isEdit ? parseInt(id) : Date.now(),
-                name: document.getElementById('productName').value,
-                category: document.getElementById('productCategory').value,
-                price: document.getElementById('productPrice').value,
-                desc_zh: document.getElementById('productDescZh').value,
-                desc_en: document.getElementById('productDescEn').value,
-                images: images
-            };
-            if (isEdit) {
-                const index = productsData.findIndex(i => i.id == id);
-                if (index !== -1) productsData[index] = newItem;
-            } else productsData.push(newItem);
-            localStorage.setItem('coway_products', JSON.stringify(productsData));
-            renderProducts();
-            
-        } else if (type === 'agent') {
-            const newItem = {
-                id: isEdit ? parseInt(id) : Date.now(),
-                name: document.getElementById('agentName').value,
-                hp_code: document.getElementById('agentHpCode').value,
-                contact: document.getElementById('agentContact').value,
-                position: document.getElementById('agentPosition').value,
-                receipt: parseInt(document.getElementById('agentReceipt').value) || 0,
-                email: document.getElementById('agentEmail').value
-            };
-            if (isEdit) {
-                const index = agentsData.findIndex(i => i.id == id);
-                if (index !== -1) agentsData[index] = newItem;
-            } else agentsData.push(newItem);
-            localStorage.setItem('coway_agents', JSON.stringify(agentsData));
-            renderAgents();
-            
-        } else if (type === 'carousel') {
-            const imageInput = document.getElementById('carouselImageInput');
-            let image = '';
-            if (imageInput.files.length > 0) {
-                image = await fileToBase64(imageInput.files[0]);
-            } else if (isEdit) {
-                const existing = carouselData.find(i => i.id == id);
-                image = existing ? existing.image : '';
-            }
-            
-            const newItem = {
-                id: isEdit ? parseInt(id) : Date.now(),
-                title: document.getElementById('carouselTitle').value,
-                desc: document.getElementById('carouselDesc').value,
-                image: image,
-                link: document.getElementById('carouselLink').value
-            };
-            if (isEdit) {
-                const index = carouselData.findIndex(i => i.id == id);
-                if (index !== -1) carouselData[index] = newItem;
-            } else carouselData.push(newItem);
-            localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
-            renderCarousel();
-            
-        } else if (type === 'notice') {
-            const imageInput = document.getElementById('noticeImageInput');
-            let image = '';
-            if (imageInput.files.length > 0) {
-                image = await fileToBase64(imageInput.files[0]);
-            } else if (isEdit) {
-                const existing = noticeData.find(i => i.id == id);
-                image = existing ? existing.image : '';
-            }
-            
-            const newItem = {
-                id: isEdit ? parseInt(id) : Date.now(),
-                title: document.getElementById('noticeTitle').value,
-                description: document.getElementById('noticeDesc').value,
-                image: image,
-                date: document.getElementById('noticeDate').value
-            };
-            if (isEdit) {
-                const index = noticeData.findIndex(i => i.id == id);
-                if (index !== -1) noticeData[index] = newItem;
-            } else noticeData.unshift(newItem);
-            localStorage.setItem('coway_notices', JSON.stringify(noticeData));
-            renderNotices();
-            
-        } else if (type === 'location') {
-            const imageInput = document.getElementById('locationImageInput');
-            let image = '';
-            if (imageInput.files.length > 0) {
-                image = await fileToBase64(imageInput.files[0]);
-            } else if (isEdit) {
-                const existing = locationsData.find(i => i.id == id);
-                image = existing ? existing.image : '';
-            }
-            
-            const newItem = {
-                id: isEdit ? parseInt(id) : Date.now(),
-                name: document.getElementById('locationName').value,
-                image: image,
-                address: document.getElementById('locationAddress').value,
-                hours: document.getElementById('locationHours').value,
-                phone: document.getElementById('locationPhone').value,
-                wazeLink: document.getElementById('locationWaze').value
-            };
-            if (isEdit) {
-                const index = locationsData.findIndex(i => i.id == id);
-                if (index !== -1) locationsData[index] = newItem;
-            } else locationsData.push(newItem);
-            localStorage.setItem('coway_locations', JSON.stringify(locationsData));
-            renderLocations();
+            closeModal();
+        } catch (error) {
+            alert('保存失败: ' + error.message);
+        } finally {
+            saveBtn.innerText = originalText;
+            saveBtn.disabled = false;
         }
-        closeModal();
     }
     
-    function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+    function closeModal() { 
+        document.getElementById('editModal').classList.remove('active'); 
+    }
     
     function escapeHtml(str) {
         if (!str) return '';
