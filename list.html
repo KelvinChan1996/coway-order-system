@@ -175,12 +175,12 @@
 
     <div class="main-layout">
         <div class="category-sidebar">
-            <div class="category-header"><i>📋</i> 产品分类</div>
+            <div class="category-header" data-i18n="products.category">📋 产品分类</div>
             <ul class="category-list" id="categoryList"></ul>
         </div>
         <div class="products-area">
             <div class="products-header">
-                <div class="current-category" id="currentCategory"><i>🛍️</i> 全部产品</div>
+                <div class="current-category" id="currentCategory"><i>🛍️</i> <span data-i18n="products.all">全部产品</span></div>
             </div>
             <div id="productsGrid" class="products-grid"></div>
         </div>
@@ -193,10 +193,10 @@
             <div class="detail-title" id="detailTitle"></div>
             <div class="detail-price" id="detailPrice"></div>
             <div class="detail-desc" id="detailDesc"></div>
-            <button id="translateBtn" class="btn-translate">🌐 切换英文</button>
+            <button id="translateBtn" class="btn-translate" data-i18n="products.translate">🌐 切换英文</button>
             <div class="detail-actions">
-                <button id="orderFromDetailBtn" class="btn-order-detail">📦 立即订购</button>
-                <button id="contactFromDetailBtn" class="btn-contact-detail">💬 联系代理</button>
+                <button id="orderFromDetailBtn" class="btn-order-detail" data-i18n="products.orderNow">📦 立即订购</button>
+                <button id="contactFromDetailBtn" class="btn-contact-detail" data-i18n="products.contactAgent">💬 联系代理</button>
             </div>
         </div>
     </div>
@@ -204,25 +204,28 @@
     <div id="orderModal" class="order-modal">
         <div class="order-content">
             <span class="modal-close" onclick="closeOrderModal()">&times;</span>
-            <h3>📝 填写订单信息</h3>
+            <h3 data-i18n="order.title">📝 填写订单信息</h3>
             <div class="selected-product-info" id="selectedProductInfo"></div>
+            <p style="background:#e8f5e9; padding:14px; border-radius:12px; margin-bottom:25px; color:#27ae60;" data-i18n="order.thankYou">
+                ✅ 感谢您的订购！请填写以下信息完成注册。
+            </p>
             <form id="orderForm">
-                <div class="form-group"><label>📎 IC 照片 (正面) *</label><input type="file" id="icUpload" accept="image/*"></div>
+                <div class="form-group"><label data-i18n="order.icPhoto">📎 IC 照片 (正面) *</label><input type="file" id="icUpload" accept="image/*"></div>
                 <div class="form-row2">
-                    <div class="form-group"><label>📞 联系电话 #1 *</label><input type="tel" id="contact1" required></div>
-                    <div class="form-group"><label>📞 联系电话 #2</label><input type="tel" id="contact2"></div>
+                    <div class="form-group"><label data-i18n="order.contact1">📞 联系电话 #1 *</label><input type="tel" id="contact1" required></div>
+                    <div class="form-group"><label data-i18n="order.contact2">📞 联系电话 #2</label><input type="tel" id="contact2"></div>
                 </div>
-                <div class="form-group"><label>🏠 安装地址 *</label><textarea id="address" rows="2" required></textarea></div>
-                <div class="checkbox-group"><input type="checkbox" id="differentDelivery"><label>📦 送货地址与安装地址不同</label></div>
+                <div class="form-group"><label data-i18n="order.address">🏠 安装地址 *</label><textarea id="address" rows="2" required></textarea></div>
+                <div class="checkbox-group"><input type="checkbox" id="differentDelivery"><label data-i18n="order.deliveryDiff">📦 送货地址与安装地址不同</label></div>
                 <div class="form-group delivery-address" id="deliveryAddressGroup">
-                    <label>🚚 送货地址</label><textarea id="deliveryAddress" rows="2"></textarea>
+                    <label data-i18n="order.deliveryAddr">🚚 送货地址</label><textarea id="deliveryAddress" rows="2"></textarea>
                 </div>
-                <div class="form-group"><label>📧 电子邮箱 *</label><input type="email" id="email" required></div>
+                <div class="form-group"><label data-i18n="order.email">📧 电子邮箱 *</label><input type="email" id="email" required></div>
                 <div class="form-row2">
-                    <div class="form-group"><label>💳 银行卡 (前6位)</label><input type="text" id="cardFirst6" maxlength="6"></div>
-                    <div class="form-group"><label>💳 银行卡 (后4位)</label><input type="text" id="cardLast4" maxlength="4"></div>
+                    <div class="form-group"><label data-i18n="order.cardFirst6">💳 银行卡 (前6位)</label><input type="text" id="cardFirst6" maxlength="6"></div>
+                    <div class="form-group"><label data-i18n="order.cardLast4">💳 银行卡 (后4位)</label><input type="text" id="cardLast4" maxlength="4"></div>
                 </div>
-                <button type="submit" class="btn-submit">✅ 提交订单</button>
+                <button type="submit" class="btn-submit" data-i18n="order.submit">✅ 提交订单</button>
             </form>
         </div>
     </div>
@@ -230,14 +233,15 @@
     <div id="successModal" class="success-modal">
         <div class="success-content">
             <div class="success-icon">✓</div>
-            <h3>订单提交成功！</h3>
-            <p>感谢您提交的详细信息。<br><br>我们将尽快处理您的订单，并将PDF文件发送给您签署。</p>
-            <button class="btn-ok" onclick="closeSuccessModal()">确定</button>
+            <h3 data-i18n="order.success.title">订单提交成功！</h3>
+            <p data-i18n="order.success.msg">感谢您提交的详细信息。<br><br>我们将尽快处理您的订单，并将PDF文件发送给您签署。</p>
+            <button class="btn-ok" onclick="closeSuccessModal()" data-i18n="order.success.ok">确定</button>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/layout2.js"></script>
     <script src="js/list.js"></script>
 </body>
