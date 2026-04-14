@@ -108,13 +108,24 @@
         }
         .btn-logout:hover { background: rgba(255,255,255,0.3); }
         
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-btn {
-            padding: 10px 24px; background: rgba(255,255,255,0.8); border: none;
-            border-radius: 40px; cursor: pointer; font-weight: 600; backdrop-filter: blur(5px);
-            transition: all 0.3s;
+        .tabs {
+            display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap;
+            background: rgba(255,255,255,0.1); padding: 10px; border-radius: 50px;
+            backdrop-filter: blur(5px);
         }
-        .tab-btn.active { background: #fff; color: #80abce; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .tab-btn {
+            padding: 10px 20px; background: transparent; border: none;
+            border-radius: 40px; cursor: pointer; font-weight: 600;
+            color: rgba(255,255,255,0.8); transition: all 0.3s;
+            font-size: 14px;
+        }
+        .tab-btn.active {
+            background: #fff; color: #80abce; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.2); color: #fff;
+        }
+        
         .panel { display: none; }
         .panel.active { display: block; }
         
@@ -122,7 +133,9 @@
             background: #27ae60; color: #fff; border: none; padding: 10px 24px;
             border-radius: 40px; cursor: pointer; margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(39,174,96,0.3);
+            transition: all 0.3s;
         }
+        .btn-add:hover { background: #219a52; transform: translateY(-2px); }
         
         .item-list {
             background: #fff; border-radius: 16px; overflow: hidden;
@@ -145,6 +158,7 @@
         .btn-edit, .btn-delete { padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; }
         .btn-edit { background: #3498db; color: #fff; }
         .btn-delete { background: #e74c3c; color: #fff; }
+        .btn-move { background: #f39c12; color: #fff; }
         
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -178,52 +192,45 @@
         .upload-status.success { color: #27ae60; }
         .upload-status.error { color: #e74c3c; }
         
+        /* 区块类型选择 */
+        .section-type-selector {
+            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .section-type-btn {
+            padding: 8px 16px; border: 2px solid #e0e0e0; border-radius: 30px;
+            background: #fff; cursor: pointer; font-size: 14px; font-weight: 500;
+            transition: all 0.3s;
+        }
+        .section-type-btn.active {
+            border-color: #80abce; background: #e8f0f8; color: #80abce;
+        }
+        
+        .dynamic-fields { margin-bottom: 15px; }
+        .field-item {
+            background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        .field-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px;
+        }
+        .field-header h4 { color: #2c3e50; }
+        .btn-remove-field {
+            background: #e74c3c; color: #fff; border: none;
+            padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px;
+        }
+        .btn-add-field {
+            background: #80abce; color: #fff; border: none;
+            padding: 10px 16px; border-radius: 30px; cursor: pointer; font-size: 14px;
+            width: 100%; margin-top: 10px;
+        }
+        
         @media (max-width: 700px) {
             .form-row2 { grid-template-columns: 1fr; }
             .item-row { flex-direction: column; align-items: flex-start; }
+            .tabs { border-radius: 20px; }
+            .tab-btn { padding: 8px 12px; font-size: 12px; }
         }
-        {
-    "sections": [
-        {
-            "type": "text",
-            "icon": "📝",
-            "title": "我们的故事",
-            "content": "Coway 成立于 1989 年..."
-        },
-        {
-            "type": "stats",
-            "icon": "📊",
-            "title": "我们的成就",
-            "stats": [
-                { "number": "500万+", "label": "全球用户" },
-                { "number": "45+", "label": "国家和地区" }
-            ]
-        },
-        {
-            "type": "team",
-            "icon": "👥",
-            "title": "核心团队",
-            "members": [
-                { "name": "张三", "role": "CEO", "bio": "...", "avatar": "url" }
-            ]
-        },
-        {
-            "type": "timeline",
-            "icon": "📅",
-            "title": "发展历程",
-            "items": [
-                { "year": "1989", "title": "公司成立", "desc": "..." }
-            ]
-        },
-        {
-            "type": "image",
-            "icon": "🖼️",
-            "title": "我们的办公室",
-            "image": "url",
-            "caption": "吉隆坡总部"
-        }
-    ]
-}
     </style>
 </head>
 <body>
@@ -235,7 +242,6 @@
         <p>安全验证 · 内容管理系统</p>
     </div>
     
-    <!-- 步骤1: 账号密码 -->
     <div id="stepAccount" class="login-step">
         <div class="input-group">
             <label>👤 ID</label>
@@ -249,7 +255,6 @@
         <div id="loginError" class="error-msg"></div>
     </div>
     
-    <!-- 步骤2: 6位安全码 -->
     <div id="stepPin" class="login-step hidden">
         <p style="margin-bottom:20px; color:#555;">请输入6位私人安全码</p>
         <div class="pin-input-container">
@@ -265,18 +270,15 @@
         <div id="pinError" class="error-msg"></div>
     </div>
     
-    <!-- 步骤3: 拼图验证 -->
     <div id="stepCaptcha" class="login-step hidden">
         <p style="margin-bottom:20px; color:#555;">请完成拼图验证</p>
         <div class="captcha-container">
             <div class="slider-wrapper">
                 <div class="slider-track" id="sliderTrack"></div>
-                <div class="slider-thumb" id="sliderThumb">
-                    <i>→</i>
-                </div>
+                <div class="slider-thumb" id="sliderThumb"><i>→</i></div>
                 <span class="slider-text" id="sliderText">向右滑动完成验证</span>
             </div>
-            <div class="captcha-puzzle" id="puzzleContainer">
+            <div class="captcha-puzzle">
                 <div class="puzzle-piece" data-piece="1">1</div>
                 <div class="puzzle-piece" data-piece="2">2</div>
                 <div class="puzzle-piece" data-piece="3">3</div>
@@ -301,6 +303,7 @@
             <button class="tab-btn" data-tab="notice">📰 优惠公告</button>
             <button class="tab-btn" data-tab="agents">👥 Agent 管理</button>
             <button class="tab-btn" data-tab="locations">📍 门店管理</button>
+            <button class="tab-btn" data-tab="about">📄 关于我们</button>
         </div>
         
         <div id="productsPanel" class="panel active">
@@ -323,9 +326,17 @@
             <button class="btn-add" id="addLocationBtn">+ 新增门店</button>
             <div id="locationsList" class="item-list"></div>
         </div>
+        <div id="aboutPanel" class="panel">
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn-add" id="addAboutSectionBtn">+ 新增区块</button>
+                <button class="btn-add" id="resetAboutBtn" style="background: #e67e22;">🔄 重置为默认</button>
+            </div>
+            <div id="aboutSectionsList" class="item-list"></div>
+        </div>
     </div>
 </div>
 
+<!-- 通用弹窗（商品/轮播/公告/Agent/门店） -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="closeModalBtn">&times;</span>
@@ -403,6 +414,66 @@
         <div class="modal-buttons">
             <button class="btn-save" id="saveItemBtn">保存</button>
             <button class="btn-cancel" id="cancelModalBtn">取消</button>
+        </div>
+    </div>
+</div>
+
+<!-- 关于我们区块编辑弹窗 -->
+<div id="aboutSectionModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <span class="modal-close" id="closeAboutModalBtn">&times;</span>
+        <h3 id="aboutModalTitle">编辑区块</h3>
+        <input type="hidden" id="aboutEditIndex">
+        
+        <div class="section-type-selector">
+            <button class="section-type-btn active" data-type="text">📝 文本</button>
+            <button class="section-type-btn" data-type="stats">📊 统计数据</button>
+            <button class="section-type-btn" data-type="team">👥 团队成员</button>
+            <button class="section-type-btn" data-type="timeline">📅 时间线</button>
+            <button class="section-type-btn" data-type="image">🖼️ 图片</button>
+        </div>
+        
+        <input type="text" id="aboutSectionTitle" placeholder="区块标题" style="margin-bottom:15px;">
+        <input type="text" id="aboutSectionIcon" placeholder="图标 (emoji)" value="📝" style="margin-bottom:15px;">
+        
+        <!-- 文本类型字段 -->
+        <div id="aboutTextFields" class="dynamic-fields">
+            <textarea id="aboutTextContent" placeholder="文本内容" rows="5"></textarea>
+        </div>
+        
+        <!-- 统计数据类型字段 -->
+        <div id="aboutStatsFields" class="dynamic-fields" style="display:none;">
+            <div id="statsFieldsContainer"></div>
+            <button class="btn-add-field" id="addStatFieldBtn">+ 添加统计项</button>
+        </div>
+        
+        <!-- 团队类型字段 -->
+        <div id="aboutTeamFields" class="dynamic-fields" style="display:none;">
+            <div id="teamFieldsContainer"></div>
+            <button class="btn-add-field" id="addTeamMemberBtn">+ 添加成员</button>
+        </div>
+        
+        <!-- 时间线类型字段 -->
+        <div id="aboutTimelineFields" class="dynamic-fields" style="display:none;">
+            <div id="timelineFieldsContainer"></div>
+            <button class="btn-add-field" id="addTimelineItemBtn">+ 添加事件</button>
+        </div>
+        
+        <!-- 图片类型字段 -->
+        <div id="aboutImageFields" class="dynamic-fields" style="display:none;">
+            <div class="image-upload-area">
+                <label>📷 图片</label>
+                <input type="file" id="aboutImageInput" accept="image/*">
+                <div id="aboutImagePreview" class="image-preview"></div>
+                <div id="aboutImageUploadStatus" class="upload-status"></div>
+                <input type="hidden" id="aboutImageUrl">
+            </div>
+            <input type="text" id="aboutImageCaption" placeholder="图片说明 (可选)">
+        </div>
+        
+        <div class="modal-buttons">
+            <button class="btn-save" id="saveAboutSectionBtn">保存</button>
+            <button class="btn-cancel" id="cancelAboutModalBtn">取消</button>
         </div>
     </div>
 </div>
