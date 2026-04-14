@@ -1,15 +1,18 @@
 // ========== 通用布局（list/location/support/about/privacy/terms） ==========
 const LAYOUT = {
-    navbar: `
-        <nav class="navbar">
-            <div class="nav-container">
-                <a href="index.html" class="logo"><i>💧</i><span>Coway</span></a>
-                <div class="nav-menu" id="navMenu"></div>
-                <a href="admin.html" class="admin-icon" title="管理员登录">👤</a>
-                <button class="mobile-menu-btn" id="menuBtn">☰</button>
-            </div>
-        </nav>
-    `,
+    // layout.js 中的 navbar 部分
+navbar: `
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <img src="img/coway-malaysia-logo.png" alt="Coway Malaysia" style="height: 28px;">
+            </a>
+            <div class="nav-menu" id="navMenu"></div>
+            <a href="admin.html" class="admin-icon" title="管理员登录">👤</a>
+            <button class="mobile-menu-btn" id="menuBtn">☰</button>
+        </div>
+    </nav>
+`,
     sidebar: `
         <div class="mobile-sidebar" id="sidebar"></div>
         <div class="overlay" id="overlay"></div>
