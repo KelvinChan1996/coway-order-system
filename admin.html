@@ -52,35 +52,6 @@
             box-shadow: 0 0 0 3px rgba(128,171,206,0.1);
         }
         
-        .captcha-container { margin: 25px 0; }
-        .slider-wrapper {
-            background: #f0f2f5; border-radius: 30px; padding: 5px; position: relative; height: 60px;
-        }
-        .slider-track {
-            height: 50px; background: linear-gradient(90deg, #80abce 0%, #a8d0e6 100%);
-            border-radius: 25px; width: 0%; position: absolute; left: 5px; top: 5px; z-index: 1;
-            transition: width 0.1s;
-        }
-        .slider-thumb {
-            width: 60px; height: 50px; background: #fff; border-radius: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;
-            cursor: grab; position: relative; z-index: 2; left: 0; transition: left 0.1s;
-            border: 2px solid #80abce;
-        }
-        .slider-thumb:active { cursor: grabbing; }
-        .slider-thumb i { font-size: 24px; color: #80abce; }
-        .slider-text {
-            position: absolute; left: 80px; top: 50%; transform: translateY(-50%);
-            color: #fff; font-weight: 500; z-index: 1; pointer-events: none;
-        }
-        .captcha-puzzle { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
-        .puzzle-piece {
-            width: 60px; height: 60px; background: #80abce; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center; color: #fff;
-            font-weight: 600; cursor: pointer; transition: all 0.3s;
-        }
-        .puzzle-piece.selected { background: #27ae60; transform: scale(1.1); }
-        
         .login-btn {
             width: 100%; padding: 14px; background: #80abce; color: #fff; border: none;
             border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer;
@@ -153,7 +124,7 @@
         .info small { color: #999; font-size: 12px; }
         .actions { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-edit, .btn-delete { padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; }
-        .btn-edit { background: #3498db; color: #fff; }
+        .btn-edit { background: #3498db; color: #999; }
         .btn-delete { background: #e74c3c; color: #fff; }
         .btn-move { background: #f39c12; color: #fff; }
         
@@ -248,28 +219,9 @@
             <input type="text" class="pin-input" maxlength="1" data-index="4">
             <input type="text" class="pin-input" maxlength="1" data-index="5">
         </div>
-        <button class="login-btn" id="goToCaptchaBtn" disabled>验证安全码</button>
+        <button class="login-btn" id="loginWithPinBtn" disabled>确认登录</button>
         <div class="back-link" id="backToAccountBtn">← 返回上一步</div>
         <div id="pinError" class="error-msg"></div>
-    </div>
-    
-    <div id="stepCaptcha" class="login-step hidden">
-        <p style="margin-bottom:20px; color:#555;">请完成拼图验证</p>
-        <div class="captcha-container">
-            <div class="slider-wrapper">
-                <div class="slider-track" id="sliderTrack"></div>
-                <div class="slider-thumb" id="sliderThumb"><i>→</i></div>
-                <span class="slider-text" id="sliderText">向右滑动完成验证</span>
-            </div>
-            <div class="captcha-puzzle">
-                <div class="puzzle-piece" data-piece="1">1</div>
-                <div class="puzzle-piece" data-piece="2">2</div>
-                <div class="puzzle-piece" data-piece="3">3</div>
-            </div>
-        </div>
-        <button class="login-btn" id="verifyCaptchaBtn" disabled>确认登录</button>
-        <div class="back-link" id="backToPinBtn">← 返回上一步</div>
-        <div id="captchaError" class="error-msg"></div>
     </div>
 </div>
 
