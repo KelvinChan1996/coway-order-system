@@ -1,4 +1,3 @@
-// ========== 首页专用布局 ==========
 const LAYOUT = {
     navbar: `
         <nav class="navbar">
@@ -52,7 +51,7 @@ function generateMenu(isMobile) {
         const active = current === item.href || (current === '' && item.href === 'index.html') ? 'active' : '';
         const text = I18N.t(item.key);
         if (item.isOrder && !isMobile) return `<a href="${item.href}" class="btn-order-nav ${active}">${text}</a>`;
-        return `<a href="${item.href}" class="${active}" data-i18n="${item.key}">${text}</a>`;
+        return `<a href="${item.href}" class="${active}">${text}</a>`;
     }).join('');
 }
 
@@ -80,7 +79,6 @@ function injectLayout() {
         document.getElementById('overlay').classList.remove('show');
     });
     
-    // 更新语言按钮激活状态
     updateLangButtonState();
 }
 
@@ -90,7 +88,6 @@ function updateLangButtonState() {
     });
 }
 
-// 监听语言切换，更新菜单和按钮状态
 window.addEventListener('languageChanged', () => {
     document.getElementById('navMenu').innerHTML = generateMenu(false);
     document.getElementById('sidebar').innerHTML = generateMenu(true);
