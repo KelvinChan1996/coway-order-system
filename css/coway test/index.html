@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Coway Malaysia | Smart Order System</title>
+    <!-- Google Fonts: Montserrat + Noto Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ---------- Coway 官方风格重置 ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans', 'Montserrat', system-ui, sans-serif;
+            background-color: #FFFFFF;
+            color: #1A1A1A;
+            line-height: 1.5;
+        }
+        /* Coway 品牌色 */
+        :root {
+            --coway-dark: #002B5C;
+            --coway-light: #0077BE;
+            --coway-gray-bg: #F5F7FA;
+            --coway-gray-border: #E5E7EB;
+            --coway-text-dark: #1F2937;
+            --coway-text-light: #6B7280;
+        }
+        /* 容器 */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        /* 导航栏 (仿官网顶部) */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--coway-gray-border);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .logo img {
+            height: 32px;
+            width: auto;
+        }
+        .nav-menu {
+            display: flex;
+            gap: 32px;
+            font-weight: 500;
+        }
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--coway-text-dark);
+            font-size: 15px;
+            transition: color 0.2s;
+        }
+        .nav-menu a:hover {
+            color: var(--coway-light);
+        }
+        /* 移动端菜单按钮 (仅移动端显示) */
+        .mobile-menu-btn {
+            display: none;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--coway-dark);
+        }
+        /* Hero 区域 (仿官网) */
+        .hero {
+            background: linear-gradient(135deg, #002B5C 0%, #004b8f 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+        .hero p {
+            font-size: 18px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        /* 统计数字区 */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 48px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        /* 产品区域 */
+        .section-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 48px 0 24px 0;
+            color: var(--coway-dark);
+            border-left: 4px solid var(--coway-light);
+            padding-left: 16px;
+        }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 32px;
+            margin-bottom: 64px;
+        }
+        /* 产品卡片 (仿官网简洁风) */
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--coway-gray-border);
+        }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1);
+            border-color: var(--coway-light);
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: var(--coway-gray-bg);
+        }
+        .product-info {
+            padding: 20px;
+        }
+        .product-name {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--coway-dark);
+        }
+        .product-desc {
+            font-size: 14px;
+            color: var(--coway-text-light);
+            line-height: 1.4;
+        }
+        /* Coway 风格按钮 */
+        .btn-primary {
+            background-color: var(--coway-dark);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: var(--coway-light);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--coway-dark);
+            color: var(--coway-dark);
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: var(--coway-dark);
+            color: white;
+        }
+        /* 底部 */
+        .footer {
+            background: var(--coway-dark);
+            color: white;
+            padding: 48px 0 24px;
+            margin-top: 64px;
+        }
+        .footer a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        /* 弹窗 (维持原有功能) */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .hero h1 {
+                font-size: 32px;
+            }
+            .stats {
+                gap: 24px;
+            }
+            .container {
+                padding: 0 16px;
+            }
+        }
+        /* 移动端侧边菜单 (代替汉堡) */
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transition: right 0.3s;
+            padding: 24px;
+        }
+        .sidebar-menu.open {
+            right: 0;
+        }
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 0;
+            color: var(--coway-dark);
+            text-decoration: none;
+            border-bottom: 1px solid #eee;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="coway-malaysia-logo.png" alt="Coway Malaysia" class="h-8 w-auto">
+            </div>
+            <div class="nav-menu">
+                <a href="#" data-cat="all">全部产品</a>
+                <a href="#" data-cat="water">水机</a>
+                <a href="#" data-cat="air">空气净化器</a>
+                <a href="#" data-cat="ac">冷气</a>
+                <a href="#" data-cat="washer">洗衣机</a>
+                <a href="#" data-cat="toilet">马桶</a>
+                <a href="#" data-cat="massageChair">按摩椅</a>
+                <a href="#" data-cat="massageBed">按摩床</a>
+                <a href="#" data-cat="bed">床</a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+        </div>
+    </div>
+
+    <!-- 移动端侧边栏 -->
+    <div class="sidebar-menu" id="sidebarMenu">
+        <div style="display: flex; justify-content: flex-end;">
+            <button id="closeSidebar" style="background:none; border:none; font-size:24px;">&times;</button>
+        </div>
+        <a href="#" data-cat="all">全部产品</a>
+        <a href="#" data-cat="water">水机</a>
+        <a href="#" data-cat="air">空气净化器</a>
+        <a href="#" data-cat="ac">冷气</a>
+        <a href="#" data-cat="washer">洗衣机</a>
+        <a href="#" data-cat="toilet">马桶</a>
+        <a href="#" data-cat="massageChair">按摩椅</a>
+        <a href="#" data-cat="massageBed">按摩床</a>
+        <a href="#" data-cat="bed">床</a>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Hero 区域 -->
+    <div class="hero">
+        <div class="container">
+            <h1>LEADING THE WORLD</h1>
+            <p>Live Pure Together with Us.</p>
+            <div class="stats">
+                <div class="stat-item"><div class="stat-number">1 MIL</div><div class="stat-label">Tests</div></div>
+                <div class="stat-item"><div class="stat-number">370</div><div class="stat-label">Researchers</div></div>
+                <div class="stat-item"><div class="stat-number">10 MIL</div><div class="stat-label">Homes Worldwide</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 产品列表区域 -->
+    <div class="container">
+        <div class="section-title">我们的产品</div>
+        <div id="productsGrid" class="products-grid"></div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="footer">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 32px;">
+                <div><h4>Coway Malaysia</h4><p style="font-size:12px; margin-top:8px;">&copy; 2026 Coway. All rights reserved.</p></div>
+                <div><a href="#">Privacy Policy</a></div>
+                <div><a href="#">Terms of Use</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 产品详情弹窗 (功能维持) -->
+    <div id="productModal" class="modal">
+        <div class="modal-content" style="max-width:700px;">
+            <div style="padding:16px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                <h3 id="modalTitle" style="color:#002B5C;">产品详情</h3>
+                <button id="closeModalBtn" style="background:none; border:none; font-size:24px;">&times;</button>
+            </div>
+            <div style="padding:20px;">
+                <div class="swiper mySwiper" style="margin-bottom:20px; border-radius:12px;">
+                    <div class="swiper-wrapper" id="modalCarousel"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                <div id="modalDescription" style="margin-bottom:20px;"></div>
+                <div style="display:flex; gap:12px; margin-bottom:20px;">
+                    <button id="translateBtn" class="btn-outline">Translate to English</button>
+                </div>
+                <div style="display:flex; gap:16px;">
+                    <button id="orderNowBtn" class="btn-primary">Order</button>
+                    <button id="contactAgentBtn" class="btn-outline">Contact</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单表单弹窗 (简化版，保持功能) -->
+    <div id="orderFormModal" class="modal">
+        <div class="modal-content" style="max-width:600px;">
+            <div style="padding:16px; border-bottom:1px solid #eee;">
+                <h3>Complete Your Order</h3>
+            </div>
+            <div style="padding:20px;">
+                <form id="orderForm">
+                    <div style="margin-bottom:16px;"><label>IC (front copy) *</label><input type="file" id="icUpload" class="form-input" style="width:100%; border:1px solid #ccc; padding:8px;"></div>
+                    <div style="margin-bottom:16px;"><label>Contact #1 *</label><input type="tel" id="contact1" required style="width:100%; border:1px solid #ccc; padding:8px;"></div>
+                    <div style="margin-bottom:16px;"><label>Contact #2</label><input type="tel" id="contact2" style="width:100%; border:1px solid #ccc; padding:8px;"></div>
+                    <div style="margin-bottom:16px;"><label>Installation Address *</label><textarea id="address" rows="2" style="width:100%; border:1px solid #ccc; padding:8px;"></textarea></div>
+                    <div style="margin-bottom:16px;"><label>Email *</label><input type="email" id="email" required style="width:100%; border:1px solid #ccc; padding:8px;"></div>
+                    <div style="margin-bottom:16px;"><label>Card (First 6 / Last 4)</label><input type="text" id="cardInfo" placeholder="123456xxxxxx7890" style="width:100%; border:1px solid #ccc; padding:8px;"></div>
+                    <button type="submit" class="btn-primary">Submit Order</button>
+                </form>
+            </div>
+            <button id="closeOrderModal" style="position:absolute; top:16px; right:20px; background:none; border:none; font-size:24px;">&times;</button>
+        </div>
+    </div>
+
+    <!-- 成功弹窗 -->
+    <div id="successModal" class="modal">
+        <div class="modal-content" style="max-width:400px; text-align:center; padding:24px;">
+            <i class="fas fa-check-circle" style="color:green; font-size:48px;"></i>
+            <p id="successMessage" style="margin:16px 0;"></p>
+            <button id="okSuccessBtn" class="btn-primary">OK</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        // ---------- 产品数据 (与官网分类一致，可扩展) ----------
+        const products = {
+            water: [
+                { name: "Coway Omba", desc_zh: "淨水與冰水一體，現代廚房首選。", desc_en: "Integrated water purifier with cold water.", images: ["https://placehold.co/800x400/002B5C/white?text=Omba"] },
+                { name: "Coway Neon", desc_zh: "時尚設計，過濾重金屬。", desc_en: "Stylish design, removes heavy metals.", images: ["https://placehold.co/800x400/002B5C/white?text=Neon"] }
+            ],
+            air: [
+                { name: "Coway Storm", desc_zh: "強力淨化PM2.5與過敏原。", desc_en: "Powerful purification for PM2.5.", images: ["https://placehold.co/800x400/002B5C/white?text=Storm"] }
+            ],
+            ac: [
+                { name: "Coway Arctic", desc_zh: "節能冷氣，快速製冷。", desc_en: "Energy-saving AC.", images: ["https://placehold.co/800x400/002B5C/white?text=Arctic"] }
+            ],
+            washer: [{ name: "Coway Washing Mate", desc_zh: "智能洗衣", desc_en: "Smart washing", images: ["https://placehold.co/800x400/002B5C/white?text=Washer"] }],
+            toilet: [{ name: "Coway Bidet", desc_zh: "智能馬桶", desc_en: "Smart bidet", images: ["https://placehold.co/800x400/002B5C/white?text=Bidet"] }],
+            massageChair: [{ name: "Coway Relax Pro", desc_zh: "全身按摩", desc_en: "Full massage", images: ["https://placehold.co/800x400/002B5C/white?text=Relax"] }],
+            massageBed: [{ name: "Coway Dream Massage", desc_zh: "按摩床", desc_en: "Massage bed", images: ["https://placehold.co/800x400/002B5C/white?text=BedMassage"] }],
+            bed: [{ name: "Coway Ergo Bed", desc_zh: "電動床", desc_en: "Ergonomic bed", images: ["https://placehold.co/800x400/002B5C/white?text=ErgoBed"] }]
+        };
+
+        // Agent 列表与分配逻辑
+        let agentList = [
+            { id: 1, name: "Ali Rehman", position: "HP", contact: "60123456789", receipt: 0 },
+            { id: 2, name: "Siti Nuraini", position: "SM", contact: "60129876543", receipt: 0 }
+        ];
+        function getLeastBusyAgent() {
+            let min = Math.min(...agentList.map(a => a.receipt));
+            return agentList.find(a => a.receipt === min);
+        }
+        function incrementReceipt(agent) { if(agent) agent.receipt++; }
+
+        // 渲染产品网格
+        function renderProducts(category = null) {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+            const cats = category ? [category] : Object.keys(products);
+            for (let cat of cats) {
+                if (!products[cat]) continue;
+                products[cat].forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <img src="${p.images[0]}" class="product-image" alt="${p.name}">
+                        <div class="product-info">
+                            <div class="product-name">${p.name}</div>
+                            <div class="product-desc">${p.desc_zh.substring(0, 60)}...</div>
+                        </div>
+                    `;
+                    card.onclick = () => openModal(p);
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        let currentProduct = null, swiper = null, currentLang = 'zh';
+        function openModal(product) {
+            currentProduct = product;
+            document.getElementById('modalTitle').innerText = product.name;
+            const carouselDiv = document.getElementById('modalCarousel');
+            carouselDiv.innerHTML = '';
+            product.images.forEach(img => {
+                let slide = document.createElement('div');
+                slide.className = 'swiper-slide';
+                slide.innerHTML = `<img src="${img}" style="width:100%; height:300px; object-fit:cover;">`;
+                carouselDiv.appendChild(slide);
+            });
+            if (swiper) swiper.destroy();
+            swiper = new Swiper('.mySwiper', { navigation: true, loop: true });
+            document.getElementById('modalDescription').innerText = product.desc_zh;
+            currentLang = 'zh';
+            document.getElementById('productModal').style.display = 'flex';
+        }
+
+        // 绑定全局事件
+        document.getElementById('translateBtn')?.addEventListener('click', () => {
+            if (!currentProduct) return;
+            if (currentLang === 'zh') {
+                document.getElementById('modalDescription').innerText = currentProduct.desc_en;
+                currentLang = 'en';
+            } else {
+                document.getElementById('modalDescription').innerText = currentProduct.desc_zh;
+                currentLang = 'zh';
+            }
+        });
+        document.getElementById('contactAgentBtn')?.addEventListener('click', () => {
+            const agent = getLeastBusyAgent();
+            if(agent) window.open(`https://wa.me/${agent.contact}?text=Hi, I'm interested in ${currentProduct?.name}`, '_blank');
+            else alert('No agent');
+        });
+        document.getElementById('orderNowBtn')?.addEventListener('click', () => {
+            document.getElementById('productModal').style.display = 'none';
+            document.getElementById('orderFormModal').style.display = 'flex';
+        });
+        function closeModals() {
+            document.getElementById('productModal').style.display = 'none';
+            document.getElementById('orderFormModal').style.display = 'none';
+            document.getElementById('successModal').style.display = 'none';
+        }
+        document.getElementById('closeModalBtn')?.addEventListener('click', closeModals);
+        document.getElementById('closeOrderModal')?.addEventListener('click', closeModals);
+        document.getElementById('orderForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const agent = getLeastBusyAgent();
+            if(agent) incrementReceipt(agent);
+            document.getElementById('successMessage').innerText = 'Thank you for your submit detail.\n\nOnce I’ve submitted your details into the system, I’ll send you a PDF file for your signature.\n\nBest regards by coway agent';
+            document.getElementById('successModal').style.display = 'flex';
+            document.getElementById('orderForm').reset();
+            closeModals();
+        });
+        document.getElementById('okSuccessBtn')?.addEventListener('click', closeModals);
+
+        // 分类筛选与移动端菜单
+        document.querySelectorAll('[data-cat]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const cat = link.getAttribute('data-cat');
+                if (cat === 'all') renderProducts(null);
+                else renderProducts(cat);
+                document.getElementById('sidebarMenu')?.classList.remove('open');
+                document.getElementById('overlay')?.classList.remove('show');
+            });
+        });
+        document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+            document.getElementById('sidebarMenu')?.classList.add('open');
+            document.getElementById('overlay')?.classList.add('show');
+        });
+        document.getElementById('closeSidebar')?.addEventListener('click', () => {
+            document.getElementById('sidebarMenu')?.classList.remove('open');
+            document.getElementById('overlay')?.classList.remove('show');
+        });
+        document.getElementById('overlay')?.addEventListener('click', () => {
+            document.getElementById('sidebarMenu')?.classList.remove('open');
+            document.getElementById('overlay')?.classList.remove('show');
+        });
+
+        renderProducts();
+    </script>
+</body>
+</html>
