@@ -15,7 +15,7 @@
         .carousel-slides { width: 100%; height: 100%; position: relative; }
         .carousel-slide {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; transition: opacity 0.8s ease;
+            opacity: 0; transition: opacity 0.8s;
             background-size: cover; background-position: center;
             display: flex; align-items: center; justify-content: center;
             text-align: center; color: #fff;
@@ -82,21 +82,22 @@
 
     <div class="notice-section">
         <div class="notice-header">
-            <h2>🎉 最新优惠与公告</h2>
+            <h2 data-i18n="home.notice.title">🎉 最新优惠与公告</h2>
         </div>
-        <div id="noticeContainer" class="notice-grid"><div class="empty-notice">加载中...</div></div>
+        <div id="noticeContainer" class="notice-grid"><div class="empty-notice" data-i18n="common.loading">加载中...</div></div>
     </div>
 
     <div class="stats-section">
-        <h2>Coway 健康生活</h2>
-        <p style="font-size:20px; opacity:0.9; margin-bottom:50px;">为全球数百万家庭提供纯净空气与健康饮水</p>
+        <h2 data-i18n="home.stats.title">Coway 健康生活</h2>
+        <p style="font-size:20px; opacity:0.9; margin-bottom:50px;" data-i18n="home.stats.desc">为全球数百万家庭提供纯净空气与健康饮水</p>
         <div class="stats-grid">
-            <div class="stat-item"><div class="stat-number">500万+</div><div class="stat-label">全球用户</div></div>
-            <div class="stat-item"><div class="stat-number">45+</div><div class="stat-label">国家和地区</div></div>
-            <div class="stat-item"><div class="stat-number">30年+</div><div class="stat-label">行业经验</div></div>
+            <div class="stat-item"><div class="stat-number">500万+</div><div class="stat-label" data-i18n="home.stats.users">全球用户</div></div>
+            <div class="stat-item"><div class="stat-number">45+</div><div class="stat-label" data-i18n="home.stats.countries">国家和地区</div></div>
+            <div class="stat-item"><div class="stat-number">30年+</div><div class="stat-label" data-i18n="home.stats.experience">行业经验</div></div>
         </div>
     </div>
 
+    <script src="js/i18n.js"></script>
     <script src="js/layout1.js"></script>
     <script>
         let carouselData = [];
@@ -111,9 +112,9 @@
         function loadCarousel() {
             let saved = localStorage.getItem('coway_carousel');
             carouselData = saved ? JSON.parse(saved) : [
-                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", title: "纯净空气，健康生活", desc: "Coway 空气净化器，为您的家庭提供最纯净的空气", link: "list.html" },
-                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", title: "健康饮水，从Coway开始", desc: "荣获国际设计大奖的净水器系列", link: "list.html" },
-                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", title: "Coway 虚拟展厅", desc: "360° 体验我们的创新产品", link: "list.html" }
+                { id: 1, image: "https://www.coway.com.my/files/Banner/coway-air-purifier-for-every-space.jpg", titleKey: "home.carousel1.title", descKey: "home.carousel1.desc", link: "list.html" },
+                { id: 2, image: "https://www.coway.com.my/files/Banner/coway-water-purifier-banner.jpg", titleKey: "home.carousel2.title", descKey: "home.carousel2.desc", link: "list.html" },
+                { id: 3, image: "https://www.coway.com.my/img/home/coway-virtual-showroom-tour.jpg", titleKey: "home.carousel3.title", descKey: "home.carousel3.desc", link: "list.html" }
             ];
             if (!saved) localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
             renderCarousel();
@@ -128,7 +129,7 @@
                 const slide = document.createElement('div');
                 slide.className = `carousel-slide ${idx === currentCarouselSlide ? 'active' : ''}`;
                 slide.style.backgroundImage = `url(${item.image})`;
-                slide.innerHTML = `<div class="carousel-content"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.desc)}</p><a href="${item.link || '#'}">了解更多 →</a></div>`;
+                slide.innerHTML = `<div class="carousel-content"><h2>${I18N.t(item.titleKey)}</h2><p>${I18N.t(item.descKey)}</p><a href="${item.link || '#'}" data-i18n="home.carousel.learnMore">了解更多 →</a></div>`;
                 container.appendChild(slide);
             });
             dotsContainer.innerHTML = '';
@@ -156,17 +157,26 @@
             const container = document.getElementById('noticeContainer');
             let notices = localStorage.getItem('coway_notices');
             notices = notices ? JSON.parse(notices) : [
-                { id: 1, title: "🎊 开斋节特别优惠！", description: "购买任何水机/空气净化器，可获免费滤芯一套 + 延长保修1年。", image: "https://placehold.co/600x400/80abce/white?text=Raya+Promo", date: "2026-04-01" },
-                { id: 2, title: "💧 水机以旧换新计划", description: "任何品牌旧水机，换购Coway水机可享RM200折扣。", image: "https://placehold.co/600x400/80abce/white?text=Trade+In", date: "2026-03-15" },
-                { id: 3, title: "🌬️ 空气净化器免费试用", description: "30天免费试用，不满意全额退款。", image: "https://placehold.co/600x400/80abce/white?text=Free+Trial", date: "2026-04-10" }
+                { id: 1, titleKey: "home.notice.raya", descKey: "home.notice.raya.desc", image: "https://placehold.co/600x400/80abce/white?text=Raya+Promo", date: "2026-04-01" },
+                { id: 2, titleKey: "home.notice.tradein", descKey: "home.notice.tradein.desc", image: "https://placehold.co/600x400/80abce/white?text=Trade+In", date: "2026-03-15" },
+                { id: 3, titleKey: "home.notice.trial", descKey: "home.notice.trial.desc", image: "https://placehold.co/600x400/80abce/white?text=Free+Trial", date: "2026-04-10" }
             ];
-            if (!localStorage.getItem('coway_notices')) localStorage.setItem('coway_notices', JSON.stringify(notices));
-            if (!notices.length) { container.innerHTML = '<div class="empty-notice">📢 暂无公告，请稍后再来</div>'; return; }
+            if (!notices.length) { container.innerHTML = `<div class="empty-notice" data-i18n="home.emptyNotice">📢 暂无公告，请稍后再来</div>`; I18N.updatePage(); return; }
+            renderNoticeCards(notices);
+            
+            window.addEventListener('languageChanged', () => {
+                const currentNotices = JSON.parse(localStorage.getItem('coway_notices')) || notices;
+                renderNoticeCards(currentNotices);
+            });
+        }
+        
+        function renderNoticeCards(notices) {
+            const container = document.getElementById('noticeContainer');
             container.innerHTML = '';
             notices.forEach(n => {
                 const card = document.createElement('div');
                 card.className = 'notice-card';
-                card.innerHTML = `<img class="notice-img" src="${n.image}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'"><div class="notice-content"><div class="notice-title">${escapeHtml(n.title)}</div><div class="notice-desc">${escapeHtml(n.description)}</div><div class="notice-date">📅 ${n.date}</div></div>`;
+                card.innerHTML = `<img class="notice-img" src="${n.image}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'"><div class="notice-content"><div class="notice-title">${I18N.t(n.titleKey)}</div><div class="notice-desc">${I18N.t(n.descKey)}</div><div class="notice-date">📅 ${n.date}</div></div>`;
                 container.appendChild(card);
             });
         }
@@ -176,6 +186,10 @@
             loadNotices();
             document.getElementById('carouselPrev')?.addEventListener('click', () => { prevCarouselSlide(); resetCarouselAutoPlay(); });
             document.getElementById('carouselNext')?.addEventListener('click', () => { nextCarouselSlide(); resetCarouselAutoPlay(); });
+        });
+        
+        window.addEventListener('languageChanged', () => {
+            renderCarousel();
         });
     </script>
 </body>
