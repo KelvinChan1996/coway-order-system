@@ -401,7 +401,9 @@ footer a:hover {
 
 /* ========== 响应式 ========== */
 @media (max-width: 992px) {
-    .grid-4 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
@@ -431,7 +433,9 @@ footer a:hover {
         grid-template-columns: 1fr;
     }
 
-    .grid-2, .grid-3, .grid-4 {
+    .grid-2,
+    .grid-3,
+    .grid-4 {
         grid-template-columns: 1fr;
     }
 
@@ -451,16 +455,5 @@ footer a:hover {
 
     .page-header {
         padding: 40px 20px 30px;
-    }
-}
-
-/* ========== 页面主体 ========== */
-body {
-    padding-top: 70px;
-}
-
-@media (max-width: 768px) {
-    body {
-        padding-top: 60px;
     }
 }
