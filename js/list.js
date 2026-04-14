@@ -1,4 +1,3 @@
-// ========== 全局变量 ==========
 let productsData = { all: [], water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: [] };
 let carouselData = [];
 let currentCategory = "all";
@@ -20,13 +19,11 @@ const categories = [
     { id: "bed", nameKey: "products.bed" }
 ];
 
-// ========== 辅助函数 ==========
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
 }
 
-// ========== 加载 Agent ==========
 async function loadAgents() {
     try {
         const csvUrl = 'https://docs.google.com/spreadsheets/d/1uYkUTabIRRDhVh_eDfBOZUjwe8Qlv-L6eTwN2FroIAY/export?format=csv';
@@ -60,7 +57,6 @@ function incrementAgentReceipt(agent) {
     if (agent) { agent.receipt++; localStorage.setItem('coway_agents', JSON.stringify(agentList)); }
 }
 
-// ========== 加载产品 ==========
 function loadProducts() {
     const saved = localStorage.getItem('coway_products');
     if (saved) {
@@ -72,7 +68,6 @@ function loadProducts() {
     }
 }
 
-// ========== 加载轮播 ==========
 function loadCarousel() {
     const saved = localStorage.getItem('coway_carousel');
     carouselData = saved ? JSON.parse(saved) : [];
@@ -116,7 +111,6 @@ function nextSlide() { if (carouselData.length) { currentCarouselSlide = (curren
 function prevSlide() { if (carouselData.length) { currentCarouselSlide = (currentCarouselSlide - 1 + carouselData.length) % carouselData.length; updateCarouselDisplay(); } }
 function resetAutoPlay() { if (carouselInterval) clearInterval(carouselInterval); carouselInterval = setInterval(nextSlide, 5000); }
 
-// ========== 渲染分类 ==========
 function renderCategoryList() {
     const container = document.getElementById('categoryList');
     container.innerHTML = '';
@@ -134,7 +128,6 @@ function renderCategoryList() {
     });
 }
 
-// ========== 渲染产品 ==========
 function renderProducts() {
     const grid = document.getElementById('productsGrid');
     const list = productsData[currentCategory] || [];
@@ -162,23 +155,38 @@ function renderProducts() {
     });
 }
 
-// ========== 详情弹窗 ==========
 function openDetailModal(p) {
     currentProduct = p;
     document.getElementById('detailTitle').innerText = p.name;
     document.getElementById('detailPrice').innerHTML = p.price;
     document.getElementById('detailDesc').innerText = p.desc_zh;
     currentLang = 'zh';
+    
     const carousel = document.getElementById('detailCarousel');
     carousel.innerHTML = '';
-    (p.images?.length ? p.images : ['https://placehold.co/800x400/80abce/white?text=Product']).forEach(img => carousel.innerHTML += `<div><img src="${img}"></div>`);
+    const images = p.images?.length ? p.images : ['https://placehold.co/800x400/80abce/white?text=Product'];
+    images.forEach(img => carousel.innerHTML += `<div><img src="${img}" alt="${escapeHtml(p.name)}"></div>`);
+    
     if ($('#detailCarousel').hasClass('slick-initialized')) $('#detailCarousel').slick('unslick');
-    $('#detailCarousel').slick({ dots: true, infinite: true, speed: 300, slidesToShow: 1, autoplay: true, autoplaySpeed: 3000 });
+    $('#detailCarousel').slick({
+        dots: true, infinite: true, speed: 300, slidesToShow: 1,
+        adaptiveHeight: false, autoplay: true, autoplaySpeed: 3000
+    });
     document.getElementById('detailModal').classList.add('active');
 }
 
-window.closeDetailModal = () => { document.getElementById('detailModal').classList.remove('active'); $('#detailCarousel').slick('unslick'); };
-window.closeOrderModal = () => { document.getElementById('orderModal').classList.remove('active'); document.getElementById('orderForm').reset(); document.getElementById('differentDelivery').checked = false; document.getElementById('deliveryAddressGroup').classList.remove('show'); };
+window.closeDetailModal = () => {
+    document.getElementById('detailModal').classList.remove('active');
+    if ($('#detailCarousel').hasClass('slick-initialized')) $('#detailCarousel').slick('unslick');
+};
+
+window.closeOrderModal = () => {
+    document.getElementById('orderModal').classList.remove('active');
+    document.getElementById('orderForm').reset();
+    document.getElementById('differentDelivery').checked = false;
+    document.getElementById('deliveryAddressGroup').classList.remove('show');
+};
+
 window.closeSuccessModal = () => document.getElementById('successModal').classList.remove('active');
 
 document.getElementById('translateBtn')?.addEventListener('click', () => {
@@ -200,7 +208,6 @@ document.getElementById('contactFromDetailBtn')?.addEventListener('click', () =>
     else alert(I18N.t('order.agent.unavailable'));
 });
 
-// ========== 订单表单 ==========
 document.getElementById('differentDelivery')?.addEventListener('change', function() {
     document.getElementById('deliveryAddressGroup').classList.toggle('show', this.checked);
 });
@@ -227,7 +234,6 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
         const msg = `新订单\n\n产品: ${currentProduct.name}\n电话1: ${formatPhone(contact1)}\n地址: ${address}\n代理: ${agent.hp_code}\n订单号: ${orderId}`;
         
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, text: msg }) });
-        
         const ic = document.getElementById('icUpload').files[0];
         if (ic) { const fd = new FormData(); fd.append('chat_id', CHAT_ID); fd.append('photo', ic); await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }); }
         
@@ -241,7 +247,6 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
     } catch { alert('提交失败'); } finally { btn.innerText = '提交订单'; btn.disabled = false; }
 });
 
-// ========== 初始化 ==========
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts(); loadCarousel(); loadAgents(); renderCategoryList(); renderProducts();
     document.getElementById('carouselPrev')?.addEventListener('click', () => { prevSlide(); resetAutoPlay(); });
