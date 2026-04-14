@@ -384,6 +384,34 @@
     </div>
 </div>
 
+    <script>
+    // 确保 DOM 加载完成后再初始化
+    (function() {
+        // 如果 admin.js 加载失败或初始化未执行，这里做一个后备
+        setTimeout(() => {
+            if (typeof doLogin === 'function') {
+                console.log('✅ admin.js 已加载，绑定事件');
+                // 手动绑定登录按钮（如果 admin.js 中未绑定）
+                const loginBtn = document.getElementById('loginBtn');
+                if (loginBtn) {
+                    // 移除旧监听器，避免重复
+                    loginBtn.replaceWith(loginBtn.cloneNode(true));
+                    document.getElementById('loginBtn').addEventListener('click', doLogin);
+                }
+                
+                // 绑定登出按钮
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.replaceWith(logoutBtn.cloneNode(true));
+                    document.getElementById('logoutBtn').addEventListener('click', logout);
+                }
+            } else {
+                console.error('❌ admin.js 未正确加载，请检查路径');
+            }
+        }, 100);
+    })();
+</script>
+
 <!-- 引入 JavaScript 逻辑文件 -->
 <script src="admin.js"></script>
 </body>
