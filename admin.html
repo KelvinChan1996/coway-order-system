@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Coway Admin | 内容管理</title>
+    <link rel="stylesheet" href="css/common.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
@@ -192,28 +191,20 @@
         .upload-status.success { color: #27ae60; }
         .upload-status.error { color: #e74c3c; }
         
-        /* 区块类型选择 */
-        .section-type-selector {
-            display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
-        }
+        .section-type-selector { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .section-type-btn {
             padding: 8px 16px; border: 2px solid #e0e0e0; border-radius: 30px;
             background: #fff; cursor: pointer; font-size: 14px; font-weight: 500;
             transition: all 0.3s;
         }
-        .section-type-btn.active {
-            border-color: #80abce; background: #e8f0f8; color: #80abce;
-        }
+        .section-type-btn.active { border-color: #80abce; background: #e8f0f8; color: #80abce; }
         
         .dynamic-fields { margin-bottom: 15px; }
         .field-item {
             background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;
             border: 1px solid #e0e0e0;
         }
-        .field-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px;
-        }
+        .field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .field-header h4 { color: #2c3e50; }
         .btn-remove-field {
             background: #e74c3c; color: #fff; border: none;
@@ -243,14 +234,8 @@
     </div>
     
     <div id="stepAccount" class="login-step">
-        <div class="input-group">
-            <label>👤 ID</label>
-            <input type="text" id="loginId" placeholder="请输入账号">
-        </div>
-        <div class="input-group">
-            <label>🔒 密码</label>
-            <input type="password" id="loginPass" placeholder="请输入密码">
-        </div>
+        <div class="input-group"><label>👤 ID</label><input type="text" id="loginId" placeholder="请输入账号"></div>
+        <div class="input-group"><label>🔒 密码</label><input type="password" id="loginPass" placeholder="请输入密码"></div>
         <button class="login-btn" id="goToPinBtn">下一步 · 安全验证</button>
         <div id="loginError" class="error-msg"></div>
     </div>
@@ -336,13 +321,11 @@
     </div>
 </div>
 
-<!-- 通用弹窗（商品/轮播/公告/Agent/门店） -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="closeModalBtn">&times;</span>
         <h3 id="modalTitle">编辑</h3>
-        <input type="hidden" id="editId">
-        <input type="hidden" id="editType">
+        <input type="hidden" id="editId"><input type="hidden" id="editType">
         
         <div id="productFields">
             <input type="text" id="productName" placeholder="商品名称">
@@ -418,7 +401,6 @@
     </div>
 </div>
 
-<!-- 关于我们区块编辑弹窗 -->
 <div id="aboutSectionModal" class="modal">
     <div class="modal-content" style="max-width: 700px;">
         <span class="modal-close" id="closeAboutModalBtn">&times;</span>
@@ -436,30 +418,10 @@
         <input type="text" id="aboutSectionTitle" placeholder="区块标题" style="margin-bottom:15px;">
         <input type="text" id="aboutSectionIcon" placeholder="图标 (emoji)" value="📝" style="margin-bottom:15px;">
         
-        <!-- 文本类型字段 -->
-        <div id="aboutTextFields" class="dynamic-fields">
-            <textarea id="aboutTextContent" placeholder="文本内容" rows="5"></textarea>
-        </div>
-        
-        <!-- 统计数据类型字段 -->
-        <div id="aboutStatsFields" class="dynamic-fields" style="display:none;">
-            <div id="statsFieldsContainer"></div>
-            <button class="btn-add-field" id="addStatFieldBtn">+ 添加统计项</button>
-        </div>
-        
-        <!-- 团队类型字段 -->
-        <div id="aboutTeamFields" class="dynamic-fields" style="display:none;">
-            <div id="teamFieldsContainer"></div>
-            <button class="btn-add-field" id="addTeamMemberBtn">+ 添加成员</button>
-        </div>
-        
-        <!-- 时间线类型字段 -->
-        <div id="aboutTimelineFields" class="dynamic-fields" style="display:none;">
-            <div id="timelineFieldsContainer"></div>
-            <button class="btn-add-field" id="addTimelineItemBtn">+ 添加事件</button>
-        </div>
-        
-        <!-- 图片类型字段 -->
+        <div id="aboutTextFields" class="dynamic-fields"><textarea id="aboutTextContent" placeholder="文本内容" rows="5"></textarea></div>
+        <div id="aboutStatsFields" class="dynamic-fields" style="display:none;"><div id="statsFieldsContainer"></div><button class="btn-add-field" id="addStatFieldBtn">+ 添加统计项</button></div>
+        <div id="aboutTeamFields" class="dynamic-fields" style="display:none;"><div id="teamFieldsContainer"></div><button class="btn-add-field" id="addTeamMemberBtn">+ 添加成员</button></div>
+        <div id="aboutTimelineFields" class="dynamic-fields" style="display:none;"><div id="timelineFieldsContainer"></div><button class="btn-add-field" id="addTimelineItemBtn">+ 添加事件</button></div>
         <div id="aboutImageFields" class="dynamic-fields" style="display:none;">
             <div class="image-upload-area">
                 <label>📷 图片</label>
