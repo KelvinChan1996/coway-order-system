@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Coway Admin | 内容管理</title>
     <style>
-        /* ========== 全局样式 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -13,7 +12,6 @@
             min-height: 100vh;
         }
         
-        /* ========== 登录页 ========== */
         .login-container {
             max-width: 400px;
             margin: 100px auto;
@@ -44,7 +42,6 @@
         }
         .error-msg { color: #e74c3c; margin-top: 15px; font-size: 14px; }
         
-        /* ========== 管理页面 ========== */
         .admin-container {
             max-width: 1400px;
             margin: 30px auto;
@@ -60,7 +57,7 @@
         }
         .admin-header h1 { color: #80abce; }
         .btn-logout {
-            background: #80abce;
+            background: #e74c3c;
             color: #fff;
             border: none;
             padding: 8px 20px;
@@ -68,7 +65,6 @@
             cursor: pointer;
         }
         
-        /* ========== Tab 切换 ========== */
         .tabs {
             display: flex;
             gap: 10px;
@@ -101,7 +97,6 @@
             margin-bottom: 20px;
         }
         
-        /* ========== 列表样式 ========== */
         .item-list {
             background: #fff;
             border-radius: 16px;
@@ -138,7 +133,6 @@
         .btn-edit { background: #3498db; color: #fff; }
         .btn-delete { background: #e74c3c; color: #fff; }
         
-        /* ========== 弹窗 ========== */
         .modal {
             display: none;
             position: fixed;
@@ -169,58 +163,24 @@
             border-radius: 8px;
         }
         .modal-content textarea { height: 80px; resize: vertical; }
-        .form-row2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+        .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .image-upload-area { margin-bottom: 15px; }
-        .image-upload-area label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        .image-preview {
-            margin-top: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-        .image-preview img {
-            max-width: 100px;
-            max-height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
+        .image-upload-area label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .image-preview { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .image-preview img { max-width: 100px; max-height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
         .current-image-info { font-size: 12px; color: #666; margin-top: 5px; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
         .modal-buttons button { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; }
         .btn-save { background: #27ae60; color: #fff; }
-        .btn-cancel { background: #95a5a6; color: #fff; }
-        .modal-close {
-            position: absolute;
-            top: 15px; right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
+        .btn-cancel { background: #95a5a6; color: #999; }
+        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
         .empty-msg { text-align: center; padding: 50px; color: #999; }
         
-        /* ========== 上传状态 ========== */
-        .upload-status {
-            font-size: 12px;
-            margin-top: 5px;
-            padding: 5px;
-            border-radius: 4px;
-        }
+        .upload-status { font-size: 12px; margin-top: 5px; padding: 5px; border-radius: 4px; }
         .upload-status.uploading { color: #f39c12; }
         .upload-status.success { color: #27ae60; }
         .upload-status.error { color: #e74c3c; }
         
-        /* ========== 响应式 ========== */
         @media (max-width: 700px) {
             .form-row2 { grid-template-columns: 1fr; }
             .item-row { flex-direction: column; align-items: flex-start; }
@@ -229,7 +189,6 @@
 </head>
 <body>
 
-<!-- 登录页 -->
 <div id="loginPage" class="login-container">
     <h2>🔐 Admin Login</h2>
     <input type="text" id="adminId" placeholder="Admin ID">
@@ -238,7 +197,6 @@
     <div id="loginError" class="error-msg"></div>
 </div>
 
-<!-- 管理页面 -->
 <div id="adminPage" style="display: none;">
     <div class="admin-container">
         <div class="admin-header">
@@ -254,31 +212,22 @@
             <button class="tab-btn" data-tab="locations">📍 门店管理</button>
         </div>
         
-        <!-- 商品管理 -->
         <div id="productsPanel" class="panel active">
             <button class="btn-add" id="addProductBtn">+ 新增商品</button>
             <div id="productsList" class="item-list"></div>
         </div>
-        
-        <!-- 轮播广告管理 -->
         <div id="carouselPanel" class="panel">
             <button class="btn-add" id="addCarouselBtn">+ 新增广告</button>
             <div id="carouselList" class="item-list"></div>
         </div>
-        
-        <!-- 公告管理 -->
         <div id="noticePanel" class="panel">
             <button class="btn-add" id="addNoticeBtn">+ 新增公告</button>
             <div id="noticeList" class="item-list"></div>
         </div>
-        
-        <!-- Agent 管理 -->
         <div id="agentsPanel" class="panel">
             <button class="btn-add" id="addAgentBtn">+ 新增 Agent</button>
             <div id="agentsList" class="item-list"></div>
         </div>
-        
-        <!-- 门店管理 -->
         <div id="locationsPanel" class="panel">
             <button class="btn-add" id="addLocationBtn">+ 新增门店</button>
             <div id="locationsList" class="item-list"></div>
@@ -286,7 +235,6 @@
     </div>
 </div>
 
-<!-- 通用弹窗 -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="closeModalBtn">&times;</span>
@@ -294,7 +242,6 @@
         <input type="hidden" id="editId">
         <input type="hidden" id="editType">
         
-        <!-- 商品字段 -->
         <div id="productFields">
             <input type="text" id="productName" placeholder="商品名称">
             <select id="productCategory">
@@ -306,7 +253,6 @@
             <input type="text" id="productPrice" placeholder="价格 (如: RM 3,999)">
             <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
             <textarea id="productDescEn" placeholder="英文描述" rows="3"></textarea>
-            
             <div class="image-upload-area">
                 <label>📷 商品图片</label>
                 <input type="file" id="productImagesInput" accept="image/*" multiple>
@@ -316,61 +262,47 @@
             </div>
         </div>
         
-        <!-- Agent 字段 -->
         <div id="agentFields">
             <input type="text" id="agentName" placeholder="姓名 *">
             <input type="text" id="agentHpCode" placeholder="HP CODE *">
             <input type="text" id="agentContact" placeholder="手机号码 (如: 60123456789) *">
-            <select id="agentPosition">
-                <option value="HP">HP</option>
-                <option value="SM">SM</option>
-                <option value="GSM">GSM</option>
-            </select>
+            <select id="agentPosition"><option value="HP">HP</option><option value="SM">SM</option><option value="GSM">GSM</option></select>
             <input type="number" id="agentReceipt" placeholder="当前单数 (DO)">
             <input type="email" id="agentEmail" placeholder="Email">
         </div>
         
-        <!-- 广告字段 -->
         <div id="carouselFields">
             <input type="text" id="carouselTitle" placeholder="广告标题">
             <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
-            
             <div class="image-upload-area">
                 <label>📷 广告图片</label>
                 <input type="file" id="carouselImageInput" accept="image/*">
                 <div id="carouselImagePreview" class="image-preview"></div>
                 <div id="carouselUploadStatus" class="upload-status"></div>
             </div>
-            
             <input type="text" id="carouselLink" placeholder="链接">
         </div>
         
-        <!-- 公告字段 -->
         <div id="noticeFields">
             <input type="text" id="noticeTitle" placeholder="公告标题">
             <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
-            
             <div class="image-upload-area">
                 <label>📷 公告图片</label>
                 <input type="file" id="noticeImageInput" accept="image/*">
                 <div id="noticeImagePreview" class="image-preview"></div>
                 <div id="noticeUploadStatus" class="upload-status"></div>
             </div>
-            
             <input type="date" id="noticeDate">
         </div>
         
-        <!-- 门店字段 -->
         <div id="locationFields">
             <input type="text" id="locationName" placeholder="门店名称">
-            
             <div class="image-upload-area">
                 <label>📷 门店图片</label>
                 <input type="file" id="locationImageInput" accept="image/*">
                 <div id="locationImagePreview" class="image-preview"></div>
                 <div id="locationUploadStatus" class="upload-status"></div>
             </div>
-            
             <textarea id="locationAddress" placeholder="地址" rows="2"></textarea>
             <input type="text" id="locationHours" placeholder="营业时间">
             <input type="text" id="locationPhone" placeholder="电话">
@@ -384,35 +316,6 @@
     </div>
 </div>
 
-    <script>
-    // 确保 DOM 加载完成后再初始化
-    (function() {
-        // 如果 admin.js 加载失败或初始化未执行，这里做一个后备
-        setTimeout(() => {
-            if (typeof doLogin === 'function') {
-                console.log('✅ admin.js 已加载，绑定事件');
-                // 手动绑定登录按钮（如果 admin.js 中未绑定）
-                const loginBtn = document.getElementById('loginBtn');
-                if (loginBtn) {
-                    // 移除旧监听器，避免重复
-                    loginBtn.replaceWith(loginBtn.cloneNode(true));
-                    document.getElementById('loginBtn').addEventListener('click', doLogin);
-                }
-                
-                // 绑定登出按钮
-                const logoutBtn = document.getElementById('logoutBtn');
-                if (logoutBtn) {
-                    logoutBtn.replaceWith(logoutBtn.cloneNode(true));
-                    document.getElementById('logoutBtn').addEventListener('click', logout);
-                }
-            } else {
-                console.error('❌ admin.js 未正确加载，请检查路径');
-            }
-        }, 100);
-    })();
-</script>
-
-<!-- 引入 JavaScript 逻辑文件 -->
 <script src="js/admin.js"></script>
 </body>
 </html>
