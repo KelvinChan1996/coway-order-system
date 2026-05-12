@@ -1,9 +1,8 @@
-// admin.js - 使用 Cloudflare Worker API 存储
+// admin.js - 使用 Cloudflare Worker API 存储（含进度条）
 
 // ========== 全局数据 ==========
 let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [], aboutData = { sections: [] };
 let currentAboutSectionType = 'text';
-
 
 // ========== 加载数据 ==========
 async function loadAllData() {
@@ -15,8 +14,10 @@ async function loadAllData() {
         agentsData = data.agents || [];
         locationsData = data.locations || [];
         aboutData = data.about || { sections: [] };
+        showToast('数据加载成功', 'success');
     } catch (e) {
         console.error('加载数据失败:', e);
+        showToast('加载数据失败: ' + e.message, 'error');
         productsData = []; carouselData = []; noticeData = []; agentsData = []; locationsData = []; aboutData = { sections: [] };
     }
     renderProducts(); renderCarousel(); renderNotices(); renderAgents(); renderLocations(); renderAboutSections();
@@ -31,10 +32,81 @@ async function saveAllData(type, data) {
         else if (type === 'agents') await saveAgents(data);
         else if (type === 'locations') await saveLocations(data);
         else if (type === 'about') await saveAbout(data);
+        showToast(`${type} 保存成功`, 'success');
     } catch (e) {
         console.error(`保存${type}失败:`, e);
-        alert('保存失败，请检查网络');
+        showToast(`保存失败: ${e.message}`, 'error');
+        throw e;
     }
+}
+
+// ========== 提示框 ==========
+function showToast(message, type = 'info') {
+    let toast = document.getElementById('globalToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'globalToast';
+        toast.style.cssText = `
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; border-radius: 40px; color: white; font-weight: 500;
+            z-index: 10000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    const colors = { success: '#27ae60', error: '#e74c3c', info: '#80abce' };
+    toast.style.backgroundColor = colors[type] || colors.info;
+    toast.textContent = message;
+    toast.style.opacity = '1';
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+    }, 3000);
+}
+
+// ========== 进度条弹窗 ==========
+let progressModal = null;
+
+function showProgressModal(title) {
+    if (!progressModal) {
+        progressModal = document.createElement('div');
+        progressModal.id = 'progressModal';
+        progressModal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 10001; display: flex;
+            justify-content: center; align-items: center; visibility: hidden;
+        `;
+        progressModal.innerHTML = `
+            <div style="background: white; padding: 30px; border-radius: 16px; min-width: 300px; text-align: center;">
+                <h3 id="progressTitle" style="margin-bottom: 20px; color: #2c3e50;">上传中</h3>
+                <div style="background: #e0e0e0; border-radius: 10px; overflow: hidden; height: 12px; margin: 20px 0;">
+                    <div id="progressBar" style="width: 0%; height: 100%; background: #80abce; transition: width 0.3s;"></div>
+                </div>
+                <div id="progressText" style="color: #666; font-size: 14px;">0%</div>
+                <div id="progressDetail" style="color: #999; font-size: 12px; margin-top: 10px;"></div>
+            </div>
+        `;
+        document.body.appendChild(progressModal);
+    }
+    
+    document.getElementById('progressTitle').textContent = title;
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('progressText').textContent = '0%';
+    document.getElementById('progressDetail').textContent = '';
+    progressModal.style.visibility = 'visible';
+}
+
+function updateProgress(percent, detail = '') {
+    const bar = document.getElementById('progressBar');
+    const text = document.getElementById('progressText');
+    const detailEl = document.getElementById('progressDetail');
+    if (bar) bar.style.width = `${percent}%`;
+    if (text) text.textContent = `${percent}%`;
+    if (detailEl && detail) detailEl.textContent = detail;
+}
+
+function hideProgressModal() {
+    if (progressModal) progressModal.style.visibility = 'hidden';
 }
 
 // ========== 辅助函数 ==========
@@ -47,54 +119,6 @@ function fileToBase64(file) {
         reader.onload = () => resolve(reader.result);
         reader.onerror = reject;
     });
-}
-
-// 图片上传（使用免费上传服务，你也可以换成自己的）
-// 图片上传函数 - 携带管理员 Token
-async function uploadImage(file, statusElementId = null) {
-    const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
-    try {
-        if (statusEl) { statusEl.textContent = '上传中...'; statusEl.className = 'upload-status uploading'; }
-        
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        // 添加管理员认证头
-        const response = await fetch(UPLOAD_WORKER, {
-            method: 'POST',
-            headers: {
-                'X-Admin-Token': ADMIN_TOKEN,  // 关键：添加 token
-            },
-            body: formData
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Upload failed: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        if (statusEl) { statusEl.textContent = '上传成功'; statusEl.className = 'upload-status success'; setTimeout(() => statusEl.textContent = '', 3000); }
-        return result.url;
-    } catch (error) {
-        if (statusEl) { statusEl.textContent = `上传失败: ${error.message}`; statusEl.className = 'upload-status error'; }
-        throw error;
-    }
-}
-
-async function uploadMultipleImages(files, statusElementId = null) {
-    const urls = [];
-    for (let i = 0; i < files.length; i++) {
-        const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
-        if (statusEl) { statusEl.textContent = `上传中 (${i + 1}/${files.length})...`; statusEl.className = 'upload-status uploading'; }
-        urls.push(await uploadImage(files[i], null));
-    }
-    if (statusElementId) {
-        const statusEl = document.getElementById(statusElementId);
-        statusEl.textContent = `全部上传成功 (${urls.length} 张)`;
-        statusEl.className = 'upload-status success';
-        setTimeout(() => statusEl.textContent = '', 3000);
-    }
-    return urls;
 }
 
 // ========== 渲染函数 ==========
@@ -334,53 +358,81 @@ async function saveItem() {
         if (type === 'product') {
             const imageInput = document.getElementById('productImagesInput');
             let images = [];
-            if (imageInput.files.length > 0) images = await uploadMultipleImages(imageInput.files, 'productUploadStatus');
-            else if (isEdit) { const existing = productsData.find(i => i.id == id); images = existing ? existing.images : []; }
+            if (imageInput.files.length > 0) {
+                showProgressModal('正在上传商品图片...');
+                images = await uploadMultipleImagesToWorker(
+                    Array.from(imageInput.files),
+                    (current, total, percent) => {
+                        updateProgress(Math.round(((current - 1) / total) * 100 + percent / total), `正在上传第 ${current}/${total} 张图片...`);
+                    },
+                    (percent) => updateProgress(percent),
+                    'productUploadStatus'
+                );
+                hideProgressModal();
+            } else if (isEdit) { 
+                const existing = productsData.find(i => i.id == id); 
+                images = existing ? existing.images : []; 
+            }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('productName').value, category: document.getElementById('productCategory').value, price: document.getElementById('productPrice').value, desc_zh: document.getElementById('productDescZh').value, desc_en: document.getElementById('productDescEn').value, images };
             if (isEdit) { const index = productsData.findIndex(i => i.id == id); if (index !== -1) productsData[index] = newItem; }
             else productsData.push(newItem);
             await saveAllData('products', productsData);
             renderProducts();
+            showToast('商品保存成功', 'success');
         } else if (type === 'agent') {
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('agentName').value, hp_code: document.getElementById('agentHpCode').value, contact: document.getElementById('agentContact').value, position: document.getElementById('agentPosition').value, receipt: parseInt(document.getElementById('agentReceipt').value) || 0, email: document.getElementById('agentEmail').value };
             if (isEdit) { const index = agentsData.findIndex(i => i.id == id); if (index !== -1) agentsData[index] = newItem; }
             else agentsData.push(newItem);
             await saveAllData('agents', agentsData);
             renderAgents();
+            showToast('Agent保存成功', 'success');
         } else if (type === 'carousel') {
             const imageInput = document.getElementById('carouselImageInput');
             let image = '';
-            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'carouselUploadStatus');
-            else if (isEdit) { const existing = carouselData.find(i => i.id == id); image = existing ? existing.image : ''; }
+            if (imageInput.files.length > 0) {
+                showProgressModal('正在上传轮播图片...');
+                image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'carouselUploadStatus');
+                hideProgressModal();
+            } else if (isEdit) { const existing = carouselData.find(i => i.id == id); image = existing ? existing.image : ''; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('carouselTitle').value, desc: document.getElementById('carouselDesc').value, image, link: document.getElementById('carouselLink').value };
             if (isEdit) { const index = carouselData.findIndex(i => i.id == id); if (index !== -1) carouselData[index] = newItem; }
             else carouselData.push(newItem);
             await saveAllData('carousel', carouselData);
             renderCarousel();
+            showToast('轮播保存成功', 'success');
         } else if (type === 'notice') {
             const imageInput = document.getElementById('noticeImageInput');
             let image = '';
-            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'noticeUploadStatus');
-            else if (isEdit) { const existing = noticeData.find(i => i.id == id); image = existing ? existing.image : ''; }
+            if (imageInput.files.length > 0) {
+                showProgressModal('正在上传公告图片...');
+                image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'noticeUploadStatus');
+                hideProgressModal();
+            } else if (isEdit) { const existing = noticeData.find(i => i.id == id); image = existing ? existing.image : ''; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('noticeTitle').value, description: document.getElementById('noticeDesc').value, image, date: document.getElementById('noticeDate').value };
             if (isEdit) { const index = noticeData.findIndex(i => i.id == id); if (index !== -1) noticeData[index] = newItem; }
             else noticeData.unshift(newItem);
             await saveAllData('notices', noticeData);
             renderNotices();
+            showToast('公告保存成功', 'success');
         } else if (type === 'location') {
             const imageInput = document.getElementById('locationImageInput');
             let image = '';
-            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'locationUploadStatus');
-            else if (isEdit) { const existing = locationsData.find(i => i.id == id); image = existing ? existing.image : ''; }
+            if (imageInput.files.length > 0) {
+                showProgressModal('正在上传门店图片...');
+                image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'locationUploadStatus');
+                hideProgressModal();
+            } else if (isEdit) { const existing = locationsData.find(i => i.id == id); image = existing ? existing.image : ''; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('locationName').value, image, address: document.getElementById('locationAddress').value, hours: document.getElementById('locationHours').value, phone: document.getElementById('locationPhone').value, wazeLink: document.getElementById('locationWaze').value };
             if (isEdit) { const index = locationsData.findIndex(i => i.id == id); if (index !== -1) locationsData[index] = newItem; }
             else locationsData.push(newItem);
             await saveAllData('locations', locationsData);
             renderLocations();
+            showToast('门店保存成功', 'success');
         }
         closeModal();
     } catch (error) {
-        alert('保存失败: ' + error.message);
+        showToast('保存失败: ' + error.message, 'error');
+        hideProgressModal();
     } finally {
         saveBtn.innerText = originalText;
         saveBtn.disabled = false;
@@ -486,8 +538,11 @@ async function saveAboutSection() {
         });
     } else if (type === 'image') {
         const imageInput = document.getElementById('aboutImageInput');
-        if (imageInput.files.length > 0) section.image = await uploadImage(imageInput.files[0], 'aboutImageUploadStatus');
-        else section.image = document.getElementById('aboutImageUrl').value;
+        if (imageInput.files.length > 0) {
+            showProgressModal('正在上传图片...');
+            section.image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'aboutImageUploadStatus');
+            hideProgressModal();
+        } else section.image = document.getElementById('aboutImageUrl').value;
         section.caption = document.getElementById('aboutImageCaption').value;
     }
     
@@ -497,12 +552,14 @@ async function saveAboutSection() {
     await saveAllData('about', aboutData);
     renderAboutSections();
     closeAboutModal();
+    showToast('区块保存成功', 'success');
 }
 
 function resetAboutData() {
     if (!confirm('确定重置？')) return;
     aboutData = { sections: [] };
     saveAllData('about', aboutData).then(() => renderAboutSections());
+    showToast('已重置', 'success');
 }
 
 // ========== 登录验证 ==========
@@ -558,6 +615,7 @@ function validatePin() {
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('adminPage').style.display = 'block';
         loadAllData();
+        showToast('登录成功', 'success');
     } else {
         document.getElementById('pinError').innerText = '安全码错误';
         document.querySelectorAll('.pin-input').forEach(i => i.value = '');
