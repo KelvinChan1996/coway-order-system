@@ -1,4 +1,4 @@
-// list.js - 使用 Cloudflare Worker API 存储数据
+// list.js - 使用 Cloudflare Worker API 存储数据（咨询模式）
 
 // ========== 全局变量 ==========
 let productsData = [];
@@ -10,6 +10,37 @@ let currentProduct = null;
 let currentLang = 'zh';
 let currentCarouselSlide = 0;
 let carouselInterval = null;
+
+// 产品映射表
+const productMap = {
+    water: [
+        { id: 'coway_omba', name: 'Coway Omba', price: 'RM 3,999' },
+        { id: 'coway_neon', name: 'Coway Neon', price: 'RM 2,499' },
+        { id: 'coway_inline', name: 'Coway Inline', price: 'RM 1,899' }
+    ],
+    air: [
+        { id: 'coway_storm', name: 'Coway Storm', price: 'RM 2,299' },
+        { id: 'coway_breeze', name: 'Coway Breeze', price: 'RM 1,599' }
+    ],
+    ac: [
+        { id: 'coway_arctic', name: 'Coway Arctic', price: 'RM 3,199' }
+    ],
+    washer: [
+        { id: 'coway_washing_mate', name: 'Coway Washing Mate', price: 'RM 2,899' }
+    ],
+    toilet: [
+        { id: 'coway_bidet_plus', name: 'Coway Bidet Plus', price: 'RM 1,499' }
+    ],
+    massageChair: [
+        { id: 'coway_relax_pro', name: 'Coway Relax Pro', price: 'RM 8,999' }
+    ],
+    massageBed: [
+        { id: 'coway_dream_massage', name: 'Coway Dream Massage', price: 'RM 6,499' }
+    ],
+    bed: [
+        { id: 'coway_ergo_bed', name: 'Coway Ergo Bed', price: 'RM 4,999' }
+    ]
+};
 
 const categories = [
     { id: "all", nameKey: "products.all" },
@@ -27,6 +58,13 @@ const categories = [
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+}
+
+function formatPhone(p) {
+    let c = p.replace(/\D/g, '');
+    if (c.startsWith('0')) c = '60' + c.substring(1);
+    if (!c.startsWith('60')) c = '60' + c;
+    return c;
 }
 
 // ========== 加载数据 ==========
@@ -81,9 +119,29 @@ function renderProducts() {
         const card = document.createElement('div');
         card.className = 'product-card';
         card.innerHTML = `<img src="${p.images?.[0] || 'https://placehold.co/800x400/80abce/white?text=Product'}"><div class="info"><h4>${escapeHtml(p.name)}</h4><p>${escapeHtml(p.desc_zh?.substring(0, 60))}...</p><div class="price">${p.price || 'RM 0'}</div></div>`;
-        card.onclick = () => openDetailModal(p);
+        card.onclick = () => openEnquiryModal(p);
         grid.appendChild(card);
     });
+}
+
+// 更新具体产品下拉列表
+function updateProductSelect(productType) {
+    const productSelect = document.getElementById('productSelect');
+    if (!productSelect) return;
+    
+    const products = productMap[productType] || [];
+    productSelect.innerHTML = '<option value="" data-i18n="order.enquiry.selectProduct">请选择具体产品</option>';
+    products.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = `${p.name} - ${p.price}`;
+        option.dataset.name = p.name;
+        option.dataset.price = p.price;
+        productSelect.appendChild(option);
+    });
+    
+    // 更新国际化
+    I18N.updatePage();
 }
 
 // ========== 轮播图 ==========
@@ -156,6 +214,29 @@ function incrementAgentReceipt(agent) {
     }
 }
 
+// ========== 咨询弹窗 ==========
+function openEnquiryModal(p) {
+    currentProduct = p;
+    document.getElementById('selectedProductInfo').innerHTML = `<span><strong>${escapeHtml(p.name)}</strong></span><span style="color:#80abce; font-weight:700;">${p.price || 'RM 0'}</span>`;
+    
+    // 重置表单
+    document.getElementById('orderForm').reset();
+    document.getElementById('productTypeSelect').value = '';
+    updateProductSelect('');
+    
+    document.getElementById('orderModal').classList.add('active');
+}
+
+// 设置产品类型变化监听
+function setupProductTypeListener() {
+    const productTypeSelect = document.getElementById('productTypeSelect');
+    if (productTypeSelect) {
+        productTypeSelect.addEventListener('change', (e) => {
+            updateProductSelect(e.target.value);
+        });
+    }
+}
+
 // ========== 详情弹窗 ==========
 function openDetailModal(p) {
     currentProduct = p;
@@ -179,8 +260,8 @@ window.closeDetailModal = () => {
 window.closeOrderModal = () => {
     document.getElementById('orderModal').classList.remove('active');
     document.getElementById('orderForm').reset();
-    document.getElementById('differentDelivery').checked = false;
-    document.getElementById('deliveryAddressGroup').classList.remove('show');
+    document.getElementById('productTypeSelect').value = '';
+    updateProductSelect('');
 };
 
 window.closeSuccessModal = () => document.getElementById('successModal').classList.remove('active');
@@ -198,14 +279,13 @@ document.getElementById('translateBtn')?.addEventListener('click', () => {
     }
 });
 
-// 订单按钮
+// 咨询按钮
 document.getElementById('orderFromDetailBtn')?.addEventListener('click', () => {
     closeDetailModal();
-    document.getElementById('selectedProductInfo').innerHTML = `<span><strong>${currentProduct?.name}</strong></span><span style="color:#80abce; font-weight:700;">${currentProduct?.price || 'RM 0'}</span>`;
-    document.getElementById('orderModal').classList.add('active');
+    openEnquiryModal(currentProduct);
 });
 
-// 联系代理按钮
+// 联系代理按钮（详情页）
 document.getElementById('contactFromDetailBtn')?.addEventListener('click', () => {
     const agent = getLeastBusyAgent();
     if (agent) {
@@ -215,42 +295,69 @@ document.getElementById('contactFromDetailBtn')?.addEventListener('click', () =>
     }
 });
 
-// ========== 订单表单 ==========
-document.getElementById('differentDelivery')?.addEventListener('change', function() {
-    document.getElementById('deliveryAddressGroup').classList.toggle('show', this.checked);
-});
-
-// Telegram 通知配置
+// ========== 咨询表单提交 ==========
 const BOT_TOKEN = '8386407941:AAF0W9XaG1tZNdwovITL2wrM-7L3uwQJfso';
 const CHAT_ID = '-1003696449169';
 
-function formatPhone(p) {
-    let c = p.replace(/\D/g, '');
-    if (c.startsWith('0')) c = '60' + c.substring(1);
-    if (!c.startsWith('60')) c = '60' + c;
-    return c;
-}
-
 document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!currentProduct) return alert(I18N.t('order.selectProduct'));
     
-    const contact1 = document.getElementById('contact1').value;
-    const address = document.getElementById('address').value;
-    const email = document.getElementById('email').value;
-    if (!contact1 || !address || !email) return alert(I18N.t('order.fillRequired'));
+    // 获取表单数据
+    const customerName = document.getElementById('customerName')?.value;
+    const contactNumber = document.getElementById('contactNumber')?.value;
+    const productTypeSelect = document.getElementById('productTypeSelect');
+    const productSelect = document.getElementById('productSelect');
     
+    const productType = productTypeSelect?.options[productTypeSelect.selectedIndex]?.text || '';
+    const selectedProduct = productSelect?.options[productSelect.selectedIndex];
+    const productName = selectedProduct?.dataset?.name || selectedProduct?.textContent || '';
+    const productPrice = selectedProduct?.dataset?.price || '';
+    
+    // 验证
+    if (!customerName) {
+        alert(I18N.t('order.enquiry.nameRequired'));
+        return;
+    }
+    if (!contactNumber) {
+        alert(I18N.t('order.enquiry.phoneRequired'));
+        return;
+    }
+    if (!productType || productType === '请选择产品类型') {
+        alert(I18N.t('order.enquiry.productRequired'));
+        return;
+    }
+    if (!productName || productName === '请选择具体产品') {
+        alert(I18N.t('order.enquiry.productRequired'));
+        return;
+    }
+    
+    // 获取 Agent
     const agent = getLeastBusyAgent();
-    if (!agent) return alert(I18N.t('order.agent.unavailable'));
+    if (!agent) {
+        alert(I18N.t('order.agent.unavailable'));
+        return;
+    }
     
     const btn = e.target.querySelector('.btn-submit');
     const originalText = btn.innerText;
-    btn.innerText = '处理中...';
+    btn.innerText = '提交中...';
     btn.disabled = true;
     
     try {
-        const orderId = 'COW' + Date.now();
-        const msg = `新订单\n\n产品: ${currentProduct.name}\n价格: ${currentProduct.price}\n电话1: ${formatPhone(contact1)}\n电话2: ${document.getElementById('contact2')?.value || '-'}\n地址: ${address}\n代理: ${agent.name} (${agent.hp_code})\n订单号: ${orderId}`;
+        const enquiryId = 'ENQ' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase();
+        const formattedPhone = formatPhone(contactNumber);
+        
+        // 发送到 Telegram
+        const msg = `📋 新咨询\n\n` +
+            `咨询ID: ${enquiryId}\n` +
+            `姓名: ${customerName}\n` +
+            `电话: ${formattedPhone}\n` +
+            `产品类型: ${productType}\n` +
+            `产品名称: ${productName}\n` +
+            `产品价格: ${productPrice}\n` +
+            `代理: ${agent.name} (${agent.hp_code})\n` +
+            `代理电话: ${agent.contact}\n` +
+            `时间: ${new Date().toLocaleString()}`;
         
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             method: 'POST',
@@ -258,17 +365,30 @@ document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
             body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
         });
         
-        const ic = document.getElementById('icUpload').files[0];
-        if (ic) {
-            const fd = new FormData();
-            fd.append('chat_id', CHAT_ID);
-            fd.append('photo', ic);
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
-        }
-        
+        // 增加 Agent 接单数
         incrementAgentReceipt(agent);
+        
+        // 显示成功弹窗并显示 Agent 电话
+        const agentPhoneLink = document.getElementById('agentPhoneLink');
+        const whatsappUrl = `https://wa.me/${agent.contact}?text=${encodeURIComponent(`Hello ${agent.name}, I am interested in ${productName}. My name is ${customerName}.`)}`;
+        agentPhoneLink.href = whatsappUrl;
+        agentPhoneLink.innerHTML = `💬 通过 WhatsApp 联系 ${agent.name}`;
+        
+        // 显示电话号码
+        const phoneDisplay = document.createElement('p');
+        phoneDisplay.style.marginTop = '10px';
+        phoneDisplay.style.fontSize = '14px';
+        phoneDisplay.innerHTML = `📞 代理电话: <strong>${agent.contact}</strong> (点击上方按钮可直接聊天)`;
+        
+        const agentDiv = document.getElementById('agentContactInfo');
+        const oldPhone = agentDiv.querySelector('.agent-phone-display');
+        if (oldPhone) oldPhone.remove();
+        phoneDisplay.className = 'agent-phone-display';
+        agentDiv.appendChild(phoneDisplay);
+        
         closeOrderModal();
         document.getElementById('successModal').classList.add('active');
+        
     } catch (err) {
         console.error('提交失败:', err);
         alert('提交失败，请稍后重试');
@@ -285,6 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderProducts();
     renderCarousel();
     renderNotices();
+    setupProductTypeListener();
     
     document.getElementById('carouselPrev')?.addEventListener('click', () => { prevSlide(); resetAutoPlay(); });
     document.getElementById('carouselNext')?.addEventListener('click', () => { nextSlide(); resetAutoPlay(); });
