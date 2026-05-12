@@ -49,17 +49,29 @@ function fileToBase64(file) {
 }
 
 // 图片上传（使用免费上传服务，你也可以换成自己的）
-const UPLOAD_WORKER = 'https://coway-api.recky1314.workers.dev/upload';
-
+// 图片上传函数 - 携带管理员 Token
 async function uploadImage(file, statusElementId = null) {
     const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
     try {
         if (statusEl) { statusEl.textContent = '上传中...'; statusEl.className = 'upload-status uploading'; }
+        
         const formData = new FormData();
         formData.append('file', file);
-        const response = await fetch(UPLOAD_WORKER, { method: 'POST', body: formData });
+        
+        // 添加管理员认证头
+        const response = await fetch(UPLOAD_WORKER, {
+            method: 'POST',
+            headers: {
+                'X-Admin-Token': ADMIN_TOKEN,  // 关键：添加 token
+            },
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Upload failed: ${response.status}`);
+        }
+        
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Upload failed');
         if (statusEl) { statusEl.textContent = '上传成功'; statusEl.className = 'upload-status success'; setTimeout(() => statusEl.textContent = '', 3000); }
         return result.url;
     } catch (error) {
