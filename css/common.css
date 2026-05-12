@@ -531,3 +531,68 @@ footer a:hover {
         padding: 40px 20px 30px;
     }
 }
+
+/* Admin 表格样式 */
+.data-table-container {
+    overflow-x: auto;
+}
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table th {
+    background: #f8fafc;
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #e0e0e0;
+}
+.data-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+.data-table tr:hover td {
+    background: #f8fafc;
+}
+.preview-img-sm {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: #f0f0f0;
+}
+.action-btns {
+    display: flex;
+    gap: 8px;
+}
+.btn-edit-sm, .btn-delete-sm {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.btn-edit-sm {
+    background: #80abce;
+    color: #fff;
+}
+.btn-edit-sm:hover {
+    background: #6a9ab8;
+    transform: scale(1.02);
+}
+.btn-delete-sm {
+    background: #e74c3c;
+    color: #fff;
+}
+.btn-delete-sm:hover {
+    background: #c0392b;
+}
+.empty-row {
+    text-align: center;
+    padding: 60px;
+    color: #999;
+}
