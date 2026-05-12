@@ -49,7 +49,7 @@ function fileToBase64(file) {
 }
 
 // 图片上传（使用免费上传服务，你也可以换成自己的）
-const UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
+const UPLOAD_WORKER = 'https://coway-api.recky1314.workers.dev/upload';
 
 async function uploadImage(file, statusElementId = null) {
     const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
