@@ -1,37 +1,8 @@
 // layout.js - 导航栏和页脚布局
 const LAYOUT = {
-    navbar: `
-        <nav class="navbar">
-            <div class="nav-container">
-                <a href="index.html" class="logo">
-                    <img src="img/coway-malaysia-logo.png" alt="Coway Malaysia">
-                </a>
-                <div class="nav-menu" id="navMenu"></div>
-                <div class="lang-switch">
-                    <button onclick="switchLanguage('zh')" class="lang-btn" data-lang="zh">中</button>
-                    <span>|</span>
-                    <button onclick="switchLanguage('en')" class="lang-btn" data-lang="en">EN</button>
-                </div>
-                <a href="admin.html" class="admin-icon" title="管理员登录" data-i18n-title="nav.admin">👤</a>
-                <button class="mobile-menu-btn" id="menuBtn">☰</button>
-            </div>
-        </nav>
-    `,
-    sidebar: `
-        <div class="mobile-sidebar" id="sidebar"></div>
-        <div class="overlay" id="overlay"></div>
-    `,
-    footer: `
-        <footer>
-            <div>
-                <a href="terms.html" data-i18n="footer.terms">使用条款</a> •
-                <a href="privacy.html" data-i18n="footer.privacy">隐私政策</a> •
-                <a href="support.html" data-i18n="footer.support">支持</a>
-            </div>
-            <div class="footer-divider"></div>
-            <div data-i18n="footer.copyright">COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
-        </footer>
-    `,
+    navbar: '<nav class="navbar"><div class="nav-container"><a href="index.html" class="logo"><img src="img/coway-malaysia-logo.png" alt="Coway Malaysia"></a><div class="nav-menu" id="navMenu"></div><div class="lang-switch"><button onclick="switchLanguage(\'zh\')" class="lang-btn" data-lang="zh">中</button><span>|</span><button onclick="switchLanguage(\'en\')" class="lang-btn" data-lang="en">EN</button></div><a href="admin.html" class="admin-icon" title="管理员登录" data-i18n-title="nav.admin">👤</a><button class="mobile-menu-btn" id="menuBtn">☰</button></div></nav>',
+    sidebar: '<div class="mobile-sidebar" id="sidebar"></div><div class="overlay" id="overlay"></div>',
+    footer: '<footer><div><a href="terms.html" data-i18n="footer.terms">使用条款</a> • <a href="privacy.html" data-i18n="footer.privacy">隐私政策</a> • <a href="support.html" data-i18n="footer.support">支持</a></div><div class="footer-divider"></div><div data-i18n="footer.copyright">COWAY (MALAYSIA) © 2026. All Rights Reserved.</div></footer>',
     menuItems: [
         { href: 'index.html', key: 'nav.home' },
         { href: 'list.html', key: 'nav.order', isOrder: true },
@@ -42,53 +13,62 @@ const LAYOUT = {
 };
 
 function getCurrentPage() {
-    const path = window.location.pathname;
+    var path = window.location.pathname;
     return path.split('/').pop() || 'index.html';
 }
 
 function generateMenu(isMobile) {
-    const current = getCurrentPage();
-    return LAYOUT.menuItems.map(function(item) {
-        const active = (current === item.href || (current === '' && item.href === 'index.html')) ? 'active' : '';
-        const text = I18N.t(item.key);
+    var current = getCurrentPage();
+    var items = LAYOUT.menuItems;
+    var html = '';
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        var active = (current === item.href || (current === '' && item.href === 'index.html')) ? 'active' : '';
+        var text = I18N.t(item.key);
         if (item.isOrder && !isMobile) {
-            return '<a href="' + item.href + '" class="btn-product-nav ' + active + '">' + text + '</a>';
+            html += '<a href="' + item.href + '" class="btn-product-nav ' + active + '">' + text + '</a>';
+        } else {
+            html += '<a href="' + item.href + '" class="' + active + '">' + text + '</a>';
         }
-        return '<a href="' + item.href + '" class="' + active + '">' + text + '</a>';
-    }).join('');
+    }
+    return html;
 }
 
 function injectLayout() {
     var header = document.createElement('header');
     header.innerHTML = LAYOUT.navbar;
     document.body.insertBefore(header, document.body.firstChild);
-    document.getElementById('navMenu').innerHTML = generateMenu(false);
+    
+    var navMenu = document.getElementById('navMenu');
+    if (navMenu) navMenu.innerHTML = generateMenu(false);
     
     var sidebarDiv = document.createElement('div');
     sidebarDiv.innerHTML = LAYOUT.sidebar;
     document.body.appendChild(sidebarDiv);
-    document.getElementById('sidebar').innerHTML = generateMenu(true);
+    
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.innerHTML = generateMenu(true);
     
     var footerDiv = document.createElement('div');
     footerDiv.innerHTML = LAYOUT.footer;
     document.body.appendChild(footerDiv);
     
     var menuBtn = document.getElementById('menuBtn');
-    var sidebar = document.getElementById('sidebar');
+    var sidebarEl = document.getElementById('sidebar');
     var overlay = document.getElementById('overlay');
     
     if (menuBtn) {
-        menuBtn.addEventListener('click', function() {
-            sidebar.classList.add('open');
+        menuBtn.onclick = function() {
+            sidebarEl.classList.add('open');
             overlay.classList.add('show');
-        });
+        };
     }
     
     if (overlay) {
-        overlay.addEventListener('click', function() {
-            sidebar.classList.remove('open');
+        overlay.onclick = function() {
+            sidebarEl.classList.remove('open');
             overlay.classList.remove('show');
-        });
+        };
     }
     
     updateLangButtonState();
@@ -107,8 +87,10 @@ function updateLangButtonState() {
 }
 
 window.addEventListener('languageChanged', function() {
-    document.getElementById('navMenu').innerHTML = generateMenu(false);
-    document.getElementById('sidebar').innerHTML = generateMenu(true);
+    var navMenu = document.getElementById('navMenu');
+    if (navMenu) navMenu.innerHTML = generateMenu(false);
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.innerHTML = generateMenu(true);
     updateLangButtonState();
     I18N.updatePage();
 });
