@@ -1,11 +1,15 @@
-let productsData = { all: [], water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: [] };
+// list.js - 使用 Cloudflare Worker API 存储数据
+
+// ========== 全局变量 ==========
+let productsData = [];
 let carouselData = [];
+let noticeData = [];
+let agentsData = [];
 let currentCategory = "all";
 let currentProduct = null;
 let currentLang = 'zh';
 let currentCarouselSlide = 0;
 let carouselInterval = null;
-let agentList = [];
 
 const categories = [
     { id: "all", nameKey: "products.all" },
@@ -19,61 +23,70 @@ const categories = [
     { id: "bed", nameKey: "products.bed" }
 ];
 
+// ========== 辅助函数 ==========
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
 }
 
-async function loadAgents() {
+// ========== 加载数据 ==========
+async function loadAllData() {
     try {
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/1uYkUTabIRRDhVh_eDfBOZUjwe8Qlv-L6eTwN2FroIAY/export?format=csv';
-        const response = await fetch(csvUrl);
-        const csvText = await response.text();
-        const rows = csvText.trim().split('\n');
-        rows[0].split(',').map(h => h.replace(/"/g, '').trim());
-        agentList = [];
-        for (let i = 1; i < rows.length; i++) {
-            if (!rows[i].trim()) continue;
-            const values = rows[i].split(',').map(v => v.replace(/"/g, '').trim());
-            agentList.push({
-                id: parseInt(values[0]) || i, name: values[1] || '', hp_code: values[2] || '',
-                contact: values[3] || '', position: values[4] || 'HP', receipt: parseInt(values[5]) || 0, email: values[6] || ''
-            });
-        }
-        localStorage.setItem('coway_agents', JSON.stringify(agentList));
-    } catch {
-        const cached = localStorage.getItem('coway_agents');
-        agentList = cached ? JSON.parse(cached) : [];
+        const data = await getAllData();
+        productsData = data.products || [];
+        carouselData = data.carousel || [];
+        noticeData = data.notices || [];
+        agentsData = data.agents || [];
+    } catch (e) {
+        console.error('加载数据失败:', e);
+        productsData = []; carouselData = []; noticeData = []; agentsData = [];
     }
 }
 
-function getLeastBusyAgent() {
-    if (!agentList.length) return null;
-    const min = Math.min(...agentList.map(a => a.receipt));
-    return agentList.find(a => a.receipt === min);
+// ========== 产品相关 ==========
+function getProductsByCategory(category) {
+    if (category === 'all') return productsData;
+    return productsData.filter(p => p.category === category);
 }
 
-function incrementAgentReceipt(agent) {
-    if (agent) { agent.receipt++; localStorage.setItem('coway_agents', JSON.stringify(agentList)); }
+function renderCategoryList() {
+    const container = document.getElementById('categoryList');
+    if (!container) return;
+    container.innerHTML = '';
+    categories.forEach(cat => {
+        const li = document.createElement('li');
+        li.className = `category-item ${currentCategory === cat.id ? 'active' : ''}`;
+        li.innerHTML = I18N.t(cat.nameKey);
+        li.onclick = () => {
+            currentCategory = cat.id;
+            renderCategoryList();
+            renderProducts();
+            document.getElementById('currentCategory').innerHTML = `<i>🛍️</i> <span>${I18N.t(cat.nameKey)}</span>`;
+        };
+        container.appendChild(li);
+    });
 }
 
-function loadProducts() {
-    const saved = localStorage.getItem('coway_products');
-    if (saved) {
-        const arr = JSON.parse(saved);
-        productsData = { all: arr, water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: [] };
-        arr.forEach(p => { if (productsData[p.category]) productsData[p.category].push(p); });
-    } else {
-        productsData = { all: [], water: [], air: [], ac: [], washer: [], toilet: [], massageChair: [], massageBed: [], bed: [] };
+function renderProducts() {
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    const list = getProductsByCategory(currentCategory);
+    if (!list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; background:#fff; border-radius:20px;"><p data-i18n="products.noProducts">暂无产品</p></div>';
+        I18N.updatePage();
+        return;
     }
+    grid.innerHTML = '';
+    list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `<img src="${p.images?.[0] || 'https://placehold.co/800x400/80abce/white?text=Product'}"><div class="info"><h4>${escapeHtml(p.name)}</h4><p>${escapeHtml(p.desc_zh?.substring(0, 60))}...</p><div class="price">${p.price || 'RM 0'}</div></div>`;
+        card.onclick = () => openDetailModal(p);
+        grid.appendChild(card);
+    });
 }
 
-function loadCarousel() {
-    const saved = localStorage.getItem('coway_carousel');
-    carouselData = saved ? JSON.parse(saved) : [];
-    renderCarousel();
-}
-
+// ========== 轮播图 ==========
 function renderCarousel() {
     const container = document.getElementById('carouselSlides');
     const dots = document.getElementById('carouselDots');
@@ -88,7 +101,7 @@ function renderCarousel() {
         const slide = document.createElement('div');
         slide.className = `carousel-slide ${i === currentCarouselSlide ? 'active' : ''}`;
         slide.style.backgroundImage = `url(${item.image})`;
-        slide.innerHTML = `<div class="carousel-content"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.desc)}</p><a href="${item.link || '#'}">了解更多 →</a></div>`;
+        slide.innerHTML = `<div class="carousel-content"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.desc)}</p><a href="${item.link || '#'}">${I18N.t('home.carousel.learnMore')}</a></div>`;
         container.appendChild(slide);
     });
     dots.innerHTML = '';
@@ -111,73 +124,56 @@ function nextSlide() { if (carouselData.length) { currentCarouselSlide = (curren
 function prevSlide() { if (carouselData.length) { currentCarouselSlide = (currentCarouselSlide - 1 + carouselData.length) % carouselData.length; updateCarouselDisplay(); } }
 function resetAutoPlay() { if (carouselInterval) clearInterval(carouselInterval); carouselInterval = setInterval(nextSlide, 5000); }
 
-function renderCategoryList() {
-    const container = document.getElementById('categoryList');
-    container.innerHTML = '';
-    categories.forEach(cat => {
-        const li = document.createElement('li');
-        li.className = `category-item ${currentCategory === cat.id ? 'active' : ''}`;
-        li.innerHTML = I18N.t(cat.nameKey);
-        li.onclick = () => {
-            currentCategory = cat.id;
-            renderCategoryList();
-            renderProducts();
-            document.getElementById('currentCategory').innerHTML = I18N.t(cat.nameKey);
-        };
-        container.appendChild(li);
-    });
-}
-
-function renderProducts() {
-    const grid = document.getElementById('productsGrid');
-    const list = productsData[currentCategory] || [];
-    if (!list.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; background:#fff; border-radius:20px;"><p data-i18n="products.noProducts">暂无产品</p></div>';
+// ========== 公告 ==========
+function renderNotices() {
+    const container = document.getElementById('noticeContainer');
+    if (!container) return;
+    if (!noticeData.length) {
+        container.innerHTML = `<div class="empty-notice" data-i18n="home.emptyNotice">暂无公告，请稍后再来</div>`;
         I18N.updatePage();
         return;
     }
-    grid.innerHTML = '';
-    list.forEach(p => {
+    container.innerHTML = '';
+    noticeData.forEach(n => {
         const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <div class="product-image-wrapper">
-                <img src="${p.images?.[0] || 'https://placehold.co/800x400/80abce/white?text=Product'}" alt="${escapeHtml(p.name)}">
-            </div>
-            <div class="info">
-                <h4>${escapeHtml(p.name)}</h4>
-                <p>${escapeHtml(p.desc_zh?.substring(0, 60))}...</p>
-                <div class="price">${p.price}</div>
-            </div>
-        `;
-        card.onclick = () => openDetailModal(p);
-        grid.appendChild(card);
+        card.className = 'notice-card';
+        card.innerHTML = `<img class="notice-img" src="${n.image}" onerror="this.src='https://placehold.co/600x400/cccccc/white?text=No+Image'"><div class="notice-content"><div class="notice-title">${escapeHtml(n.title)}</div><div class="notice-desc">${escapeHtml(n.description)}</div><div class="notice-date">${n.date}</div></div>`;
+        container.appendChild(card);
     });
 }
 
+// ========== Agent ==========
+function getLeastBusyAgent() {
+    if (!agentsData.length) return null;
+    const minReceipt = Math.min(...agentsData.map(a => a.receipt || 0));
+    return agentsData.find(a => (a.receipt || 0) === minReceipt);
+}
+
+function incrementAgentReceipt(agent) {
+    if (agent) {
+        agent.receipt = (agent.receipt || 0) + 1;
+        saveAgents(agentsData).catch(e => console.error('保存Agent失败:', e));
+    }
+}
+
+// ========== 详情弹窗 ==========
 function openDetailModal(p) {
     currentProduct = p;
     document.getElementById('detailTitle').innerText = p.name;
-    document.getElementById('detailPrice').innerHTML = p.price;
+    document.getElementById('detailPrice').innerHTML = p.price || 'RM 0';
     document.getElementById('detailDesc').innerText = p.desc_zh;
     currentLang = 'zh';
-    
     const carousel = document.getElementById('detailCarousel');
     carousel.innerHTML = '';
-    const images = p.images?.length ? p.images : ['https://placehold.co/800x400/80abce/white?text=Product'];
-    images.forEach(img => carousel.innerHTML += `<div><img src="${img}" alt="${escapeHtml(p.name)}"></div>`);
-    
+    (p.images?.length ? p.images : ['https://placehold.co/800x400/80abce/white?text=Product']).forEach(img => carousel.innerHTML += `<div><img src="${img}" style="width:100%; border-radius:8px;"></div>`);
     if ($('#detailCarousel').hasClass('slick-initialized')) $('#detailCarousel').slick('unslick');
-    $('#detailCarousel').slick({
-        dots: true, infinite: true, speed: 300, slidesToShow: 1,
-        adaptiveHeight: false, autoplay: true, autoplaySpeed: 3000
-    });
+    $('#detailCarousel').slick({ dots: true, infinite: true, speed: 300, slidesToShow: 1, autoplay: true, autoplaySpeed: 3000 });
     document.getElementById('detailModal').classList.add('active');
 }
 
 window.closeDetailModal = () => {
     document.getElementById('detailModal').classList.remove('active');
-    if ($('#detailCarousel').hasClass('slick-initialized')) $('#detailCarousel').slick('unslick');
+    $('#detailCarousel').slick('unslick');
 };
 
 window.closeOrderModal = () => {
@@ -189,73 +185,117 @@ window.closeOrderModal = () => {
 
 window.closeSuccessModal = () => document.getElementById('successModal').classList.remove('active');
 
+// 翻译按钮
 document.getElementById('translateBtn')?.addEventListener('click', () => {
     if (!currentProduct) return;
     const el = document.getElementById('detailDesc');
-    if (currentLang === 'zh') { el.innerText = currentProduct.desc_en; currentLang = 'en'; }
-    else { el.innerText = currentProduct.desc_zh; currentLang = 'zh'; }
+    if (currentLang === 'zh') {
+        el.innerText = currentProduct.desc_en || currentProduct.desc_zh;
+        currentLang = 'en';
+    } else {
+        el.innerText = currentProduct.desc_zh;
+        currentLang = 'zh';
+    }
 });
 
+// 订单按钮
 document.getElementById('orderFromDetailBtn')?.addEventListener('click', () => {
     closeDetailModal();
-    document.getElementById('selectedProductInfo').innerHTML = `<span><strong>${currentProduct.name}</strong></span><span style="color:#80abce; font-weight:700;">${currentProduct.price}</span>`;
+    document.getElementById('selectedProductInfo').innerHTML = `<span><strong>${currentProduct?.name}</strong></span><span style="color:#80abce; font-weight:700;">${currentProduct?.price || 'RM 0'}</span>`;
     document.getElementById('orderModal').classList.add('active');
 });
 
+// 联系代理按钮
 document.getElementById('contactFromDetailBtn')?.addEventListener('click', () => {
     const agent = getLeastBusyAgent();
-    if (agent) window.open(`https://wa.me/${agent.contact}?text=${encodeURIComponent(`Hello ${agent.name}, I am interested in ${currentProduct?.name}.`)}`, '_blank');
-    else alert(I18N.t('order.agent.unavailable'));
+    if (agent) {
+        window.open(`https://wa.me/${agent.contact}?text=${encodeURIComponent(`Hello ${agent.name}, I am interested in ${currentProduct?.name}.`)}`, '_blank');
+    } else {
+        alert(I18N.t('order.agent.unavailable'));
+    }
 });
 
+// ========== 订单表单 ==========
 document.getElementById('differentDelivery')?.addEventListener('change', function() {
     document.getElementById('deliveryAddressGroup').classList.toggle('show', this.checked);
 });
 
+// Telegram 通知配置
+const BOT_TOKEN = '8386407941:AAF0W9XaG1tZNdwovITL2wrM-7L3uwQJfso';
+const CHAT_ID = '-1003696449169';
+
+function formatPhone(p) {
+    let c = p.replace(/\D/g, '');
+    if (c.startsWith('0')) c = '60' + c.substring(1);
+    if (!c.startsWith('60')) c = '60' + c;
+    return c;
+}
+
 document.getElementById('orderForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentProduct) return alert(I18N.t('order.selectProduct'));
+    
     const contact1 = document.getElementById('contact1').value;
     const address = document.getElementById('address').value;
     const email = document.getElementById('email').value;
     if (!contact1 || !address || !email) return alert(I18N.t('order.fillRequired'));
     
-    const formatPhone = p => { let c = p.replace(/\D/g, ''); if (c.startsWith('0')) c = '60' + c.substring(1); if (!c.startsWith('60')) c = '60' + c; return c; };
     const agent = getLeastBusyAgent();
     if (!agent) return alert(I18N.t('order.agent.unavailable'));
     
     const btn = e.target.querySelector('.btn-submit');
-    btn.innerText = '处理中...'; btn.disabled = true;
+    const originalText = btn.innerText;
+    btn.innerText = '处理中...';
+    btn.disabled = true;
     
     try {
-        const BOT_TOKEN = '8386407941:AAF0W9XaG1tZNdwovITL2wrM-7L3uwQJfso';
-        const CHAT_ID = '-1003696449169';
         const orderId = 'COW' + Date.now();
-        const msg = `新订单\n\n产品: ${currentProduct.name}\n电话1: ${formatPhone(contact1)}\n地址: ${address}\n代理: ${agent.hp_code}\n订单号: ${orderId}`;
+        const msg = `新订单\n\n产品: ${currentProduct.name}\n价格: ${currentProduct.price}\n电话1: ${formatPhone(contact1)}\n电话2: ${document.getElementById('contact2')?.value || '-'}\n地址: ${address}\n代理: ${agent.name} (${agent.hp_code})\n订单号: ${orderId}`;
         
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, text: msg }) });
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
+        });
+        
         const ic = document.getElementById('icUpload').files[0];
-        if (ic) { const fd = new FormData(); fd.append('chat_id', CHAT_ID); fd.append('photo', ic); await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd }); }
+        if (ic) {
+            const fd = new FormData();
+            fd.append('chat_id', CHAT_ID);
+            fd.append('photo', ic);
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
+        }
         
-        const orders = JSON.parse(localStorage.getItem('coway_orders') || '[]');
-        orders.unshift({ orderId, date: new Date().toISOString(), product: currentProduct.name, status: 'pending' });
-        localStorage.setItem('coway_orders', JSON.stringify(orders));
         incrementAgentReceipt(agent);
-        
         closeOrderModal();
         document.getElementById('successModal').classList.add('active');
-    } catch { alert('提交失败'); } finally { btn.innerText = '提交订单'; btn.disabled = false; }
+    } catch (err) {
+        console.error('提交失败:', err);
+        alert('提交失败，请稍后重试');
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadProducts(); loadCarousel(); loadAgents(); renderCategoryList(); renderProducts();
+// ========== 初始化 ==========
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadAllData();
+    renderCategoryList();
+    renderProducts();
+    renderCarousel();
+    renderNotices();
+    
     document.getElementById('carouselPrev')?.addEventListener('click', () => { prevSlide(); resetAutoPlay(); });
     document.getElementById('carouselNext')?.addEventListener('click', () => { nextSlide(); resetAutoPlay(); });
 });
 
+// 语言切换时重新渲染
 window.addEventListener('languageChanged', () => {
     renderCategoryList();
     renderProducts();
     renderCarousel();
-    document.getElementById('currentCategory').innerHTML = I18N.t(categories.find(c => c.id === currentCategory).nameKey);
+    renderNotices();
+    const currentCat = categories.find(c => c.id === currentCategory);
+    if (currentCat) document.getElementById('currentCategory').innerHTML = `<i>🛍️</i> <span>${I18N.t(currentCat.nameKey)}</span>`;
 });
