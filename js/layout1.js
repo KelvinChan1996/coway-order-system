@@ -31,14 +31,13 @@ const LAYOUT = {
             <div data-i18n="footer.copyright">COWAY (MALAYSIA) © 2026. All Rights Reserved.</div>
         </footer>
     `,
-    menuItems: [
-        { href: 'index.html', key: 'nav.home' },
-        { href: 'list.html', key: 'nav.order', isOrder: true },
-        { href: 'location.html', key: 'nav.locations' },
-        { href: 'support.html', key: 'nav.support' },
-        { href: 'about.html', key: 'nav.about' }
-    ]
-};
+   menuItems: [
+    { href: 'index.html', key: 'nav.home' },
+    { href: 'list.html', key: 'nav.order', isOrder: true },
+    { href: 'location.html', key: 'nav.locations' },
+    { href: 'support.html', key: 'nav.support' },
+    { href: 'about.html', key: 'nav.about' }
+]
 
 function getCurrentPage() {
     const path = window.location.pathname;
