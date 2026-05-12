@@ -115,12 +115,8 @@
         }
         .item-row:last-child { border-bottom: none; }
         .preview-img {
-          width: 100px;
-          height: 70px;
-          object-fit: contain;      /* 改为 contain */
-          border-radius: 8px;
-          background: #f5f5f5;
-          padding: 5px;
+            width: 100px; height: 70px; object-fit: cover; border-radius: 8px;
+            background: #f5f5f5;
         }
         .info { flex: 1; min-width: 200px; }
         .info h4 { margin-bottom: 8px; color: #333; }
@@ -394,6 +390,7 @@
     </div>
 </div>
 
+<script src="js/api.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/admin.js"></script>
 </body>
