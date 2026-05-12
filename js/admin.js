@@ -1,10 +1,13 @@
 // admin.js - 使用 Cloudflare Worker API 存储
+
 // ========== 管理员密钥和上传地址 ==========
 const ADMIN_TOKEN = 'coway_admin_168888';
 const UPLOAD_WORKER = 'https://coway-api.recky1314.workers.dev/upload';
+
 // ========== 全局数据 ==========
 let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [], aboutData = { sections: [] };
 let currentAboutSectionType = 'text';
+
 
 // ========== 加载数据 ==========
 async function loadAllData() {
