@@ -3,395 +3,544 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Coway Admin | 内容管理</title>
+    <title>Coway Admin | 内容管理系统</title>
     <link rel="stylesheet" href="css/common.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ========== Admin 布局 ========== */
+        .admin-wrapper {
+            display: flex;
             min-height: 100vh;
         }
-        
-        .login-container {
-            max-width: 420px;
-            margin: 80px auto;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            padding: 40px 35px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+        /* 左侧边栏 */
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a2632 100%);
+            color: #fff;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-logo {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .sidebar-logo span {
+            font-size: 20px;
+            font-weight: 700;
+            color: #80abce;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin: 5px 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu li a i {
+            font-size: 20px;
+            width: 24px;
             text-align: center;
         }
-        .login-header { margin-bottom: 30px; }
-        .login-header .logo-icon { font-size: 48px; margin-bottom: 10px; }
-        .login-header h2 { color: #2c3e50; font-size: 28px; font-weight: 600; }
-        .login-header p { color: #7f8c8d; font-size: 14px; margin-top: 5px; }
-        
-        .login-step { display: block; }
-        .login-step.hidden { display: none; }
-        
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 6px; }
-        .input-group input {
-            width: 100%; padding: 14px 16px; border: 2px solid #e0e0e0; border-radius: 12px;
-            font-size: 16px; background: #f8fafc; transition: all 0.3s;
+
+        .sidebar-menu li:hover a {
+            background: rgba(128, 171, 206, 0.2);
+            color: #fff;
         }
-        .input-group input:focus {
-            outline: none; border-color: #80abce; background: #fff;
-            box-shadow: 0 0 0 3px rgba(128,171,206,0.1);
+
+        .sidebar-menu li.active a {
+            background: #80abce;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(128, 171, 206, 0.3);
         }
-        
-        .pin-input-container {
-            display: flex; gap: 10px; justify-content: center; margin: 25px 0;
+
+        /* 右侧主内容 */
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px 30px 40px;
         }
-        .pin-input {
-            width: 50px; height: 60px; text-align: center; font-size: 28px; font-weight: 600;
-            border: 2px solid #e0e0e0; border-radius: 12px; background: #f8fafc; transition: all 0.3s;
-        }
-        .pin-input:focus {
-            outline: none; border-color: #80abce; background: #fff;
-            box-shadow: 0 0 0 3px rgba(128,171,206,0.1);
-        }
-        
-        .login-btn {
-            width: 100%; padding: 14px; background: #80abce; color: #fff; border: none;
-            border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; margin-top: 10px;
-        }
-        .login-btn:hover { background: #6a9ab8; transform: translateY(-2px); box-shadow: 0 5px 20px rgba(128,171,206,0.4); }
-        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .back-link { margin-top: 15px; color: #80abce; cursor: pointer; font-size: 14px; }
-        .back-link:hover { text-decoration: underline; }
-        .error-msg { color: #e74c3c; margin-top: 15px; font-size: 14px; min-height: 20px; }
-        
-        .admin-container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+
+        /* 顶部栏 */
         .admin-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #fff;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(128, 171, 206, 0.2);
         }
-        .admin-header h1 { color: #fff; font-size: 28px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .btn-logout {
-            background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff;
-            border: 1px solid rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 40px;
-            cursor: pointer; transition: all 0.3s;
+
+        .admin-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-right: auto;
         }
-        .btn-logout:hover { background: rgba(255,255,255,0.3); }
-        
-        .tabs {
-            display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap;
-            background: rgba(255,255,255,0.1); padding: 10px; border-radius: 50px;
-            backdrop-filter: blur(5px);
-        }
-        .tab-btn {
-            padding: 10px 20px; background: transparent; border: none;
-            border-radius: 40px; cursor: pointer; font-weight: 600;
-            color: rgba(255,255,255,0.8); transition: all 0.3s;
+
+        .btn-add-top {
+            background: linear-gradient(135deg, #80abce, #6a9ab8);
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(128, 171, 206, 0.3);
         }
-        .tab-btn.active {
-            background: #fff; color: #80abce; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+
+        .btn-add-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(128, 171, 206, 0.4);
         }
-        .tab-btn:hover:not(.active) {
-            background: rgba(255,255,255,0.2); color: #fff;
+
+        /* 卡片容器 */
+        .admin-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            border: 1px solid rgba(128, 171, 206, 0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.4s ease;
         }
-        
-        .panel { display: none; }
-        .panel.active { display: block; }
-        
-        .btn-add {
-            background: #27ae60; color: #fff; border: none; padding: 10px 24px;
-            border-radius: 40px; cursor: pointer; margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(39,174,96,0.3);
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            padding: 20px 25px;
+            background: linear-gradient(135deg, #f8fafc, #fff);
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-table th {
+            background: #fafbfc;
+            font-weight: 600;
+            color: #555;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .preview-img-sm {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f0f0f0;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit-sm, .btn-delete-sm {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-edit-sm {
+            background: #80abce;
+            color: #fff;
+        }
+
+        .btn-edit-sm:hover {
+            background: #6a9ab8;
+            transform: scale(1.02);
+        }
+
+        .btn-delete-sm {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-delete-sm:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+
+        .empty-row td {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        /* 进度条弹窗 */
+        .progress-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
             transition: all 0.3s;
         }
-        .btn-add:hover { background: #219a52; transform: translateY(-2px); }
-        
-        .item-list {
-            background: #fff; border-radius: 16px; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
+        .progress-modal.active {
+            visibility: visible;
+            opacity: 1;
         }
-        .item-row {
-            display: flex; padding: 20px; border-bottom: 1px solid #eee;
-            gap: 20px; flex-wrap: wrap; align-items: center;
+
+        .progress-content {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 20px;
+            min-width: 350px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        .item-row:last-child { border-bottom: none; }
-        .preview-img {
-            width: 100px; height: 70px; object-fit: cover; border-radius: 8px;
-            background: #f5f5f5;
+
+        .progress-content h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
         }
-        .info { flex: 1; min-width: 200px; }
-        .info h4 { margin-bottom: 8px; color: #333; }
-        .info p { color: #666; font-size: 13px; margin-bottom: 5px; }
-        .info small { color: #999; font-size: 12px; }
-        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn-edit, .btn-delete { padding: 6px 16px; border-radius: 20px; border: none; cursor: pointer; }
-        .btn-edit { background: #3498db; color: #999; }
-        .btn-delete { background: #e74c3c; color: #fff; }
-        .btn-move { background: #f39c12; color: #fff; }
-        
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 12px;
+            margin: 20px 0;
         }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: #fff; max-width: 550px; width: 90%; max-height: 85vh;
-            overflow-y: auto; border-radius: 16px; padding: 25px; position: relative;
+
+        .progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #80abce, #6a9ab8);
+            transition: width 0.3s ease;
         }
-        .modal-content h3 { margin-bottom: 20px; color: #80abce; }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px;
+
+        .progress-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
         }
-        .modal-content textarea { height: 80px; resize: vertical; }
-        .form-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .image-upload-area { margin-bottom: 15px; }
-        .image-upload-area label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
-        .image-preview { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-        .image-preview img { max-width: 100px; max-height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
-        .current-image-info { font-size: 12px; color: #666; margin-top: 5px; }
-        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
-        .modal-buttons button { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; }
-        .btn-save { background: #27ae60; color: #fff; }
-        .btn-cancel { background: #95a5a6; color: #fff; }
-        .modal-close { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
-        .empty-msg { text-align: center; padding: 50px; color: #999; }
-        
-        .upload-status { font-size: 12px; margin-top: 5px; padding: 5px; border-radius: 4px; }
-        .upload-status.uploading { color: #f39c12; }
-        .upload-status.success { color: #27ae60; }
-        .upload-status.error { color: #e74c3c; }
-        
-        .section-type-selector { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .section-type-btn {
-            padding: 8px 16px; border: 2px solid #e0e0e0; border-radius: 30px;
-            background: #fff; cursor: pointer; font-size: 14px; font-weight: 500;
-            transition: all 0.3s;
+
+        .progress-detail {
+            color: #999;
+            font-size: 12px;
         }
-        .section-type-btn.active { border-color: #80abce; background: #e8f0f8; color: #80abce; }
-        
-        .dynamic-fields { margin-bottom: 15px; }
-        .field-item {
-            background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+            .admin-main {
+                margin-left: 0;
+                padding: 15px;
+            }
+            .admin-sidebar.open {
+                width: 260px;
+                transform: translateX(0);
+            }
+            .admin-header {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            .btn-add-top {
+                order: 2;
+            }
+            .admin-title {
+                order: 1;
+            }
+            .data-table th, .data-table td {
+                padding: 12px;
+                font-size: 12px;
+            }
+            .action-btns {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
-        .field-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .field-header h4 { color: #2c3e50; }
-        .btn-remove-field {
-            background: #e74c3c; color: #fff; border: none;
-            padding: 4px 12px; border-radius: 20px; cursor: pointer; font-size: 12px;
+
+        /* 移动端菜单按钮 */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            background: #80abce;
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .btn-add-field {
-            background: #80abce; color: #fff; border: none;
-            padding: 10px 16px; border-radius: 30px; cursor: pointer; font-size: 14px;
-            width: 100%; margin-top: 10px;
-        }
-        
-        @media (max-width: 700px) {
-            .form-row2 { grid-template-columns: 1fr; }
-            .item-row { flex-direction: column; align-items: flex-start; }
-            .tabs { border-radius: 20px; }
-            .tab-btn { padding: 8px 12px; font-size: 12px; }
+
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            .admin-header {
+                padding-left: 50px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div id="loginPage" class="login-container">
-    <div class="login-header">
-        <div class="logo-icon">💧</div>
-        <h2>Coway Admin</h2>
-        <p>安全验证 · 内容管理系统</p>
-    </div>
-    
-    <div id="stepAccount" class="login-step">
-        <div class="input-group"><label>👤 ID</label><input type="text" id="loginId" placeholder="请输入账号"></div>
-        <div class="input-group"><label>🔒 密码</label><input type="password" id="loginPass" placeholder="请输入密码"></div>
-        <button class="login-btn" id="goToPinBtn">下一步 · 安全验证</button>
-        <div id="loginError" class="error-msg"></div>
-    </div>
-    
-    <div id="stepPin" class="login-step hidden">
-        <p style="margin-bottom:20px; color:#555;">请输入6位私人安全码</p>
-        <div class="pin-input-container">
-            <input type="text" class="pin-input" maxlength="1" data-index="0">
-            <input type="text" class="pin-input" maxlength="1" data-index="1">
-            <input type="text" class="pin-input" maxlength="1" data-index="2">
-            <input type="text" class="pin-input" maxlength="1" data-index="3">
-            <input type="text" class="pin-input" maxlength="1" data-index="4">
-            <input type="text" class="pin-input" maxlength="1" data-index="5">
-        </div>
-        <button class="login-btn" id="loginWithPinBtn" disabled>确认登录</button>
-        <div class="back-link" id="backToAccountBtn">← 返回上一步</div>
-        <div id="pinError" class="error-msg"></div>
-    </div>
-</div>
+<button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
 
-<div id="adminPage" style="display: none;">
-    <div class="admin-container">
+<div class="admin-wrapper">
+    <!-- 左侧边栏 -->
+    <div class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-logo">
+            <img src="img/coway-malaysia-logo.png" alt="Coway" onerror="this.src='https://placehold.co/40x40/80abce/white?text=C'">
+            <span>Coway Admin</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li data-tab="products" class="active"><a href="#"><i>📦</i> 商品管理</a></li>
+            <li data-tab="carousel"><a href="#"><i>🎠</i> 轮播广告</a></li>
+            <li data-tab="notice"><a href="#"><i>📰</i> 优惠公告</a></li>
+            <li data-tab="agents"><a href="#"><i>👥</i> Agent 管理</a></li>
+            <li data-tab="locations"><a href="#"><i>📍</i> 门店管理</a></li>
+            <li data-tab="about"><a href="#"><i>📄</i> 关于我们</a></li>
+            <li style="margin-top: 40px;"><a href="#" id="logoutBtnAdmin"><i>🚪</i> 退出登录</a></li>
+        </ul>
+    </div>
+
+    <!-- 右侧主内容 -->
+    <div class="admin-main">
         <div class="admin-header">
-            <h1>📢 Coway 内容管理系统</h1>
-            <button class="btn-logout" id="logoutBtn">退出登录</button>
+            <div class="admin-title" id="currentPanelTitle">商品管理</div>
+            <button class="btn-add-top" id="globalAddBtn">➕ 新增</button>
         </div>
-        
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="products">📦 商品管理</button>
-            <button class="tab-btn" data-tab="carousel">🎠 轮播广告</button>
-            <button class="tab-btn" data-tab="notice">📰 优惠公告</button>
-            <button class="tab-btn" data-tab="agents">👥 Agent 管理</button>
-            <button class="tab-btn" data-tab="locations">📍 门店管理</button>
-            <button class="tab-btn" data-tab="about">📄 关于我们</button>
+
+        <!-- 商品面板 -->
+        <div id="productsPanel" class="admin-card panel">
+            <div class="card-header"><h3>商品列表</h3></div>
+            <div class="card-body"><div id="productsList" class="data-table-container"></div></div>
         </div>
-        
-        <div id="productsPanel" class="panel active">
-            <button class="btn-add" id="addProductBtn">+ 新增商品</button>
-            <div id="productsList" class="item-list"></div>
+
+        <!-- 轮播面板 -->
+        <div id="carouselPanel" class="admin-card panel" style="display:none;">
+            <div class="card-header"><h3>轮播广告列表</h3></div>
+            <div class="card-body"><div id="carouselList" class="data-table-container"></div></div>
         </div>
-        <div id="carouselPanel" class="panel">
-            <button class="btn-add" id="addCarouselBtn">+ 新增广告</button>
-            <div id="carouselList" class="item-list"></div>
+
+        <!-- 公告面板 -->
+        <div id="noticePanel" class="admin-card panel" style="display:none;">
+            <div class="card-header"><h3>公告列表</h3></div>
+            <div class="card-body"><div id="noticeList" class="data-table-container"></div></div>
         </div>
-        <div id="noticePanel" class="panel">
-            <button class="btn-add" id="addNoticeBtn">+ 新增公告</button>
-            <div id="noticeList" class="item-list"></div>
+
+        <!-- Agent面板 -->
+        <div id="agentsPanel" class="admin-card panel" style="display:none;">
+            <div class="card-header"><h3>Agent 列表</h3></div>
+            <div class="card-body"><div id="agentsList" class="data-table-container"></div></div>
         </div>
-        <div id="agentsPanel" class="panel">
-            <button class="btn-add" id="addAgentBtn">+ 新增 Agent</button>
-            <div id="agentsList" class="item-list"></div>
+
+        <!-- 门店面板 -->
+        <div id="locationsPanel" class="admin-card panel" style="display:none;">
+            <div class="card-header"><h3>门店列表</h3></div>
+            <div class="card-body"><div id="locationsList" class="data-table-container"></div></div>
         </div>
-        <div id="locationsPanel" class="panel">
-            <button class="btn-add" id="addLocationBtn">+ 新增门店</button>
-            <div id="locationsList" class="item-list"></div>
-        </div>
-        <div id="aboutPanel" class="panel">
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn-add" id="addAboutSectionBtn">+ 新增区块</button>
-                <button class="btn-add" id="resetAboutBtn" style="background: #e67e22;">🔄 重置为默认</button>
-            </div>
-            <div id="aboutSectionsList" class="item-list"></div>
+
+        <!-- 关于我们面板 -->
+        <div id="aboutPanel" class="admin-card panel" style="display:none;">
+            <div class="card-header"><h3>关于我们区块</h3></div>
+            <div class="card-body"><div id="aboutSectionsList" class="data-table-container"></div></div>
         </div>
     </div>
 </div>
 
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="modal-close" id="closeModalBtn">&times;</span>
-        <h3 id="modalTitle">编辑</h3>
-        <input type="hidden" id="editId"><input type="hidden" id="editType">
-        
-        <div id="productFields">
-            <input type="text" id="productName" placeholder="商品名称">
-            <select id="productCategory">
-                <option value="water">水机</option><option value="air">空气净化器</option>
-                <option value="ac">冷气机</option><option value="washer">洗衣机</option>
-                <option value="toilet">马桶</option><option value="massageChair">按摩椅</option>
-                <option value="massageBed">按摩床</option><option value="bed">床</option>
-            </select>
-            <input type="text" id="productPrice" placeholder="价格 (如: RM 3,999)">
-            <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
-            <textarea id="productDescEn" placeholder="英文描述" rows="3"></textarea>
-            <div class="image-upload-area">
-                <label>📷 商品图片</label>
-                <input type="file" id="productImagesInput" accept="image/*" multiple>
-                <div id="productImagesPreview" class="image-preview"></div>
-                <div class="current-image-info" id="productImagesInfo"></div>
-                <div id="productUploadStatus" class="upload-status"></div>
-            </div>
+<!-- 进度条弹窗 -->
+<div id="progressModal" class="progress-modal">
+    <div class="progress-content">
+        <h3 id="progressTitle">正在处理...</h3>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
         </div>
-        
-        <div id="agentFields">
-            <input type="text" id="agentName" placeholder="姓名 *">
-            <input type="text" id="agentHpCode" placeholder="HP CODE *">
-            <input type="text" id="agentContact" placeholder="手机号码 (如: 60123456789) *">
-            <select id="agentPosition"><option value="HP">HP</option><option value="SM">SM</option><option value="GSM">GSM</option></select>
-            <input type="number" id="agentReceipt" placeholder="当前单数 (DO)">
-            <input type="email" id="agentEmail" placeholder="Email">
-        </div>
-        
-        <div id="carouselFields">
-            <input type="text" id="carouselTitle" placeholder="广告标题">
-            <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
-            <div class="image-upload-area">
-                <label>📷 广告图片</label>
-                <input type="file" id="carouselImageInput" accept="image/*">
-                <div id="carouselImagePreview" class="image-preview"></div>
-                <div id="carouselUploadStatus" class="upload-status"></div>
-            </div>
-            <input type="text" id="carouselLink" placeholder="链接">
-        </div>
-        
-        <div id="noticeFields">
-            <input type="text" id="noticeTitle" placeholder="公告标题">
-            <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
-            <div class="image-upload-area">
-                <label>📷 公告图片</label>
-                <input type="file" id="noticeImageInput" accept="image/*">
-                <div id="noticeImagePreview" class="image-preview"></div>
-                <div id="noticeUploadStatus" class="upload-status"></div>
-            </div>
-            <input type="date" id="noticeDate">
-        </div>
-        
-        <div id="locationFields">
-            <input type="text" id="locationName" placeholder="门店名称">
-            <div class="image-upload-area">
-                <label>📷 门店图片</label>
-                <input type="file" id="locationImageInput" accept="image/*">
-                <div id="locationImagePreview" class="image-preview"></div>
-                <div id="locationUploadStatus" class="upload-status"></div>
-            </div>
-            <textarea id="locationAddress" placeholder="地址" rows="2"></textarea>
-            <input type="text" id="locationHours" placeholder="营业时间">
-            <input type="text" id="locationPhone" placeholder="电话">
-            <input type="text" id="locationWaze" placeholder="Waze 链接">
-        </div>
-        
-        <div class="modal-buttons">
-            <button class="btn-save" id="saveItemBtn">保存</button>
-            <button class="btn-cancel" id="cancelModalBtn">取消</button>
-        </div>
-    </div>
-</div>
-
-<div id="aboutSectionModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
-        <span class="modal-close" id="closeAboutModalBtn">&times;</span>
-        <h3 id="aboutModalTitle">编辑区块</h3>
-        <input type="hidden" id="aboutEditIndex">
-        
-        <div class="section-type-selector">
-            <button class="section-type-btn active" data-type="text">📝 文本</button>
-            <button class="section-type-btn" data-type="stats">📊 统计数据</button>
-            <button class="section-type-btn" data-type="team">👥 团队成员</button>
-            <button class="section-type-btn" data-type="timeline">📅 时间线</button>
-            <button class="section-type-btn" data-type="image">🖼️ 图片</button>
-        </div>
-        
-        <input type="text" id="aboutSectionTitle" placeholder="区块标题" style="margin-bottom:15px;">
-        <input type="text" id="aboutSectionIcon" placeholder="图标 (emoji)" value="📝" style="margin-bottom:15px;">
-        
-        <div id="aboutTextFields" class="dynamic-fields"><textarea id="aboutTextContent" placeholder="文本内容" rows="5"></textarea></div>
-        <div id="aboutStatsFields" class="dynamic-fields" style="display:none;"><div id="statsFieldsContainer"></div><button class="btn-add-field" id="addStatFieldBtn">+ 添加统计项</button></div>
-        <div id="aboutTeamFields" class="dynamic-fields" style="display:none;"><div id="teamFieldsContainer"></div><button class="btn-add-field" id="addTeamMemberBtn">+ 添加成员</button></div>
-        <div id="aboutTimelineFields" class="dynamic-fields" style="display:none;"><div id="timelineFieldsContainer"></div><button class="btn-add-field" id="addTimelineItemBtn">+ 添加事件</button></div>
-        <div id="aboutImageFields" class="dynamic-fields" style="display:none;">
-            <div class="image-upload-area">
-                <label>📷 图片</label>
-                <input type="file" id="aboutImageInput" accept="image/*">
-                <div id="aboutImagePreview" class="image-preview"></div>
-                <div id="aboutImageUploadStatus" class="upload-status"></div>
-                <input type="hidden" id="aboutImageUrl">
-            </div>
-            <input type="text" id="aboutImageCaption" placeholder="图片说明 (可选)">
-        </div>
-        
-        <div class="modal-buttons">
-            <button class="btn-save" id="saveAboutSectionBtn">保存</button>
-            <button class="btn-cancel" id="cancelAboutModalBtn">取消</button>
-        </div>
+        <div class="progress-text" id="progressText">0%</div>
+        <div class="progress-detail" id="progressDetail"></div>
     </div>
 </div>
 
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/admin.js"></script>
+<script>
+    // 侧边栏切换
+    document.querySelectorAll('.sidebar-menu li[data-tab]').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const tab = item.dataset.tab;
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            item.classList.add('active');
+            
+            document.querySelectorAll('.panel').forEach(panel => panel.style.display = 'none');
+            document.getElementById(`${tab}Panel`).style.display = 'block';
+            
+            const titles = {
+                products: '商品管理',
+                carousel: '轮播广告',
+                notice: '优惠公告',
+                agents: 'Agent 管理',
+                locations: '门店管理',
+                about: '关于我们'
+            };
+            document.getElementById('currentPanelTitle').innerText = titles[tab] || '管理';
+            
+            // 重新渲染对应列表
+            if (tab === 'products') renderProducts();
+            else if (tab === 'carousel') renderCarousel();
+            else if (tab === 'notice') renderNotices();
+            else if (tab === 'agents') renderAgents();
+            else if (tab === 'locations') renderLocations();
+            else if (tab === 'about') renderAboutSections();
+        });
+    });
+    
+    // 全局添加按钮
+    document.getElementById('globalAddBtn').addEventListener('click', () => {
+        const activeTab = document.querySelector('.sidebar-menu li.active')?.dataset.tab;
+        if (activeTab === 'products') openModal('product', null);
+        else if (activeTab === 'carousel') openModal('carousel', null);
+        else if (activeTab === 'notice') openModal('notice', null);
+        else if (activeTab === 'agents') openModal('agent', null);
+        else if (activeTab === 'locations') openModal('location', null);
+        else if (activeTab === 'about') openAboutModal(-1);
+    });
+    
+    // 移动端菜单
+    document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
+        document.getElementById('adminSidebar').classList.toggle('open');
+    });
+    
+    // 退出登录
+    document.getElementById('logoutBtnAdmin')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        logout();
+    });
+    
+    // 全局进度条控制函数
+    window.showProgress = function(title) {
+        const modal = document.getElementById('progressModal');
+        document.getElementById('progressTitle').innerText = title;
+        document.getElementById('progressBarFill').style.width = '0%';
+        document.getElementById('progressText').innerText = '0%';
+        document.getElementById('progressDetail').innerText = '';
+        modal.classList.add('active');
+    };
+    
+    window.updateProgress = function(percent, detail) {
+        document.getElementById('progressBarFill').style.width = percent + '%';
+        document.getElementById('progressText').innerText = percent + '%';
+        if (detail) document.getElementById('progressDetail').innerText = detail;
+    };
+    
+    window.hideProgress = function() {
+        document.getElementById('progressModal').classList.remove('active');
+    };
+</script>
 </body>
 </html>
