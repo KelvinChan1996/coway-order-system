@@ -1,94 +1,43 @@
-// ==================== 登录验证配置 ====================
-const VALID_ID = "coway";
-const VALID_PASS = "A888888";
-const VALID_PIN = "168888";
+// admin.js - 使用 Cloudflare Worker API 存储
 
-// ==================== 后台配置 ====================
-const UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
-
-// ==================== 全局数据 ====================
+// ========== 全局数据 ==========
 let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [], aboutData = { sections: [] };
 let currentAboutSectionType = 'text';
 
-// ==================== 登录流程控制 ====================
-function showStep(step) {
-    document.getElementById('stepAccount').classList.add('hidden');
-    document.getElementById('stepPin').classList.add('hidden');
-    document.getElementById(`step${step.charAt(0).toUpperCase() + step.slice(1)}`).classList.remove('hidden');
-    document.getElementById('loginError').innerText = '';
-    document.getElementById('pinError').innerText = '';
+// ========== 加载数据 ==========
+async function loadAllData() {
+    try {
+        const data = await getAllData();
+        productsData = data.products || [];
+        carouselData = data.carousel || [];
+        noticeData = data.notices || [];
+        agentsData = data.agents || [];
+        locationsData = data.locations || [];
+        aboutData = data.about || { sections: [] };
+    } catch (e) {
+        console.error('加载数据失败:', e);
+        productsData = []; carouselData = []; noticeData = []; agentsData = []; locationsData = []; aboutData = { sections: [] };
+    }
+    renderProducts(); renderCarousel(); renderNotices(); renderAgents(); renderLocations(); renderAboutSections();
 }
 
-function validateAccount() {
-    const id = document.getElementById('loginId').value;
-    const pass = document.getElementById('loginPass').value;
-    if (id === VALID_ID && pass === VALID_PASS) {
-        showStep('pin');
-        setTimeout(() => document.querySelector('.pin-input').focus(), 100);
-    } else {
-        document.getElementById('loginError').innerText = '账号或密码错误';
+// ========== 保存数据 ==========
+async function saveAllData(type, data) {
+    try {
+        if (type === 'products') await saveProducts(data);
+        else if (type === 'carousel') await saveCarousel(data);
+        else if (type === 'notices') await saveNotices(data);
+        else if (type === 'agents') await saveAgents(data);
+        else if (type === 'locations') await saveLocations(data);
+        else if (type === 'about') await saveAbout(data);
+    } catch (e) {
+        console.error(`保存${type}失败:`, e);
+        alert('保存失败，请检查网络');
     }
 }
 
-function setupPinInputs() {
-    const inputs = document.querySelectorAll('.pin-input');
-    inputs.forEach((input, index) => {
-        input.addEventListener('input', (e) => {
-            if (e.target.value.length === 1 && index < 5) inputs[index + 1].focus();
-            checkPinComplete();
-        });
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Backspace' && !e.target.value && index > 0) inputs[index - 1].focus();
-        });
-        input.addEventListener('paste', (e) => {
-            e.preventDefault();
-            const paste = (e.clipboardData || window.clipboardData).getData('text');
-            if (/^\d{6}$/.test(paste)) {
-                paste.split('').forEach((char, i) => { if (inputs[i]) inputs[i].value = char; });
-                checkPinComplete();
-            }
-        });
-    });
-}
-
-function getPinValue() {
-    return Array.from(document.querySelectorAll('.pin-input')).map(i => i.value).join('');
-}
-
-function checkPinComplete() {
-    const pin = getPinValue();
-    document.getElementById('loginWithPinBtn').disabled = pin.length !== 6;
-}
-
-function validatePin() {
-    const pin = getPinValue();
-    if (pin === VALID_PIN) {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('adminPage').style.display = 'block';
-        loadAllData();
-    } else {
-        document.getElementById('pinError').innerText = '安全码错误';
-        document.querySelectorAll('.pin-input').forEach(i => i.value = '');
-        document.getElementById('loginWithPinBtn').disabled = true;
-        document.querySelector('.pin-input').focus();
-    }
-}
-
-function logout() {
-    document.getElementById('loginPage').style.display = 'block';
-    document.getElementById('adminPage').style.display = 'none';
-    document.getElementById('loginId').value = '';
-    document.getElementById('loginPass').value = '';
-    document.querySelectorAll('.pin-input').forEach(i => i.value = '');
-    document.getElementById('loginWithPinBtn').disabled = true;
-    showStep('account');
-}
-
-// ==================== 辅助函数 ====================
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
-}
+// ========== 辅助函数 ==========
+function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]); }
 
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -99,25 +48,22 @@ function fileToBase64(file) {
     });
 }
 
-// ==================== 图片上传 ====================
+// 图片上传（使用免费上传服务，你也可以换成自己的）
+const UPLOAD_WORKER = 'https://coway-github-upload.recky1314.workers.dev';
+
 async function uploadImage(file, statusElementId = null) {
     const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
-    const updateStatus = (msg, type) => {
-        if (statusEl) { statusEl.textContent = msg; statusEl.className = `upload-status ${type}`; }
-    };
     try {
-        updateStatus('上传中...', 'uploading');
+        if (statusEl) { statusEl.textContent = '上传中...'; statusEl.className = 'upload-status uploading'; }
         const formData = new FormData();
         formData.append('file', file);
         const response = await fetch(UPLOAD_WORKER, { method: 'POST', body: formData });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Upload failed');
-        updateStatus('上传成功', 'success');
-        setTimeout(() => updateStatus('', ''), 3000);
+        if (statusEl) { statusEl.textContent = '上传成功'; statusEl.className = 'upload-status success'; setTimeout(() => statusEl.textContent = '', 3000); }
         return result.url;
     } catch (error) {
-        console.error('Upload error:', error);
-        updateStatus(`上传失败: ${error.message}`, 'error');
+        if (statusEl) { statusEl.textContent = `上传失败: ${error.message}`; statusEl.className = 'upload-status error'; }
         throw error;
     }
 }
@@ -127,12 +73,7 @@ async function uploadMultipleImages(files, statusElementId = null) {
     for (let i = 0; i < files.length; i++) {
         const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
         if (statusEl) { statusEl.textContent = `上传中 (${i + 1}/${files.length})...`; statusEl.className = 'upload-status uploading'; }
-        try {
-            urls.push(await uploadImage(files[i], null));
-        } catch (error) {
-            if (statusEl) { statusEl.textContent = `第 ${i + 1} 张上传失败`; statusEl.className = 'upload-status error'; }
-            throw error;
-        }
+        urls.push(await uploadImage(files[i], null));
     }
     if (statusElementId) {
         const statusEl = document.getElementById(statusElementId);
@@ -143,21 +84,7 @@ async function uploadMultipleImages(files, statusElementId = null) {
     return urls;
 }
 
-// ==================== 数据加载 ====================
-function loadAllData() {
-    productsData = JSON.parse(localStorage.getItem('coway_products') || '[]');
-    carouselData = JSON.parse(localStorage.getItem('coway_carousel') || '[]');
-    noticeData = JSON.parse(localStorage.getItem('coway_notices') || '[]');
-    agentsData = JSON.parse(localStorage.getItem('coway_agents') || '[]');
-    locationsData = JSON.parse(localStorage.getItem('coway_locations') || '[]');
-    
-    const savedAbout = localStorage.getItem('coway_about');
-    aboutData = savedAbout ? JSON.parse(savedAbout) : { sections: [] };
-    
-    renderProducts(); renderCarousel(); renderNotices(); renderAgents(); renderLocations(); renderAboutSections();
-}
-
-// ==================== 渲染函数 ====================
+// ========== 渲染函数 ==========
 function renderProducts() {
     const container = document.getElementById('productsList');
     if (!productsData.length) { container.innerHTML = '<div class="empty-msg">暂无商品</div>'; return; }
@@ -236,19 +163,7 @@ function renderAboutSections() {
         div.className = 'item-row';
         const typeNames = { text: '文本', stats: '统计', team: '团队', timeline: '时间线', image: '图片' };
         const typeName = typeNames[section.type] || section.type;
-        div.innerHTML = `
-            <div class="info">
-                <h4>${section.icon || ''} ${escapeHtml(section.title || '未命名区块')}</h4>
-                <p>类型: ${typeName}</p>
-                ${section.type === 'text' ? `<small>${escapeHtml((section.content || '').substring(0, 50))}...</small>` : ''}
-            </div>
-            <div class="actions">
-                <button class="btn-edit" data-index="${index}">编辑</button>
-                ${index > 0 ? `<button class="btn-move" data-index="${index}" data-direction="up">上移</button>` : ''}
-                ${index < aboutData.sections.length - 1 ? `<button class="btn-move" data-index="${index}" data-direction="down">下移</button>` : ''}
-                <button class="btn-delete" data-index="${index}">删除</button>
-            </div>
-        `;
+        div.innerHTML = `<div class="info"><h4>${section.icon || ''} ${escapeHtml(section.title || '未命名区块')}</h4><p>类型: ${typeName}</p>${section.type === 'text' ? `<small>${escapeHtml((section.content || '').substring(0, 50))}...</small>` : ''}</div><div class="actions"><button class="btn-edit" data-index="${index}">编辑</button><button class="btn-delete" data-index="${index}">删除</button></div>`;
         container.appendChild(div);
     });
     bindAboutEvents(container);
@@ -267,15 +182,15 @@ function bindItemEvents(container) {
         });
     });
     container.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const id = btn.dataset.id;
             const type = btn.dataset.type;
             if (!confirm('确定删除？')) return;
-            if (type === 'product') { productsData = productsData.filter(i => i.id != id); localStorage.setItem('coway_products', JSON.stringify(productsData)); renderProducts(); }
-            else if (type === 'carousel') { carouselData = carouselData.filter(i => i.id != id); localStorage.setItem('coway_carousel', JSON.stringify(carouselData)); renderCarousel(); }
-            else if (type === 'notice') { noticeData = noticeData.filter(i => i.id != id); localStorage.setItem('coway_notices', JSON.stringify(noticeData)); renderNotices(); }
-            else if (type === 'agent') { agentsData = agentsData.filter(i => i.id != id); localStorage.setItem('coway_agents', JSON.stringify(agentsData)); renderAgents(); }
-            else if (type === 'location') { locationsData = locationsData.filter(i => i.id != id); localStorage.setItem('coway_locations', JSON.stringify(locationsData)); renderLocations(); }
+            if (type === 'product') { productsData = productsData.filter(i => i.id != id); await saveAllData('products', productsData); renderProducts(); }
+            else if (type === 'carousel') { carouselData = carouselData.filter(i => i.id != id); await saveAllData('carousel', carouselData); renderCarousel(); }
+            else if (type === 'notice') { noticeData = noticeData.filter(i => i.id != id); await saveAllData('notices', noticeData); renderNotices(); }
+            else if (type === 'agent') { agentsData = agentsData.filter(i => i.id != id); await saveAllData('agents', agentsData); renderAgents(); }
+            else if (type === 'location') { locationsData = locationsData.filter(i => i.id != id); await saveAllData('locations', locationsData); renderLocations(); }
         });
     });
 }
@@ -285,30 +200,17 @@ function bindAboutEvents(container) {
         btn.addEventListener('click', () => openAboutModal(parseInt(btn.dataset.index)));
     });
     container.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             if (!confirm('确定删除？')) return;
             const index = parseInt(btn.dataset.index);
             aboutData.sections.splice(index, 1);
-            localStorage.setItem('coway_about', JSON.stringify(aboutData));
-            renderAboutSections();
-        });
-    });
-    container.querySelectorAll('.btn-move').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const index = parseInt(btn.dataset.index);
-            const direction = btn.dataset.direction;
-            if (direction === 'up' && index > 0) {
-                [aboutData.sections[index - 1], aboutData.sections[index]] = [aboutData.sections[index], aboutData.sections[index - 1]];
-            } else if (direction === 'down' && index < aboutData.sections.length - 1) {
-                [aboutData.sections[index], aboutData.sections[index + 1]] = [aboutData.sections[index + 1], aboutData.sections[index]];
-            }
-            localStorage.setItem('coway_about', JSON.stringify(aboutData));
+            await saveAllData('about', aboutData);
             renderAboutSections();
         });
     });
 }
 
-// ==================== 弹窗管理 ====================
+// ========== 弹窗管理 ==========
 function closeModal() { document.getElementById('editModal').classList.remove('active'); }
 
 function setupImagePreview(fileInputId, previewId, isMultiple = false) {
@@ -406,13 +308,73 @@ function openModal(type, item) {
     document.getElementById('editModal').classList.add('active');
 }
 
-function openProductModal() { openModal('product', null); }
-function openCarouselModal() { openModal('carousel', null); }
-function openNoticeModal() { openModal('notice', null); }
-function openAgentModal() { openModal('agent', null); }
-function openLocationModal() { openModal('location', null); }
+async function saveItem() {
+    const type = document.getElementById('editType').value;
+    const id = document.getElementById('editId').value;
+    const isEdit = id !== '';
+    const saveBtn = document.getElementById('saveItemBtn');
+    const originalText = saveBtn.innerText;
+    saveBtn.innerText = '保存中...';
+    saveBtn.disabled = true;
 
-// ==================== 关于我们弹窗 ====================
+    try {
+        if (type === 'product') {
+            const imageInput = document.getElementById('productImagesInput');
+            let images = [];
+            if (imageInput.files.length > 0) images = await uploadMultipleImages(imageInput.files, 'productUploadStatus');
+            else if (isEdit) { const existing = productsData.find(i => i.id == id); images = existing ? existing.images : []; }
+            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('productName').value, category: document.getElementById('productCategory').value, price: document.getElementById('productPrice').value, desc_zh: document.getElementById('productDescZh').value, desc_en: document.getElementById('productDescEn').value, images };
+            if (isEdit) { const index = productsData.findIndex(i => i.id == id); if (index !== -1) productsData[index] = newItem; }
+            else productsData.push(newItem);
+            await saveAllData('products', productsData);
+            renderProducts();
+        } else if (type === 'agent') {
+            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('agentName').value, hp_code: document.getElementById('agentHpCode').value, contact: document.getElementById('agentContact').value, position: document.getElementById('agentPosition').value, receipt: parseInt(document.getElementById('agentReceipt').value) || 0, email: document.getElementById('agentEmail').value };
+            if (isEdit) { const index = agentsData.findIndex(i => i.id == id); if (index !== -1) agentsData[index] = newItem; }
+            else agentsData.push(newItem);
+            await saveAllData('agents', agentsData);
+            renderAgents();
+        } else if (type === 'carousel') {
+            const imageInput = document.getElementById('carouselImageInput');
+            let image = '';
+            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'carouselUploadStatus');
+            else if (isEdit) { const existing = carouselData.find(i => i.id == id); image = existing ? existing.image : ''; }
+            const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('carouselTitle').value, desc: document.getElementById('carouselDesc').value, image, link: document.getElementById('carouselLink').value };
+            if (isEdit) { const index = carouselData.findIndex(i => i.id == id); if (index !== -1) carouselData[index] = newItem; }
+            else carouselData.push(newItem);
+            await saveAllData('carousel', carouselData);
+            renderCarousel();
+        } else if (type === 'notice') {
+            const imageInput = document.getElementById('noticeImageInput');
+            let image = '';
+            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'noticeUploadStatus');
+            else if (isEdit) { const existing = noticeData.find(i => i.id == id); image = existing ? existing.image : ''; }
+            const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('noticeTitle').value, description: document.getElementById('noticeDesc').value, image, date: document.getElementById('noticeDate').value };
+            if (isEdit) { const index = noticeData.findIndex(i => i.id == id); if (index !== -1) noticeData[index] = newItem; }
+            else noticeData.unshift(newItem);
+            await saveAllData('notices', noticeData);
+            renderNotices();
+        } else if (type === 'location') {
+            const imageInput = document.getElementById('locationImageInput');
+            let image = '';
+            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'locationUploadStatus');
+            else if (isEdit) { const existing = locationsData.find(i => i.id == id); image = existing ? existing.image : ''; }
+            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('locationName').value, image, address: document.getElementById('locationAddress').value, hours: document.getElementById('locationHours').value, phone: document.getElementById('locationPhone').value, wazeLink: document.getElementById('locationWaze').value };
+            if (isEdit) { const index = locationsData.findIndex(i => i.id == id); if (index !== -1) locationsData[index] = newItem; }
+            else locationsData.push(newItem);
+            await saveAllData('locations', locationsData);
+            renderLocations();
+        }
+        closeModal();
+    } catch (error) {
+        alert('保存失败: ' + error.message);
+    } finally {
+        saveBtn.innerText = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+// ========== 关于我们弹窗 ==========
 function openAboutModal(index = -1) {
     currentAboutSectionType = 'text';
     const isEdit = index >= 0;
@@ -426,7 +388,6 @@ function openAboutModal(index = -1) {
     document.getElementById('aboutImageCaption').value = '';
     document.getElementById('aboutImagePreview').innerHTML = '';
     document.getElementById('aboutImageUploadStatus').innerHTML = '';
-    
     document.getElementById('statsFieldsContainer').innerHTML = '';
     document.getElementById('teamFieldsContainer').innerHTML = '';
     document.getElementById('timelineFieldsContainer').innerHTML = '';
@@ -436,22 +397,16 @@ function openAboutModal(index = -1) {
         document.getElementById('aboutSectionTitle').value = section.title || '';
         document.getElementById('aboutSectionIcon').value = section.icon || '';
         currentAboutSectionType = section.type;
-        
-        if (section.type === 'text') {
-            document.getElementById('aboutTextContent').value = section.content || '';
-        } else if (section.type === 'stats') {
-            if (section.stats) section.stats.forEach(stat => addStatField(stat.number, stat.label));
-        } else if (section.type === 'team') {
-            if (section.members) section.members.forEach(m => addTeamMemberField(m.name, m.role, m.bio, m.avatar));
-        } else if (section.type === 'timeline') {
-            if (section.items) section.items.forEach(item => addTimelineItemField(item.year, item.title, item.desc));
-        } else if (section.type === 'image') {
+        if (section.type === 'text') document.getElementById('aboutTextContent').value = section.content || '';
+        else if (section.type === 'stats' && section.stats) section.stats.forEach(stat => addStatField(stat.number, stat.label));
+        else if (section.type === 'team' && section.members) section.members.forEach(m => addTeamMemberField(m.name, m.role, m.bio, m.avatar));
+        else if (section.type === 'timeline' && section.items) section.items.forEach(item => addTimelineItemField(item.year, item.title, item.desc));
+        else if (section.type === 'image') {
             document.getElementById('aboutImageUrl').value = section.image || '';
             document.getElementById('aboutImageCaption').value = section.caption || '';
             if (section.image) { const img = document.createElement('img'); img.src = section.image; document.getElementById('aboutImagePreview').appendChild(img); }
         }
     }
-    
     updateAboutFieldsVisibility();
     document.querySelectorAll('.section-type-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === currentAboutSectionType));
     setupImagePreview('aboutImageInput', 'aboutImagePreview', false);
@@ -495,16 +450,13 @@ function closeAboutModal() { document.getElementById('aboutSectionModal').classL
 async function saveAboutSection() {
     const index = document.getElementById('aboutEditIndex').value;
     const isEdit = index !== '' && index !== '-1';
-    
     const title = document.getElementById('aboutSectionTitle').value;
     const icon = document.getElementById('aboutSectionIcon').value;
     const type = currentAboutSectionType;
-    
     let section = { type, title, icon };
     
-    if (type === 'text') {
-        section.content = document.getElementById('aboutTextContent').value;
-    } else if (type === 'stats') {
+    if (type === 'text') section.content = document.getElementById('aboutTextContent').value;
+    else if (type === 'stats') {
         section.stats = [];
         document.querySelectorAll('#statsFieldsContainer .field-item').forEach(item => {
             section.stats.push({ number: item.querySelector('.stat-number').value, label: item.querySelector('.stat-label').value });
@@ -521,18 +473,15 @@ async function saveAboutSection() {
         });
     } else if (type === 'image') {
         const imageInput = document.getElementById('aboutImageInput');
-        if (imageInput.files.length > 0) {
-            section.image = await uploadImage(imageInput.files[0], 'aboutImageUploadStatus');
-        } else {
-            section.image = document.getElementById('aboutImageUrl').value;
-        }
+        if (imageInput.files.length > 0) section.image = await uploadImage(imageInput.files[0], 'aboutImageUploadStatus');
+        else section.image = document.getElementById('aboutImageUrl').value;
         section.caption = document.getElementById('aboutImageCaption').value;
     }
     
     if (isEdit) aboutData.sections[parseInt(index)] = section;
     else aboutData.sections.push(section);
     
-    localStorage.setItem('coway_about', JSON.stringify(aboutData));
+    await saveAllData('about', aboutData);
     renderAboutSections();
     closeAboutModal();
 }
@@ -540,121 +489,41 @@ async function saveAboutSection() {
 function resetAboutData() {
     if (!confirm('确定重置？')) return;
     aboutData = { sections: [] };
-    localStorage.setItem('coway_about', JSON.stringify(aboutData));
-    renderAboutSections();
+    saveAllData('about', aboutData).then(() => renderAboutSections());
 }
 
-// ==================== 保存逻辑 ====================
-async function saveItem() {
-    const type = document.getElementById('editType').value;
-    const id = document.getElementById('editId').value;
-    const isEdit = id !== '';
-    const saveBtn = document.getElementById('saveItemBtn');
-    const originalText = saveBtn.innerText;
-    saveBtn.innerText = '保存中...';
-    saveBtn.disabled = true;
+// ========== 登录验证 ==========
+const VALID_ID = "coway";
+const VALID_PASS = "A888888";
+const VALID_PIN = "168888";
 
-    try {
-        if (type === 'product') {
-            const imageInput = document.getElementById('productImagesInput');
-            let images = [];
-            if (imageInput.files.length > 0) images = await uploadMultipleImages(imageInput.files, 'productUploadStatus');
-            else if (isEdit) { const existing = productsData.find(i => i.id == id); images = existing ? existing.images : []; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('productName').value, category: document.getElementById('productCategory').value, price: document.getElementById('productPrice').value, desc_zh: document.getElementById('productDescZh').value, desc_en: document.getElementById('productDescEn').value, images };
-            if (isEdit) { const index = productsData.findIndex(i => i.id == id); if (index !== -1) productsData[index] = newItem; }
-            else productsData.push(newItem);
-            localStorage.setItem('coway_products', JSON.stringify(productsData));
-            renderProducts();
-        } else if (type === 'agent') {
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('agentName').value, hp_code: document.getElementById('agentHpCode').value, contact: document.getElementById('agentContact').value, position: document.getElementById('agentPosition').value, receipt: parseInt(document.getElementById('agentReceipt').value) || 0, email: document.getElementById('agentEmail').value };
-            if (isEdit) { const index = agentsData.findIndex(i => i.id == id); if (index !== -1) agentsData[index] = newItem; }
-            else agentsData.push(newItem);
-            localStorage.setItem('coway_agents', JSON.stringify(agentsData));
-            renderAgents();
-        } else if (type === 'carousel') {
-            const imageInput = document.getElementById('carouselImageInput');
-            let image = '';
-            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'carouselUploadStatus');
-            else if (isEdit) { const existing = carouselData.find(i => i.id == id); image = existing ? existing.image : ''; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('carouselTitle').value, desc: document.getElementById('carouselDesc').value, image, link: document.getElementById('carouselLink').value };
-            if (isEdit) { const index = carouselData.findIndex(i => i.id == id); if (index !== -1) carouselData[index] = newItem; }
-            else carouselData.push(newItem);
-            localStorage.setItem('coway_carousel', JSON.stringify(carouselData));
-            renderCarousel();
-        } else if (type === 'notice') {
-            const imageInput = document.getElementById('noticeImageInput');
-            let image = '';
-            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'noticeUploadStatus');
-            else if (isEdit) { const existing = noticeData.find(i => i.id == id); image = existing ? existing.image : ''; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('noticeTitle').value, description: document.getElementById('noticeDesc').value, image, date: document.getElementById('noticeDate').value };
-            if (isEdit) { const index = noticeData.findIndex(i => i.id == id); if (index !== -1) noticeData[index] = newItem; }
-            else noticeData.unshift(newItem);
-            localStorage.setItem('coway_notices', JSON.stringify(noticeData));
-            renderNotices();
-        } else if (type === 'location') {
-            const imageInput = document.getElementById('locationImageInput');
-            let image = '';
-            if (imageInput.files.length > 0) image = await uploadImage(imageInput.files[0], 'locationUploadStatus');
-            else if (isEdit) { const existing = locationsData.find(i => i.id == id); image = existing ? existing.image : ''; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('locationName').value, image, address: document.getElementById('locationAddress').value, hours: document.getElementById('locationHours').value, phone: document.getElementById('locationPhone').value, wazeLink: document.getElementById('locationWaze').value };
-            if (isEdit) { const index = locationsData.findIndex(i => i.id == id); if (index !== -1) locationsData[index] = newItem; }
-            else locationsData.push(newItem);
-            localStorage.setItem('coway_locations', JSON.stringify(locationsData));
-            renderLocations();
-        }
-        closeModal();
-    } catch (error) {
-        alert('保存失败: ' + error.message);
-    } finally {
-        saveBtn.innerText = originalText;
-        saveBtn.disabled = false;
+function showStep(step) {
+    document.getElementById('stepAccount').classList.add('hidden');
+    document.getElementById('stepPin').classList.add('hidden');
+    document.getElementById(`step${step.charAt(0).toUpperCase() + step.slice(1)}`).classList.remove('hidden');
+    document.getElementById('loginError').innerText = '';
+    document.getElementById('pinError').innerText = '';
+}
+
+function validateAccount() {
+    const id = document.getElementById('loginId').value;
+    const pass = document.getElementById('loginPass').value;
+    if (id === VALID_ID && pass === VALID_PASS) {
+        showStep('pin');
+        setTimeout(() => document.querySelector('.pin-input').focus(), 100);
+    } else {
+        document.getElementById('loginError').innerText = '账号或密码错误';
     }
 }
 
-// ==================== 事件绑定 ====================
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('goToPinBtn').addEventListener('click', validateAccount);
-    document.getElementById('loginWithPinBtn').addEventListener('click', validatePin);
-    document.getElementById('backToAccountBtn').addEventListener('click', () => showStep('account'));
-    
-    setupPinInputs();
-    
-    document.getElementById('logoutBtn').addEventListener('click', logout);
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
-    document.getElementById('saveItemBtn').addEventListener('click', saveItem);
-    document.getElementById('addProductBtn').addEventListener('click', openProductModal);
-    document.getElementById('addCarouselBtn').addEventListener('click', openCarouselModal);
-    document.getElementById('addNoticeBtn').addEventListener('click', openNoticeModal);
-    document.getElementById('addAgentBtn').addEventListener('click', openAgentModal);
-    document.getElementById('addLocationBtn').addEventListener('click', openLocationModal);
-    
-    document.getElementById('addAboutSectionBtn')?.addEventListener('click', () => openAboutModal(-1));
-    document.getElementById('resetAboutBtn')?.addEventListener('click', resetAboutData);
-    document.getElementById('closeAboutModalBtn')?.addEventListener('click', closeAboutModal);
-    document.getElementById('cancelAboutModalBtn')?.addEventListener('click', closeAboutModal);
-    document.getElementById('saveAboutSectionBtn')?.addEventListener('click', saveAboutSection);
-    
-    document.querySelectorAll('.section-type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.section-type-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentAboutSectionType = btn.dataset.type;
-            updateAboutFieldsVisibility();
+function setupPinInputs() {
+    const inputs = document.querySelectorAll('.pin-input');
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            if (e.target.value.length === 1 && index < 5) inputs[index + 1].focus();
+            checkPinComplete();
         });
-    });
-    
-    document.getElementById('addStatFieldBtn')?.addEventListener('click', () => addStatField());
-    document.getElementById('addTeamMemberBtn')?.addEventListener('click', () => addTeamMemberField());
-    document.getElementById('addTimelineItemBtn')?.addEventListener('click', () => addTimelineItemField());
-    
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.dataset.tab;
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(`${tab}Panel`).classList.add('active');
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) inputs[index - 1].focus();
         });
-    });
-});
+        input.addEventListener('paste', (e
