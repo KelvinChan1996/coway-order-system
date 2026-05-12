@@ -11,37 +11,6 @@ let currentLang = 'zh';
 let currentCarouselSlide = 0;
 let carouselInterval = null;
 
-// 产品映射表
-const productMap = {
-    water: [
-        { id: 'coway_omba', name: 'Coway Omba', price: 'RM 3,999' },
-        { id: 'coway_neon', name: 'Coway Neon', price: 'RM 2,499' },
-        { id: 'coway_inline', name: 'Coway Inline', price: 'RM 1,899' }
-    ],
-    air: [
-        { id: 'coway_storm', name: 'Coway Storm', price: 'RM 2,299' },
-        { id: 'coway_breeze', name: 'Coway Breeze', price: 'RM 1,599' }
-    ],
-    ac: [
-        { id: 'coway_arctic', name: 'Coway Arctic', price: 'RM 3,199' }
-    ],
-    washer: [
-        { id: 'coway_washing_mate', name: 'Coway Washing Mate', price: 'RM 2,899' }
-    ],
-    toilet: [
-        { id: 'coway_bidet_plus', name: 'Coway Bidet Plus', price: 'RM 1,499' }
-    ],
-    massageChair: [
-        { id: 'coway_relax_pro', name: 'Coway Relax Pro', price: 'RM 8,999' }
-    ],
-    massageBed: [
-        { id: 'coway_dream_massage', name: 'Coway Dream Massage', price: 'RM 6,499' }
-    ],
-    bed: [
-        { id: 'coway_ergo_bed', name: 'Coway Ergo Bed', price: 'RM 4,999' }
-    ]
-};
-
 const categories = [
     { id: "all", nameKey: "products.all" },
     { id: "water", nameKey: "products.water" },
