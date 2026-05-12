@@ -32,8 +32,12 @@
             background: #fff; color: #333; padding: 12px 36px; border-radius: 50px;
             text-decoration: none; font-weight: 600; display: inline-block;
         }
-        .carousel-dots { position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; gap: 12px; z-index: 10; }
-        .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
+        .carousel-dots {
+            position: absolute; bottom: 30px; left: 0; right: 0; display: flex; justify-content: center; gap: 12px; z-index: 10;
+        }
+        .carousel-dot {
+            width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer;
+        }
         .carousel-dot.active { background: #fff; width: 28px; border-radius: 5px; }
         .carousel-prev, .carousel-next {
             position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px;
@@ -98,6 +102,7 @@
     </div>
 
     <script src="js/i18n.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/layout1.js"></script>
     <script>
         let carouselData = [];
@@ -109,10 +114,15 @@
             return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' })[m]);
         }
         
-        function loadCarousel() {
-            let saved = localStorage.getItem('coway_carousel');
-            carouselData = saved ? JSON.parse(saved) : [];
-            renderCarousel();
+        async function loadCarousel() {
+            try {
+                carouselData = await getCarousel();
+                renderCarousel();
+            } catch (e) {
+                console.error('加载轮播失败:', e);
+                carouselData = [];
+                renderCarousel();
+            }
         }
         
         function renderCarousel() {
@@ -121,8 +131,9 @@
             if (!container) return;
             container.innerHTML = '';
             if (!carouselData.length) {
-                container.innerHTML = '<div class="carousel-slide active" style="background-image:url(https://placehold.co/1600x550/80abce/white?text=Coway);"><div class="carousel-content"><h2>Coway Malaysia</h2><p>健康生活领导者</p></div></div>';
+                container.innerHTML = '<div class="carousel-slide active" style="background-image:url(https://placehold.co/1600x550/80abce/white?text=Coway);"><div class="carousel-content"><h2>Coway Malaysia</h2><p>健康生活领导者</p><a href="#" data-i18n="home.carousel.learnMore">了解更多 →</a></div></div>';
                 dotsContainer.innerHTML = '';
+                I18N.updatePage();
                 return;
             }
             carouselData.forEach((item, idx) => {
@@ -141,6 +152,7 @@
             });
             if (carouselInterval) clearInterval(carouselInterval);
             carouselInterval = setInterval(nextCarouselSlide, 6000);
+            I18N.updatePage();
         }
         
         function updateCarouselDisplay() {
@@ -153,21 +165,28 @@
         function goToCarouselSlide(idx) { currentCarouselSlide = idx; updateCarouselDisplay(); }
         function resetCarouselAutoPlay() { if (carouselInterval) clearInterval(carouselInterval); carouselInterval = setInterval(nextCarouselSlide, 6000); }
         
-        function loadNotices() {
+        async function loadNotices() {
             const container = document.getElementById('noticeContainer');
-            let notices = localStorage.getItem('coway_notices');
-            notices = notices ? JSON.parse(notices) : [];
-            if (!notices.length) { container.innerHTML = `<div class="empty-notice" data-i18n="home.emptyNotice">暂无公告，请稍后再来</div>`; I18N.updatePage(); return; }
-            renderNoticeCards(notices);
-            
-            window.addEventListener('languageChanged', () => {
-                const currentNotices = JSON.parse(localStorage.getItem('coway_notices')) || [];
-                renderNoticeCards(currentNotices);
-            });
+            try {
+                const notices = await getNotices();
+                renderNoticeCards(notices);
+                window.addEventListener('languageChanged', () => {
+                    getNotices().then(notices2 => renderNoticeCards(notices2));
+                });
+            } catch (e) {
+                console.error('加载公告失败:', e);
+                renderNoticeCards([]);
+            }
         }
         
         function renderNoticeCards(notices) {
             const container = document.getElementById('noticeContainer');
+            if (!container) return;
+            if (!notices.length) {
+                container.innerHTML = `<div class="empty-notice" data-i18n="home.emptyNotice">暂无公告，请稍后再来</div>`;
+                I18N.updatePage();
+                return;
+            }
             container.innerHTML = '';
             notices.forEach(n => {
                 const card = document.createElement('div');
