@@ -1,4 +1,4 @@
-// js/api.js - 统一 API 调用
+// js/api.js - 统一 API 调用（含进度条支持）
 const API_BASE = 'https://coway-api.recky1314.workers.dev/api';
 const ADMIN_TOKEN = 'coway_admin_168888';
 const UPLOAD_WORKER = 'https://coway-api.recky1314.workers.dev/upload';
@@ -55,48 +55,79 @@ async function saveAbout(about) { return await apiRequest('about', 'POST', about
 async function getFeedbacks() { return await apiRequest('feedbacks'); }
 async function saveFeedback(feedback) { return await apiRequest('feedbacks', 'POST', feedback, false); }
 
-// 图片上传函数
-async function uploadImageToWorker(file, statusElementId = null) {
+// ========== 带进度条的图片上传 ==========
+async function uploadImageToWorker(file, onProgress, statusElementId = null) {
     const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
-    try {
-        if (statusEl) { statusEl.textContent = '上传中...'; statusEl.className = 'upload-status uploading'; }
+    
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        // 上传进度
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable && onProgress) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                onProgress(percent);
+                if (statusEl) {
+                    statusEl.textContent = `上传中 ${percent}%...`;
+                    statusEl.className = 'upload-status uploading';
+                }
+            }
+        });
+        
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                try {
+                    const result = JSON.parse(xhr.responseText);
+                    if (statusEl) {
+                        statusEl.textContent = '上传成功';
+                        statusEl.className = 'upload-status success';
+                        setTimeout(() => statusEl.textContent = '', 3000);
+                    }
+                    resolve(result.url);
+                } catch (e) {
+                    reject(new Error('解析响应失败'));
+                }
+            } else {
+                reject(new Error(`上传失败: ${xhr.status}`));
+            }
+        });
+        
+        xhr.addEventListener('error', () => {
+            reject(new Error('网络错误'));
+        });
+        
+        xhr.open('POST', UPLOAD_WORKER);
+        xhr.setRequestHeader('X-Admin-Token', ADMIN_TOKEN);
         
         const formData = new FormData();
         formData.append('file', file);
-        
-        const response = await fetch(UPLOAD_WORKER, {
-            method: 'POST',
-            headers: {
-                'X-Admin-Token': ADMIN_TOKEN,
-            },
-            body: formData
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Upload failed: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        if (statusEl) { statusEl.textContent = '上传成功'; statusEl.className = 'upload-status success'; setTimeout(() => statusEl.textContent = '', 3000); }
-        return result.url;
-    } catch (error) {
-        if (statusEl) { statusEl.textContent = `上传失败: ${error.message}`; statusEl.className = 'upload-status error'; }
-        throw error;
-    }
+        xhr.send(formData);
+    });
 }
 
-async function uploadMultipleImagesToWorker(files, statusElementId = null) {
+// 多图片上传（带总体进度）
+async function uploadMultipleImagesToWorker(files, onFileProgress, onOverallProgress, statusElementId = null) {
     const urls = [];
+    const total = files.length;
+    
     for (let i = 0; i < files.length; i++) {
-        const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
-        if (statusEl) { statusEl.textContent = `上传中 (${i + 1}/${files.length})...`; statusEl.className = 'upload-status uploading'; }
-        urls.push(await uploadImageToWorker(files[i], null));
+        const file = files[i];
+        const fileIndex = i + 1;
+        
+        // 单文件进度
+        const url = await uploadImageToWorker(file, (percent) => {
+            if (onFileProgress) {
+                onFileProgress(fileIndex, total, percent);
+            }
+        }, statusElementId);
+        
+        urls.push(url);
+        
+        // 总体进度
+        if (onOverallProgress) {
+            onOverallProgress(Math.round((fileIndex / total) * 100));
+        }
     }
-    if (statusElementId) {
-        const statusEl = document.getElementById(statusElementId);
-        statusEl.textContent = `全部上传成功 (${urls.length} 张)`;
-        statusEl.className = 'upload-status success';
-        setTimeout(() => statusEl.textContent = '', 3000);
-    }
+    
     return urls;
 }
