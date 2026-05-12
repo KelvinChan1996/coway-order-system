@@ -262,43 +262,80 @@
         </div>
     </div>
 
-    <div id="orderModal" class="order-modal">
-        <div class="order-content">
-            <span class="modal-close" onclick="closeOrderModal()">&times;</span>
-            <h3 data-i18n="order.title">填写订单信息</h3>
-            <div class="selected-product-info" id="selectedProductInfo"></div>
-            <p style="background:#e8f5e9; padding:14px; border-radius:12px; margin-bottom:25px; color:#27ae60;" data-i18n="order.thankYou">
-                感谢您的订购！请填写以下信息完成注册。
-            </p>
-            <form id="orderForm">
-                <div class="form-group"><label data-i18n="order.icPhoto">IC 照片 (正面) *</label><input type="file" id="icUpload" accept="image/*"></div>
-                <div class="form-row2">
-                    <div class="form-group"><label data-i18n="order.contact1">联系电话 #1 *</label><input type="tel" id="contact1" required></div>
-                    <div class="form-group"><label data-i18n="order.contact2">联系电话 #2</label><input type="tel" id="contact2"></div>
-                </div>
-                <div class="form-group"><label data-i18n="order.address">安装地址 *</label><textarea id="address" rows="2" required></textarea></div>
-                <div class="checkbox-group"><input type="checkbox" id="differentDelivery"><label data-i18n="order.deliveryDiff">送货地址与安装地址不同</label></div>
-                <div class="form-group delivery-address" id="deliveryAddressGroup">
-                    <label data-i18n="order.deliveryAddr">送货地址</label><textarea id="deliveryAddress" rows="2"></textarea>
-                </div>
-                <div class="form-group"><label data-i18n="order.email">电子邮箱 *</label><input type="email" id="email" required></div>
-                <div class="form-row2">
-                    <div class="form-group"><label data-i18n="order.cardFirst6">银行卡 (前6位)</label><input type="text" id="cardFirst6" maxlength="6"></div>
-                    <div class="form-group"><label data-i18n="order.cardLast4">银行卡 (后4位)</label><input type="text" id="cardLast4" maxlength="4"></div>
-                </div>
-                <button type="submit" class="btn-submit" data-i18n="order.submit">提交订单</button>
-            </form>
-        </div>
+    <!-- 咨询弹窗 -->
+<div id="orderModal" class="order-modal">
+    <div class="order-content">
+        <span class="modal-close" onclick="closeOrderModal()">&times;</span>
+        <h3 data-i18n="order.enquiry.title">📝 产品咨询</h3>
+        
+        <div class="selected-product-info" id="selectedProductInfo"></div>
+        
+        <p style="background:#e8f5e9; padding:14px; border-radius:12px; margin-bottom:25px; color:#27ae60;" data-i18n="order.enquiry.thanks">
+            📋 请填写以下信息，我们的代理会尽快联系您。
+        </p>
+        
+        <form id="orderForm">
+            <!-- 姓名 -->
+            <div class="form-group">
+                <label data-i18n="order.enquiry.name">👤 您的姓名 *</label>
+                <input type="text" id="customerName" data-i18n-placeholder="order.enquiry.name.placeholder" placeholder="请输入您的姓名" required>
+            </div>
+            
+            <!-- 手机号码 -->
+            <div class="form-group">
+                <label data-i18n="order.enquiry.phone">📱 WhatsApp 手机号码 *</label>
+                <input type="tel" id="contactNumber" data-i18n-placeholder="order.enquiry.phone.placeholder" placeholder="例如: 0123456789" required>
+                <small style="color:#888; font-size:12px;">请填写可接收 WhatsApp 的马来西亚手机号码</small>
+            </div>
+            
+            <!-- 产品类型（选项表） -->
+            <div class="form-group">
+                <label data-i18n="order.enquiry.productType">📦 产品类型 *</label>
+                <select id="productTypeSelect" required>
+                    <option value="" data-i18n="order.enquiry.selectProductType">请选择产品类型</option>
+                    <option value="water" data-i18n="products.water">💧 水机</option>
+                    <option value="air" data-i18n="products.air">🌬️ 空气净化器</option>
+                    <option value="ac" data-i18n="products.ac">❄️ 冷气机</option>
+                    <option value="washer" data-i18n="products.washer">🧺 洗衣机</option>
+                    <option value="toilet" data-i18n="products.toilet">🚽 马桶</option>
+                    <option value="massageChair" data-i18n="products.massageChair">💆 按摩椅</option>
+                    <option value="massageBed" data-i18n="products.massageBed">🛏️ 按摩床</option>
+                    <option value="bed" data-i18n="products.bed">🛌 床</option>
+                </select>
+            </div>
+            
+            <!-- 具体产品（选项表） -->
+            <div class="form-group">
+                <label data-i18n="order.enquiry.product">🔧 具体产品 *</label>
+                <select id="productSelect" required>
+                    <option value="" data-i18n="order.enquiry.selectProduct">请选择具体产品</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 15px; margin-top: 25px;">
+                <button type="submit" class="btn-submit" style="flex:1;" data-i18n="order.enquiry.submit">📤 提交咨询</button>
+                <button type="button" class="btn-cancel" onclick="closeOrderModal()" style="flex:1; background:#95a5a6; color:#fff; border:none; border-radius:40px; padding:14px; font-weight:600; cursor:pointer;" data-i18n="order.enquiry.cancel">取消</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <div id="successModal" class="success-modal">
-        <div class="success-content">
-            <div class="success-icon">✓</div>
-            <h3 data-i18n="order.success.title">订单提交成功！</h3>
-            <p data-i18n="order.success.msg">感谢您提交的详细信息。我们将尽快处理您的订单。</p>
-            <button class="btn-ok" onclick="closeSuccessModal()" data-i18n="order.success.ok">确定</button>
+<!-- 成功弹窗（显示 Agent 电话） -->
+<div id="successModal" class="success-modal">
+    <div class="success-content">
+        <div class="success-icon">✓</div>
+        <h3 data-i18n="order.success.title">咨询已提交！</h3>
+        <p id="successMessage" data-i18n="order.enquiry.thanks">感谢您的咨询！我们的代理会尽快联系您。</p>
+        <div id="agentContactInfo" style="margin: 20px 0; padding: 15px; background: #f0f7ff; border-radius: 12px;">
+            <p style="margin-bottom: 10px; font-weight: 600;">📞 您也可以直接联系我们的代理：</p>
+            <a id="agentPhoneLink" href="#" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #25D366; color: #fff; padding: 12px 24px; border-radius: 40px; text-decoration: none; font-weight: 600; margin: 10px 0;">
+                💬 通过 WhatsApp 联系
+            </a>
+            <p style="font-size: 12px; color: #888; margin-top: 10px;">点击上方按钮将自动打开 WhatsApp 对话</p>
         </div>
+        <button class="btn-ok" onclick="closeSuccessModal()" data-i18n="order.success.ok">确定</button>
     </div>
+</div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
