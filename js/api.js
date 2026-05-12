@@ -1,5 +1,7 @@
 // js/api.js - 统一 API 调用
 const API_BASE = 'https://coway-api.recky1314.workers.dev/api';
+const ADMIN_TOKEN = 'coway_admin_168888';
+const UPLOAD_WORKER = 'https://coway-api.recky1314.workers.dev/upload';
 
 // 管理员密钥（必须与 admin 登录密码一致）
 const ADMIN_TOKEN = 'coway_admin_168888';
