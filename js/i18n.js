@@ -4,7 +4,7 @@ const I18N = {
     dict: {
         zh: {
             'nav.home': '首页',
-            'nav.order': '在线下单',
+            'nav.order': '产品',
             'nav.locations': '门店位置',
             'nav.support': '支持',
             'nav.about': '关于我们',
@@ -117,7 +117,7 @@ const I18N = {
         },
         en: {
             'nav.home': 'Home',
-            'nav.order': 'Order Now',
+            'nav.order': 'product',
             'nav.locations': 'Locations',
             'nav.support': 'Support',
             'nav.about': 'About Us',
