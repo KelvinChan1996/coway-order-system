@@ -1,24 +1,26 @@
-// ========== 关于我们数据 ==========
+// about.js - 关于我们页面（从 Cloudflare Worker API 读取）
+
 let aboutData = { sections: [] };
 
-// ========== 加载数据 ==========
-function loadAboutData() {
-    const saved = localStorage.getItem('coway_about');
-    if (saved) {
-        try {
-            aboutData = JSON.parse(saved);
-        } catch (e) {
-            aboutData = { sections: [] };
-        }
-    } else {
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+}
+
+async function loadAboutData() {
+    try {
+        const data = await getAbout();
+        aboutData = data && data.sections ? data : { sections: [] };
+    } catch (e) {
+        console.error('加载关于我们数据失败:', e);
         aboutData = { sections: [] };
     }
     renderAboutPage();
 }
 
-// ========== 渲染页面 ==========
 function renderAboutPage() {
     const container = document.getElementById('aboutContainer');
+    if (!container) return;
     
     if (!aboutData.sections || aboutData.sections.length === 0) {
         container.innerHTML = `
@@ -32,7 +34,6 @@ function renderAboutPage() {
     }
     
     let html = '';
-    
     aboutData.sections.forEach((section) => {
         switch (section.type) {
             case 'text':
@@ -61,6 +62,7 @@ function renderTextSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
+                ${section.icon ? `<i>${escapeHtml(section.icon)}</i>` : ''}
                 <span>${escapeHtml(section.title || '')}</span>
             </div>
             <div class="section-content">
@@ -90,6 +92,7 @@ function renderTeamSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
+                ${section.icon ? `<i>${escapeHtml(section.icon)}</i>` : ''}
                 <span>${escapeHtml(section.title || '团队介绍')}</span>
             </div>
             <div class="team-grid">
@@ -116,6 +119,7 @@ function renderTimelineSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
+                ${section.icon ? `<i>${escapeHtml(section.icon)}</i>` : ''}
                 <span>${escapeHtml(section.title || '发展历程')}</span>
             </div>
             <div class="timeline">
@@ -141,6 +145,7 @@ function renderStatsSection(section) {
     return `
         <div class="about-section">
             <div class="section-title">
+                ${section.icon ? `<i>${escapeHtml(section.icon)}</i>` : ''}
                 <span>${escapeHtml(section.title || '数据统计')}</span>
             </div>
             <div class="stats-grid">
@@ -155,26 +160,24 @@ function renderImageSection(section) {
         <div class="about-section">
             ${section.title ? `
                 <div class="section-title">
+                    ${section.icon ? `<i>${escapeHtml(section.icon)}</i>` : ''}
                     <span>${escapeHtml(section.title)}</span>
                 </div>
             ` : ''}
             <div class="section-content">
-                ${section.image ? `<img src="${section.image}" alt="${escapeHtml(section.title || '')}">` : ''}
+                ${section.image ? `<img src="${section.image}" alt="${escapeHtml(section.title || '')}" onerror="this.src='https://placehold.co/800x400/cccccc/white?text=No+Image'">` : ''}
                 ${section.caption ? `<p style="text-align:center; color:#888; margin-top:10px;">${escapeHtml(section.caption)}</p>` : ''}
             </div>
         </div>
     `;
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
-}
-
+// 语言切换时重新渲染
 window.addEventListener('languageChanged', () => {
     renderAboutPage();
 });
 
+// 页面加载
 document.addEventListener('DOMContentLoaded', () => {
     loadAboutData();
 });
