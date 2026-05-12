@@ -526,4 +526,81 @@ function setupPinInputs() {
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Backspace' && !e.target.value && index > 0) inputs[index - 1].focus();
         });
-        input.addEventListener('paste', (e
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            if (/^\d{6}$/.test(paste)) {
+                paste.split('').forEach((char, i) => { if (inputs[i]) inputs[i].value = char; });
+                checkPinComplete();
+            }
+        });
+    });
+}
+
+function getPinValue() { return Array.from(document.querySelectorAll('.pin-input')).map(i => i.value).join(''); }
+function checkPinComplete() { document.getElementById('loginWithPinBtn').disabled = getPinValue().length !== 6; }
+
+function validatePin() {
+    if (getPinValue() === VALID_PIN) {
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('adminPage').style.display = 'block';
+        loadAllData();
+    } else {
+        document.getElementById('pinError').innerText = '安全码错误';
+        document.querySelectorAll('.pin-input').forEach(i => i.value = '');
+        document.getElementById('loginWithPinBtn').disabled = true;
+        document.querySelector('.pin-input').focus();
+    }
+}
+
+function logout() {
+    document.getElementById('loginPage').style.display = 'block';
+    document.getElementById('adminPage').style.display = 'none';
+    document.getElementById('loginId').value = '';
+    document.getElementById('loginPass').value = '';
+    document.querySelectorAll('.pin-input').forEach(i => i.value = '');
+    document.getElementById('loginWithPinBtn').disabled = true;
+    showStep('account');
+}
+
+// ========== 事件绑定 ==========
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('goToPinBtn')?.addEventListener('click', validateAccount);
+    document.getElementById('loginWithPinBtn')?.addEventListener('click', validatePin);
+    document.getElementById('backToAccountBtn')?.addEventListener('click', () => showStep('account'));
+    setupPinInputs();
+    document.getElementById('logoutBtn')?.addEventListener('click', logout);
+    document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
+    document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
+    document.getElementById('saveItemBtn')?.addEventListener('click', saveItem);
+    document.getElementById('addProductBtn')?.addEventListener('click', () => openModal('product', null));
+    document.getElementById('addCarouselBtn')?.addEventListener('click', () => openModal('carousel', null));
+    document.getElementById('addNoticeBtn')?.addEventListener('click', () => openModal('notice', null));
+    document.getElementById('addAgentBtn')?.addEventListener('click', () => openModal('agent', null));
+    document.getElementById('addLocationBtn')?.addEventListener('click', () => openModal('location', null));
+    document.getElementById('addAboutSectionBtn')?.addEventListener('click', () => openAboutModal(-1));
+    document.getElementById('resetAboutBtn')?.addEventListener('click', resetAboutData);
+    document.getElementById('closeAboutModalBtn')?.addEventListener('click', closeAboutModal);
+    document.getElementById('cancelAboutModalBtn')?.addEventListener('click', closeAboutModal);
+    document.getElementById('saveAboutSectionBtn')?.addEventListener('click', saveAboutSection);
+    document.querySelectorAll('.section-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.section-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentAboutSectionType = btn.dataset.type;
+            updateAboutFieldsVisibility();
+        });
+    });
+    document.getElementById('addStatFieldBtn')?.addEventListener('click', () => addStatField());
+    document.getElementById('addTeamMemberBtn')?.addEventListener('click', () => addTeamMemberField());
+    document.getElementById('addTimelineItemBtn')?.addEventListener('click', () => addTimelineItemField());
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${tab}Panel`).classList.add('active');
+        });
+    });
+});
