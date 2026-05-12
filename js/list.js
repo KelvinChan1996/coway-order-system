@@ -124,23 +124,28 @@ function renderProducts() {
     });
 }
 
-// 更新具体产品下拉列表
+// 根据产品类型更新具体产品下拉列表（从后台数据读取）
 function updateProductSelect(productType) {
     const productSelect = document.getElementById('productSelect');
     if (!productSelect) return;
     
-    const products = productMap[productType] || [];
-    productSelect.innerHTML = '<option value="" data-i18n="order.enquiry.selectProduct">请选择具体产品</option>';
-    products.forEach(p => {
-        const option = document.createElement('option');
-        option.value = p.id;
-        option.textContent = `${p.name} - ${p.price}`;
-        option.dataset.name = p.name;
-        option.dataset.price = p.price;
-        productSelect.appendChild(option);
-    });
+    // 从后台产品数据中筛选对应类型的产品
+    const filteredProducts = productsData.filter(p => p.category === productType);
     
-    // 更新国际化
+    if (filteredProducts.length === 0) {
+        productSelect.innerHTML = '<option value="" data-i18n="order.enquiry.selectProduct">暂无产品，请稍后再来</option>';
+    } else {
+        productSelect.innerHTML = '<option value="" data-i18n="order.enquiry.selectProduct">请选择具体产品</option>';
+        filteredProducts.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = `${p.name} - ${p.price || '价格待定'}`;
+            option.dataset.name = p.name;
+            option.dataset.price = p.price || 'RM 0';
+            productSelect.appendChild(option);
+        });
+    }
+    
     I18N.updatePage();
 }
 
