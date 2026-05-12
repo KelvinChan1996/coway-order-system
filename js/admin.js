@@ -1,4 +1,4 @@
-// admin.js - 使用 Cloudflare Worker API 存储（含进度条）
+// admin.js - 使用 Cloudflare Worker API 存储（侧边栏版）
 
 // ========== 全局数据 ==========
 let productsData = [], carouselData = [], noticeData = [], agentsData = [], locationsData = [], aboutData = { sections: [] };
@@ -6,17 +6,23 @@ let currentAboutSectionType = 'text';
 
 // ========== 加载数据 ==========
 async function loadAllData() {
+    showProgress('正在加载数据...');
+    updateProgress(30, '连接服务器中...');
     try {
         const data = await getAllData();
+        updateProgress(60, '解析数据中...');
         productsData = data.products || [];
         carouselData = data.carousel || [];
         noticeData = data.notices || [];
         agentsData = data.agents || [];
         locationsData = data.locations || [];
         aboutData = data.about || { sections: [] };
-        showToast('数据加载成功', 'success');
+        updateProgress(100, '加载完成');
+        await new Promise(r => setTimeout(r, 300));
+        hideProgress();
     } catch (e) {
         console.error('加载数据失败:', e);
+        hideProgress();
         showToast('加载数据失败: ' + e.message, 'error');
         productsData = []; carouselData = []; noticeData = []; agentsData = []; locationsData = []; aboutData = { sections: [] };
     }
@@ -49,64 +55,29 @@ function showToast(message, type = 'info') {
         toast.style.cssText = `
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             padding: 12px 24px; border-radius: 40px; color: white; font-weight: 500;
-            z-index: 10000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            z-index: 10001; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+            font-size: 14px; white-space: nowrap;
         `;
         document.body.appendChild(toast);
     }
-    
     const colors = { success: '#27ae60', error: '#e74c3c', info: '#80abce' };
     toast.style.backgroundColor = colors[type] || colors.info;
     toast.textContent = message;
     toast.style.opacity = '1';
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-    }, 3000);
+    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
 }
 
-// ========== 进度条弹窗 ==========
-let progressModal = null;
-
-function showProgressModal(title) {
-    if (!progressModal) {
-        progressModal = document.createElement('div');
-        progressModal.id = 'progressModal';
-        progressModal.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 10001; display: flex;
-            justify-content: center; align-items: center; visibility: hidden;
-        `;
-        progressModal.innerHTML = `
-            <div style="background: white; padding: 30px; border-radius: 16px; min-width: 300px; text-align: center;">
-                <h3 id="progressTitle" style="margin-bottom: 20px; color: #2c3e50;">上传中</h3>
-                <div style="background: #e0e0e0; border-radius: 10px; overflow: hidden; height: 12px; margin: 20px 0;">
-                    <div id="progressBar" style="width: 0%; height: 100%; background: #80abce; transition: width 0.3s;"></div>
-                </div>
-                <div id="progressText" style="color: #666; font-size: 14px;">0%</div>
-                <div id="progressDetail" style="color: #999; font-size: 12px; margin-top: 10px;"></div>
-            </div>
-        `;
-        document.body.appendChild(progressModal);
-    }
-    
-    document.getElementById('progressTitle').textContent = title;
-    document.getElementById('progressBar').style.width = '0%';
-    document.getElementById('progressText').textContent = '0%';
-    document.getElementById('progressDetail').textContent = '';
-    progressModal.style.visibility = 'visible';
+// 进度条函数（由 HTML 中的全局函数提供）
+function showProgress(title) {
+    if (window.showProgressModal) window.showProgressModal(title);
+    else console.log('进度:', title);
 }
-
-function updateProgress(percent, detail = '') {
-    const bar = document.getElementById('progressBar');
-    const text = document.getElementById('progressText');
-    const detailEl = document.getElementById('progressDetail');
-    if (bar) bar.style.width = `${percent}%`;
-    if (text) text.textContent = `${percent}%`;
-    if (detailEl && detail) detailEl.textContent = detail;
+function updateProgress(percent, detail) {
+    if (window.updateProgressBar) window.updateProgressBar(percent, detail);
+    else console.log('进度:', percent + '%', detail);
 }
-
-function hideProgressModal() {
-    if (progressModal) progressModal.style.visibility = 'hidden';
+function hideProgress() {
+    if (window.hideProgressModal) window.hideProgressModal();
 }
 
 // ========== 辅助函数 ==========
@@ -121,122 +92,251 @@ function fileToBase64(file) {
     });
 }
 
-// ========== 渲染函数 ==========
+// 图片上传（带进度）
+async function uploadImageWithProgress(file, onProgress) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable && onProgress) {
+                onProgress(Math.round((e.loaded / e.total) * 100));
+            }
+        });
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 200) {
+                try {
+                    const result = JSON.parse(xhr.responseText);
+                    resolve(result.url);
+                } catch (e) { reject(new Error('解析响应失败')); }
+            } else { reject(new Error(`上传失败: ${xhr.status}`)); }
+        });
+        xhr.addEventListener('error', () => reject(new Error('网络错误')));
+        xhr.open('POST', 'https://coway-api.recky1314.workers.dev/upload');
+        xhr.setRequestHeader('X-Admin-Token', 'coway_admin_168888');
+        const formData = new FormData();
+        formData.append('file', file);
+        xhr.send(formData);
+    });
+}
+
+async function uploadImage(file, statusElementId = null) {
+    const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
+    try {
+        if (statusEl) { statusEl.textContent = '上传中...'; statusEl.className = 'upload-status uploading'; }
+        let lastPercent = 0;
+        const url = await uploadImageWithProgress(file, (percent) => {
+            if (statusEl) statusEl.textContent = `上传中 ${percent}%...`;
+            if (window.updateProgressBar) window.updateProgressBar(percent);
+        });
+        if (statusEl) { statusEl.textContent = '上传成功'; statusEl.className = 'upload-status success'; setTimeout(() => statusEl.textContent = '', 3000); }
+        return url;
+    } catch (error) {
+        if (statusEl) { statusEl.textContent = `上传失败: ${error.message}`; statusEl.className = 'upload-status error'; }
+        throw error;
+    }
+}
+
+async function uploadMultipleImages(files, statusElementId = null) {
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+        const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
+        if (statusEl) { statusEl.textContent = `上传中 (${i + 1}/${files.length})...`; statusEl.className = 'upload-status uploading'; }
+        if (window.updateProgressBar) window.updateProgressBar(Math.round((i / files.length) * 100), `正在上传第 ${i+1}/${files.length} 张`);
+        urls.push(await uploadImageWithProgress(files[i]));
+    }
+    if (statusElementId) {
+        const statusEl = document.getElementById(statusElementId);
+        statusEl.textContent = `全部上传成功 (${urls.length} 张)`;
+        statusEl.className = 'upload-status success';
+        setTimeout(() => statusEl.textContent = '', 3000);
+    }
+    return urls;
+}
+
+// ========== 表格渲染函数 ==========
 function renderProducts() {
     const container = document.getElementById('productsList');
-    if (!productsData.length) { container.innerHTML = '<div class="empty-msg">暂无商品</div>'; return; }
-    container.innerHTML = '';
+    if (!container) return;
+    if (!productsData.length) {
+        container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无商品，点击右上角"新增"添加</div></div>';
+        return;
+    }
+    let html = '<table class="data-table"><thead><table><th>图片</th><th>商品名称</th><th>分类</th><th>价格</th><th style="width:140px">操作</th></tr></thead><tbody>';
     productsData.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        const firstImage = p.images && p.images[0] ? `<img class="preview-img" src="${p.images[0]}">` : '<div class="preview-img" style="background:#ddd; display:flex;align-items:center;justify-content:center;">无图</div>';
-        div.innerHTML = `${firstImage}<div class="info"><h4>${escapeHtml(p.name)}</h4><p>${p.price}</p><small>${p.category}</small></div><div class="actions"><button class="btn-edit" data-id="${p.id}" data-type="product">编辑</button><button class="btn-delete" data-id="${p.id}" data-type="product">删除</button></div>`;
-        container.appendChild(div);
+        html += `<tr>
+            <td><img class="preview-img-sm" src="${p.images?.[0] || 'https://placehold.co/50x50/80abce/white?text=No'}" onerror="this.src='https://placehold.co/50x50/80abce/white?text=No'"></td>
+            <td><strong>${escapeHtml(p.name)}</strong><br><small style="color:#999;">${escapeHtml(p.desc_zh?.substring(0, 30))}...</small></td>
+            <td>${p.category || '-'}</td>
+            <td>${p.price || '-'}</td>
+            <td class="action-btns">
+                <button class="btn-edit-sm" data-id="${p.id}" data-type="product">编辑</button>
+                <button class="btn-delete-sm" data-id="${p.id}" data-type="product">删除</button>
+            </td>
+        </tr>`;
     });
-    bindItemEvents(container);
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    bindTableEvents(container);
 }
 
 function renderCarousel() {
     const container = document.getElementById('carouselList');
-    if (!carouselData.length) { container.innerHTML = '<div class="empty-msg">暂无广告</div>'; return; }
-    container.innerHTML = '';
+    if (!container) return;
+    if (!carouselData.length) {
+        container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无轮播广告，点击右上角"新增"添加</div></div>';
+        return;
+    }
+    let html = '<table class="data-table"><thead><tr><th>图片</th><th>标题</th><th>描述</th><th style="width:140px">操作</th></tr></thead><tbody>';
     carouselData.forEach(c => {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        div.innerHTML = `${c.image ? `<img class="preview-img" src="${c.image}">` : '<div class="preview-img" style="background:#ddd;">无图</div>'}<div class="info"><h4>${escapeHtml(c.title)}</h4><p>${escapeHtml(c.desc)}</p></div><div class="actions"><button class="btn-edit" data-id="${c.id}" data-type="carousel">编辑</button><button class="btn-delete" data-id="${c.id}" data-type="carousel">删除</button></div>`;
-        container.appendChild(div);
+        html += `<tr>
+            <td><img class="preview-img-sm" src="${c.image || 'https://placehold.co/50x50/80abce/white?text=No'}" onerror="this.src='https://placehold.co/50x50/80abce/white?text=No'"></td>
+            <td><strong>${escapeHtml(c.title)}</strong></td>
+            <td>${escapeHtml(c.desc?.substring(0, 50))}${c.desc?.length > 50 ? '...' : ''}</td>
+            <td class="action-btns">
+                <button class="btn-edit-sm" data-id="${c.id}" data-type="carousel">编辑</button>
+                <button class="btn-delete-sm" data-id="${c.id}" data-type="carousel">删除</button>
+            </td>
+        </tr>`;
     });
-    bindItemEvents(container);
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    bindTableEvents(container);
 }
 
 function renderNotices() {
     const container = document.getElementById('noticeList');
-    if (!noticeData.length) { container.innerHTML = '<div class="empty-msg">暂无公告</div>'; return; }
-    container.innerHTML = '';
+    if (!container) return;
+    if (!noticeData.length) {
+        container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无公告，点击右上角"新增"添加</div></div>';
+        return;
+    }
+    let html = '<table class="data-table"><thead><tr><th>图片</th><th>标题</th><th>内容</th><th>日期</th><th style="width:140px">操作</th></tr></thead><tbody>';
     noticeData.forEach(n => {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        div.innerHTML = `${n.image ? `<img class="preview-img" src="${n.image}">` : '<div class="preview-img" style="background:#ddd;">无图</div>'}<div class="info"><h4>${escapeHtml(n.title)}</h4><p>${escapeHtml(n.description)}</p><small>${n.date}</small></div><div class="actions"><button class="btn-edit" data-id="${n.id}" data-type="notice">编辑</button><button class="btn-delete" data-id="${n.id}" data-type="notice">删除</button></div>`;
-        container.appendChild(div);
+        html += `<tr>
+            <td><img class="preview-img-sm" src="${n.image || 'https://placehold.co/50x50/80abce/white?text=No'}" onerror="this.src='https://placehold.co/50x50/80abce/white?text=No'"></td>
+            <td><strong>${escapeHtml(n.title)}</strong></td>
+            <td>${escapeHtml(n.description?.substring(0, 50))}${n.description?.length > 50 ? '...' : ''}</td>
+            <td>${n.date || '-'}</td>
+            <td class="action-btns">
+                <button class="btn-edit-sm" data-id="${n.id}" data-type="notice">编辑</button>
+                <button class="btn-delete-sm" data-id="${n.id}" data-type="notice">删除</button>
+            </td>
+        </tr>`;
     });
-    bindItemEvents(container);
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    bindTableEvents(container);
 }
 
 function renderAgents() {
     const container = document.getElementById('agentsList');
-    if (!agentsData.length) { container.innerHTML = '<div class="empty-msg">暂无 Agent</div>'; return; }
-    container.innerHTML = '';
+    if (!container) return;
+    if (!agentsData.length) {
+        container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无 Agent，点击右上角"新增"添加</div></div>';
+        return;
+    }
+    let html = '<table class="data-table"><thead><tr><th>姓名</th><th>HP Code</th><th>联系方式</th><th>职位</th><th>单数</th><th style="width:140px">操作</th></tr></thead><tbody>';
     agentsData.forEach(a => {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        div.innerHTML = `<div class="info"><h4>${escapeHtml(a.name)} (${escapeHtml(a.hp_code)})</h4><p>${a.contact} | ${a.email || '-'}</p><p>${a.position} | DO: ${a.receipt}</p></div><div class="actions"><button class="btn-edit" data-id="${a.id}" data-type="agent">编辑</button><button class="btn-delete" data-id="${a.id}" data-type="agent">删除</button></div>`;
-        container.appendChild(div);
+        html += `<tr>
+            <td><strong>${escapeHtml(a.name)}</strong></td>
+            <td>${escapeHtml(a.hp_code) || '-'}</td>
+            <td>${a.contact || '-'}<br><small>${a.email || ''}</small></td>
+            <td>${a.position || '-'}</td>
+            <td>${a.receipt || 0}</td>
+            <td class="action-btns">
+                <button class="btn-edit-sm" data-id="${a.id}" data-type="agent">编辑</button>
+                <button class="btn-delete-sm" data-id="${a.id}" data-type="agent">删除</button>
+            </td>
+        </tr>`;
     });
-    bindItemEvents(container);
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    bindTableEvents(container);
 }
 
 function renderLocations() {
     const container = document.getElementById('locationsList');
-    if (!locationsData.length) { container.innerHTML = '<div class="empty-msg">暂无门店</div>'; return; }
-    container.innerHTML = '';
+    if (!container) return;
+    if (!locationsData.length) {
+        container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无门店，点击右上角"新增"添加</div></div>';
+        return;
+    }
+    let html = '<table class="data-table"><thead><tr><th>图片</th><th>门店名称</th><th>地址</th><th>电话</th><th style="width:140px">操作</th></tr></thead><tbody>';
     locationsData.forEach(l => {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        div.innerHTML = `${l.image ? `<img class="preview-img" src="${l.image}">` : '<div class="preview-img" style="background:#ddd;">无图</div>'}<div class="info"><h4>${escapeHtml(l.name)}</h4><p>${escapeHtml(l.address)}</p><small>${l.hours}</small></div><div class="actions"><button class="btn-edit" data-id="${l.id}" data-type="location">编辑</button><button class="btn-delete" data-id="${l.id}" data-type="location">删除</button></div>`;
-        container.appendChild(div);
+        html += `<tr>
+            <td><img class="preview-img-sm" src="${l.image || 'https://placehold.co/50x50/80abce/white?text=No'}" onerror="this.src='https://placehold.co/50x50/80abce/white?text=No'"></td>
+            <td><strong>${escapeHtml(l.name)}</strong></td>
+            <td>${escapeHtml(l.address?.substring(0, 40))}${l.address?.length > 40 ? '...' : ''}</td>
+            <td>${l.phone || '-'}</td>
+            <td class="action-btns">
+                <button class="btn-edit-sm" data-id="${l.id}" data-type="location">编辑</button>
+                <button class="btn-delete-sm" data-id="${l.id}" data-type="location">删除</button>
+            </td>
+        </tr>`;
     });
-    bindItemEvents(container);
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    bindTableEvents(container);
 }
 
 function renderAboutSections() {
     const container = document.getElementById('aboutSectionsList');
+    if (!container) return;
     if (!aboutData.sections || !aboutData.sections.length) {
-        container.innerHTML = '<div class="empty-msg">暂无区块，点击"新增区块"开始编辑</div>';
+        container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无区块，点击右上角"新增"添加</div></div>';
         return;
     }
-    container.innerHTML = '';
+    const typeNames = { text: '文本', stats: '统计', team: '团队', timeline: '时间线', image: '图片' };
+    let html = '<table class="data-table"><thead><tr><th>图标</th><th>标题</th><th>类型</th><th style="width:140px">操作</th></tr></thead><tbody>';
     aboutData.sections.forEach((section, index) => {
-        const div = document.createElement('div');
-        div.className = 'item-row';
-        const typeNames = { text: '文本', stats: '统计', team: '团队', timeline: '时间线', image: '图片' };
-        const typeName = typeNames[section.type] || section.type;
-        div.innerHTML = `<div class="info"><h4>${section.icon || ''} ${escapeHtml(section.title || '未命名区块')}</h4><p>类型: ${typeName}</p>${section.type === 'text' ? `<small>${escapeHtml((section.content || '').substring(0, 50))}...</small>` : ''}</div><div class="actions"><button class="btn-edit" data-index="${index}">编辑</button><button class="btn-delete" data-index="${index}">删除</button></div>`;
-        container.appendChild(div);
+        html += `<tr>
+            <td><span style="font-size:24px;">${section.icon || '📄'}</span></td>
+            <td><strong>${escapeHtml(section.title || '未命名区块')}</strong></td>
+            <td>${typeNames[section.type] || section.type}</td>
+            <td class="action-btns">
+                <button class="btn-edit-sm" data-index="${index}" data-type="about">编辑</button>
+                <button class="btn-delete-sm" data-index="${index}" data-type="about">删除</button>
+            </td>
+        </tr>`;
     });
-    bindAboutEvents(container);
+    html += '</tbody></table>';
+    container.innerHTML = html;
+    bindAboutTableEvents(container);
 }
 
-function bindItemEvents(container) {
-    container.querySelectorAll('.btn-edit').forEach(btn => {
+function bindTableEvents(container) {
+    container.querySelectorAll('.btn-edit-sm').forEach(btn => {
         btn.addEventListener('click', () => {
-            const id = btn.dataset.id;
+            const id = parseInt(btn.dataset.id);
             const type = btn.dataset.type;
-            if (type === 'product') openModal('product', productsData.find(i => i.id == id));
-            else if (type === 'carousel') openModal('carousel', carouselData.find(i => i.id == id));
-            else if (type === 'notice') openModal('notice', noticeData.find(i => i.id == id));
-            else if (type === 'agent') openModal('agent', agentsData.find(i => i.id == id));
-            else if (type === 'location') openModal('location', locationsData.find(i => i.id == id));
+            if (type === 'product') openModal('product', productsData.find(i => i.id === id));
+            else if (type === 'carousel') openModal('carousel', carouselData.find(i => i.id === id));
+            else if (type === 'notice') openModal('notice', noticeData.find(i => i.id === id));
+            else if (type === 'agent') openModal('agent', agentsData.find(i => i.id === id));
+            else if (type === 'location') openModal('location', locationsData.find(i => i.id === id));
         });
     });
-    container.querySelectorAll('.btn-delete').forEach(btn => {
+    container.querySelectorAll('.btn-delete-sm').forEach(btn => {
         btn.addEventListener('click', async () => {
-            const id = btn.dataset.id;
-            const type = btn.dataset.type;
             if (!confirm('确定删除？')) return;
-            if (type === 'product') { productsData = productsData.filter(i => i.id != id); await saveAllData('products', productsData); renderProducts(); }
-            else if (type === 'carousel') { carouselData = carouselData.filter(i => i.id != id); await saveAllData('carousel', carouselData); renderCarousel(); }
-            else if (type === 'notice') { noticeData = noticeData.filter(i => i.id != id); await saveAllData('notices', noticeData); renderNotices(); }
-            else if (type === 'agent') { agentsData = agentsData.filter(i => i.id != id); await saveAllData('agents', agentsData); renderAgents(); }
-            else if (type === 'location') { locationsData = locationsData.filter(i => i.id != id); await saveAllData('locations', locationsData); renderLocations(); }
+            const id = parseInt(btn.dataset.id);
+            const type = btn.dataset.type;
+            if (type === 'product') { productsData = productsData.filter(i => i.id !== id); await saveAllData('products', productsData); renderProducts(); }
+            else if (type === 'carousel') { carouselData = carouselData.filter(i => i.id !== id); await saveAllData('carousel', carouselData); renderCarousel(); }
+            else if (type === 'notice') { noticeData = noticeData.filter(i => i.id !== id); await saveAllData('notices', noticeData); renderNotices(); }
+            else if (type === 'agent') { agentsData = agentsData.filter(i => i.id !== id); await saveAllData('agents', agentsData); renderAgents(); }
+            else if (type === 'location') { locationsData = locationsData.filter(i => i.id !== id); await saveAllData('locations', locationsData); renderLocations(); }
         });
     });
 }
 
-function bindAboutEvents(container) {
-    container.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => openAboutModal(parseInt(btn.dataset.index)));
+function bindAboutTableEvents(container) {
+    container.querySelectorAll('.btn-edit-sm').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.dataset.index);
+            openAboutModal(index);
+        });
     });
-    container.querySelectorAll('.btn-delete').forEach(btn => {
+    container.querySelectorAll('.btn-delete-sm').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (!confirm('确定删除？')) return;
             const index = parseInt(btn.dataset.index);
@@ -359,80 +459,66 @@ async function saveItem() {
             const imageInput = document.getElementById('productImagesInput');
             let images = [];
             if (imageInput.files.length > 0) {
-                showProgressModal('正在上传商品图片...');
-                images = await uploadMultipleImagesToWorker(
-                    Array.from(imageInput.files),
-                    (current, total, percent) => {
-                        updateProgress(Math.round(((current - 1) / total) * 100 + percent / total), `正在上传第 ${current}/${total} 张图片...`);
-                    },
-                    (percent) => updateProgress(percent),
-                    'productUploadStatus'
-                );
-                hideProgressModal();
-            } else if (isEdit) { 
-                const existing = productsData.find(i => i.id == id); 
-                images = existing ? existing.images : []; 
-            }
+                showProgress('正在上传商品图片...');
+                images = await uploadMultipleImages(Array.from(imageInput.files), 'productUploadStatus');
+                hideProgress();
+            } else if (isEdit) { const existing = productsData.find(i => i.id == id); images = existing ? existing.images : []; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('productName').value, category: document.getElementById('productCategory').value, price: document.getElementById('productPrice').value, desc_zh: document.getElementById('productDescZh').value, desc_en: document.getElementById('productDescEn').value, images };
             if (isEdit) { const index = productsData.findIndex(i => i.id == id); if (index !== -1) productsData[index] = newItem; }
             else productsData.push(newItem);
             await saveAllData('products', productsData);
             renderProducts();
-            showToast('商品保存成功', 'success');
         } else if (type === 'agent') {
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('agentName').value, hp_code: document.getElementById('agentHpCode').value, contact: document.getElementById('agentContact').value, position: document.getElementById('agentPosition').value, receipt: parseInt(document.getElementById('agentReceipt').value) || 0, email: document.getElementById('agentEmail').value };
             if (isEdit) { const index = agentsData.findIndex(i => i.id == id); if (index !== -1) agentsData[index] = newItem; }
             else agentsData.push(newItem);
             await saveAllData('agents', agentsData);
             renderAgents();
-            showToast('Agent保存成功', 'success');
         } else if (type === 'carousel') {
             const imageInput = document.getElementById('carouselImageInput');
             let image = '';
             if (imageInput.files.length > 0) {
-                showProgressModal('正在上传轮播图片...');
-                image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'carouselUploadStatus');
-                hideProgressModal();
+                showProgress('正在上传轮播图片...');
+                image = await uploadImage(imageInput.files[0], 'carouselUploadStatus');
+                hideProgress();
             } else if (isEdit) { const existing = carouselData.find(i => i.id == id); image = existing ? existing.image : ''; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('carouselTitle').value, desc: document.getElementById('carouselDesc').value, image, link: document.getElementById('carouselLink').value };
             if (isEdit) { const index = carouselData.findIndex(i => i.id == id); if (index !== -1) carouselData[index] = newItem; }
             else carouselData.push(newItem);
             await saveAllData('carousel', carouselData);
             renderCarousel();
-            showToast('轮播保存成功', 'success');
         } else if (type === 'notice') {
             const imageInput = document.getElementById('noticeImageInput');
             let image = '';
             if (imageInput.files.length > 0) {
-                showProgressModal('正在上传公告图片...');
-                image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'noticeUploadStatus');
-                hideProgressModal();
+                showProgress('正在上传公告图片...');
+                image = await uploadImage(imageInput.files[0], 'noticeUploadStatus');
+                hideProgress();
             } else if (isEdit) { const existing = noticeData.find(i => i.id == id); image = existing ? existing.image : ''; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('noticeTitle').value, description: document.getElementById('noticeDesc').value, image, date: document.getElementById('noticeDate').value };
             if (isEdit) { const index = noticeData.findIndex(i => i.id == id); if (index !== -1) noticeData[index] = newItem; }
             else noticeData.unshift(newItem);
             await saveAllData('notices', noticeData);
             renderNotices();
-            showToast('公告保存成功', 'success');
         } else if (type === 'location') {
             const imageInput = document.getElementById('locationImageInput');
             let image = '';
             if (imageInput.files.length > 0) {
-                showProgressModal('正在上传门店图片...');
-                image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'locationUploadStatus');
-                hideProgressModal();
+                showProgress('正在上传门店图片...');
+                image = await uploadImage(imageInput.files[0], 'locationUploadStatus');
+                hideProgress();
             } else if (isEdit) { const existing = locationsData.find(i => i.id == id); image = existing ? existing.image : ''; }
             const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('locationName').value, image, address: document.getElementById('locationAddress').value, hours: document.getElementById('locationHours').value, phone: document.getElementById('locationPhone').value, wazeLink: document.getElementById('locationWaze').value };
             if (isEdit) { const index = locationsData.findIndex(i => i.id == id); if (index !== -1) locationsData[index] = newItem; }
             else locationsData.push(newItem);
             await saveAllData('locations', locationsData);
             renderLocations();
-            showToast('门店保存成功', 'success');
         }
         closeModal();
+        showToast('保存成功', 'success');
     } catch (error) {
         showToast('保存失败: ' + error.message, 'error');
-        hideProgressModal();
+        hideProgress();
     } finally {
         saveBtn.innerText = originalText;
         saveBtn.disabled = false;
@@ -539,9 +625,9 @@ async function saveAboutSection() {
     } else if (type === 'image') {
         const imageInput = document.getElementById('aboutImageInput');
         if (imageInput.files.length > 0) {
-            showProgressModal('正在上传图片...');
-            section.image = await uploadImageToWorker(imageInput.files[0], (percent) => updateProgress(percent), 'aboutImageUploadStatus');
-            hideProgressModal();
+            showProgress('正在上传图片...');
+            section.image = await uploadImage(imageInput.files[0], 'aboutImageUploadStatus');
+            hideProgress();
         } else section.image = document.getElementById('aboutImageUrl').value;
         section.caption = document.getElementById('aboutImageCaption').value;
     }
@@ -552,14 +638,12 @@ async function saveAboutSection() {
     await saveAllData('about', aboutData);
     renderAboutSections();
     closeAboutModal();
-    showToast('区块保存成功', 'success');
 }
 
 function resetAboutData() {
     if (!confirm('确定重置？')) return;
     aboutData = { sections: [] };
     saveAllData('about', aboutData).then(() => renderAboutSections());
-    showToast('已重置', 'success');
 }
 
 // ========== 登录验证 ==========
@@ -615,7 +699,6 @@ function validatePin() {
         document.getElementById('loginPage').style.display = 'none';
         document.getElementById('adminPage').style.display = 'block';
         loadAllData();
-        showToast('登录成功', 'success');
     } else {
         document.getElementById('pinError').innerText = '安全码错误';
         document.querySelectorAll('.pin-input').forEach(i => i.value = '');
@@ -644,13 +727,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
     document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
     document.getElementById('saveItemBtn')?.addEventListener('click', saveItem);
-    document.getElementById('addProductBtn')?.addEventListener('click', () => openModal('product', null));
-    document.getElementById('addCarouselBtn')?.addEventListener('click', () => openModal('carousel', null));
-    document.getElementById('addNoticeBtn')?.addEventListener('click', () => openModal('notice', null));
-    document.getElementById('addAgentBtn')?.addEventListener('click', () => openModal('agent', null));
-    document.getElementById('addLocationBtn')?.addEventListener('click', () => openModal('location', null));
-    document.getElementById('addAboutSectionBtn')?.addEventListener('click', () => openAboutModal(-1));
-    document.getElementById('resetAboutBtn')?.addEventListener('click', resetAboutData);
     document.getElementById('closeAboutModalBtn')?.addEventListener('click', closeAboutModal);
     document.getElementById('cancelAboutModalBtn')?.addEventListener('click', closeAboutModal);
     document.getElementById('saveAboutSectionBtn')?.addEventListener('click', saveAboutSection);
@@ -665,13 +741,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addStatFieldBtn')?.addEventListener('click', () => addStatField());
     document.getElementById('addTeamMemberBtn')?.addEventListener('click', () => addTeamMemberField());
     document.getElementById('addTimelineItemBtn')?.addEventListener('click', () => addTimelineItemField());
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.dataset.tab;
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(`${tab}Panel`).classList.add('active');
-        });
-    });
 });
