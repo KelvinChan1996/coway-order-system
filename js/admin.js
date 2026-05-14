@@ -67,7 +67,7 @@ function showToast(message, type = 'info') {
     setTimeout(() => { toast.style.opacity = '0'; }, 3000);
 }
 
-// 进度条函数（由 HTML 中的全局函数提供）
+// 进度条函数
 function showProgress(title) {
     if (window.showProgressModal) window.showProgressModal(title);
     else console.log('进度:', title);
@@ -122,7 +122,6 @@ async function uploadImage(file, statusElementId = null) {
     const statusEl = statusElementId ? document.getElementById(statusElementId) : null;
     try {
         if (statusEl) { statusEl.textContent = '上传中...'; statusEl.className = 'upload-status uploading'; }
-        let lastPercent = 0;
         const url = await uploadImageWithProgress(file, (percent) => {
             if (statusEl) statusEl.textContent = `上传中 ${percent}%...`;
             if (window.updateProgressBar) window.updateProgressBar(percent);
@@ -160,7 +159,7 @@ function renderProducts() {
         container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无商品，点击右上角"新增"添加</div></div>';
         return;
     }
-    let html = '<table class="data-table"><thead><table><th>图片</th><th>商品名称</th><th>分类</th><th>价格</th><th style="width:140px">操作</th></tr></thead><tbody>';
+    let html = '<table class="data-table"><thead><tr><th>图片</th><th>商品名称</th><th>分类</th><th>价格</th><th style="width:140px">操作</th></tr></thead><tbody>';
     productsData.forEach(p => {
         html += `<tr>
             <td><img class="preview-img-sm" src="${p.images?.[0] || 'https://placehold.co/50x50/80abce/white?text=No'}" onerror="this.src='https://placehold.co/50x50/80abce/white?text=No'"></td>
@@ -234,7 +233,7 @@ function renderAgents() {
         container.innerHTML = '<div class="empty-row"><div style="padding:60px; text-align:center; color:#999;">暂无 Agent，点击右上角"新增"添加</div></div>';
         return;
     }
-    let html = '<table class="data-table"><thead><tr><th>姓名</th><th>HP Code</th><th>联系方式</th><th>职位</th><th>单数</th><th style="width:140px">操作</th></tr></thead><tbody>';
+    let html = '<table class="data-table"><thead><tr><th>姓名</th><th>HP Code</th><th>联系方式</th><th>职位</th><th>单数</th><th style="width:140px">操作</th><tr></thead><tbody>';
     agentsData.forEach(a => {
         html += `<tr>
             <td><strong>${escapeHtml(a.name)}</strong></td>
@@ -348,7 +347,10 @@ function bindAboutTableEvents(container) {
 }
 
 // ========== 弹窗管理 ==========
-function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+function closeModal() { 
+    var modal = document.getElementById('editModal');
+    if (modal) modal.classList.remove('active');
+}
 
 function setupImagePreview(fileInputId, previewId, isMultiple = false) {
     const input = document.getElementById(fileInputId);
@@ -357,15 +359,15 @@ function setupImagePreview(fileInputId, previewId, isMultiple = false) {
     const newInput = input.cloneNode(true);
     input.parentNode.replaceChild(newInput, input);
     newInput.addEventListener('change', async function() {
-        preview.innerHTML = '';
+        if (preview) preview.innerHTML = '';
         if (isMultiple) {
             for (let file of this.files) {
                 const base64 = await fileToBase64(file);
                 const img = document.createElement('img');
                 img.src = base64;
-                preview.appendChild(img);
+                if (preview) preview.appendChild(img);
             }
-        } else if (this.files[0]) {
+        } else if (this.files[0] && preview) {
             const base64 = await fileToBase64(this.files[0]);
             const img = document.createElement('img');
             img.src = base64;
@@ -375,101 +377,202 @@ function setupImagePreview(fileInputId, previewId, isMultiple = false) {
 }
 
 function openModal(type, item) {
-    document.getElementById('editType').value = type;
-    document.getElementById('editId').value = item ? item.id : '';
-    ['product', 'agent', 'carousel', 'notice', 'location'].forEach(t => document.getElementById(`${t}Fields`).style.display = 'none');
-    const modalTitle = document.getElementById('modalTitle');
-
+    var editType = document.getElementById('editType');
+    var editId = document.getElementById('editId');
+    if (editType) editType.value = type;
+    if (editId) editId.value = item ? item.id : '';
+    
+    var fieldIds = ['productFields', 'agentFields', 'carouselFields', 'noticeFields', 'locationFields'];
+    for (var i = 0; i < fieldIds.length; i++) {
+        var field = document.getElementById(fieldIds[i]);
+        if (field) field.style.display = 'none';
+    }
+    
+    var modalTitle = document.getElementById('modalTitle');
+    
     if (type === 'product') {
-        document.getElementById('productFields').style.display = 'block';
-        modalTitle.innerText = item ? '编辑商品' : '新增商品';
-        document.getElementById('productName').value = item ? item.name : '';
-        document.getElementById('productCategory').value = item ? item.category : 'water';
-        document.getElementById('productPrice').value = item ? item.price : '';
-        document.getElementById('productDescZh').value = item ? item.desc_zh : '';
-        document.getElementById('productDescEn').value = item ? item.desc_en : '';
-        const previewDiv = document.getElementById('productImagesPreview');
-        const infoDiv = document.getElementById('productImagesInfo');
-        const statusDiv = document.getElementById('productUploadStatus');
-        previewDiv.innerHTML = ''; statusDiv.innerHTML = '';
-        if (item && item.images && item.images.length) {
-            item.images.forEach(img => { const imgEl = document.createElement('img'); imgEl.src = img; previewDiv.appendChild(imgEl); });
-            infoDiv.innerHTML = `当前有 ${item.images.length} 张图片，重新上传将替换`;
-        } else infoDiv.innerHTML = '暂无图片，请上传';
+        var productFields = document.getElementById('productFields');
+        if (productFields) productFields.style.display = 'block';
+        if (modalTitle) modalTitle.innerText = item ? '编辑商品' : '新增商品';
+        
+        var nameInput = document.getElementById('productName');
+        var categorySelect = document.getElementById('productCategory');
+        var priceInput = document.getElementById('productPrice');
+        var descZh = document.getElementById('productDescZh');
+        var descEn = document.getElementById('productDescEn');
+        
+        if (nameInput) nameInput.value = item ? item.name : '';
+        if (categorySelect) categorySelect.value = item ? item.category : 'water';
+        if (priceInput) priceInput.value = item ? item.price : '';
+        if (descZh) descZh.value = item ? item.desc_zh : '';
+        if (descEn) descEn.value = item ? item.desc_en : '';
+        
+        var previewDiv = document.getElementById('productImagesPreview');
+        var infoDiv = document.getElementById('productImagesInfo');
+        var statusDiv = document.getElementById('productUploadStatus');
+        if (previewDiv) previewDiv.innerHTML = '';
+        if (statusDiv) statusDiv.innerHTML = '';
+        if (infoDiv) {
+            if (item && item.images && item.images.length) {
+                for (var j = 0; j < item.images.length; j++) {
+                    var img = document.createElement('img');
+                    img.src = item.images[j];
+                    if (previewDiv) previewDiv.appendChild(img);
+                }
+                infoDiv.innerHTML = `当前有 ${item.images.length} 张图片，重新上传将替换`;
+            } else {
+                infoDiv.innerHTML = '暂无图片，请上传';
+            }
+        }
         setupImagePreview('productImagesInput', 'productImagesPreview', true);
     } else if (type === 'agent') {
-        document.getElementById('agentFields').style.display = 'block';
-        modalTitle.innerText = item ? '编辑 Agent' : '新增 Agent';
-        document.getElementById('agentName').value = item ? item.name : '';
-        document.getElementById('agentHpCode').value = item ? item.hp_code : '';
-        document.getElementById('agentContact').value = item ? item.contact : '';
-        document.getElementById('agentPosition').value = item ? item.position : 'HP';
-        document.getElementById('agentReceipt').value = item ? item.receipt : 0;
-        document.getElementById('agentEmail').value = item ? item.email : '';
+        var agentFields = document.getElementById('agentFields');
+        if (agentFields) agentFields.style.display = 'block';
+        if (modalTitle) modalTitle.innerText = item ? '编辑 Agent' : '新增 Agent';
+        
+        var agentName = document.getElementById('agentName');
+        var agentHpCode = document.getElementById('agentHpCode');
+        var agentContact = document.getElementById('agentContact');
+        var agentPosition = document.getElementById('agentPosition');
+        var agentReceipt = document.getElementById('agentReceipt');
+        var agentEmail = document.getElementById('agentEmail');
+        
+        if (agentName) agentName.value = item ? item.name : '';
+        if (agentHpCode) agentHpCode.value = item ? item.hp_code : '';
+        if (agentContact) agentContact.value = item ? item.contact : '';
+        if (agentPosition) agentPosition.value = item ? item.position : 'HP';
+        if (agentReceipt) agentReceipt.value = item ? item.receipt : 0;
+        if (agentEmail) agentEmail.value = item ? item.email : '';
     } else if (type === 'carousel') {
-        document.getElementById('carouselFields').style.display = 'block';
-        modalTitle.innerText = item ? '编辑广告' : '新增广告';
-        document.getElementById('carouselTitle').value = item ? item.title : '';
-        document.getElementById('carouselDesc').value = item ? item.desc : '';
-        document.getElementById('carouselLink').value = item ? item.link : '';
-        const previewDiv = document.getElementById('carouselImagePreview');
-        const statusDiv = document.getElementById('carouselUploadStatus');
-        previewDiv.innerHTML = ''; statusDiv.innerHTML = '';
-        if (item && item.image) { const imgEl = document.createElement('img'); imgEl.src = item.image; previewDiv.appendChild(imgEl); }
+        var carouselFields = document.getElementById('carouselFields');
+        if (carouselFields) carouselFields.style.display = 'block';
+        if (modalTitle) modalTitle.innerText = item ? '编辑广告' : '新增广告';
+        
+        var carouselTitle = document.getElementById('carouselTitle');
+        var carouselDesc = document.getElementById('carouselDesc');
+        var carouselLink = document.getElementById('carouselLink');
+        
+        if (carouselTitle) carouselTitle.value = item ? item.title : '';
+        if (carouselDesc) carouselDesc.value = item ? item.desc : '';
+        if (carouselLink) carouselLink.value = item ? item.link : '';
+        
+        var carouselPreview = document.getElementById('carouselImagePreview');
+        if (carouselPreview) carouselPreview.innerHTML = '';
+        if (item && item.image) {
+            var img = document.createElement('img');
+            img.src = item.image;
+            if (carouselPreview) carouselPreview.appendChild(img);
+        }
         setupImagePreview('carouselImageInput', 'carouselImagePreview', false);
     } else if (type === 'notice') {
-        document.getElementById('noticeFields').style.display = 'block';
-        modalTitle.innerText = item ? '编辑公告' : '新增公告';
-        document.getElementById('noticeTitle').value = item ? item.title : '';
-        document.getElementById('noticeDesc').value = item ? item.description : '';
-        document.getElementById('noticeDate').value = item ? item.date : new Date().toISOString().split('T')[0];
-        const previewDiv = document.getElementById('noticeImagePreview');
-        const statusDiv = document.getElementById('noticeUploadStatus');
-        previewDiv.innerHTML = ''; statusDiv.innerHTML = '';
-        if (item && item.image) { const imgEl = document.createElement('img'); imgEl.src = item.image; previewDiv.appendChild(imgEl); }
+        var noticeFields = document.getElementById('noticeFields');
+        if (noticeFields) noticeFields.style.display = 'block';
+        if (modalTitle) modalTitle.innerText = item ? '编辑公告' : '新增公告';
+        
+        var noticeTitle = document.getElementById('noticeTitle');
+        var noticeDesc = document.getElementById('noticeDesc');
+        var noticeDate = document.getElementById('noticeDate');
+        
+        if (noticeTitle) noticeTitle.value = item ? item.title : '';
+        if (noticeDesc) noticeDesc.value = item ? item.description : '';
+        if (noticeDate) noticeDate.value = item ? item.date : new Date().toISOString().split('T')[0];
+        
+        var noticePreview = document.getElementById('noticeImagePreview');
+        if (noticePreview) noticePreview.innerHTML = '';
+        if (item && item.image) {
+            var img = document.createElement('img');
+            img.src = item.image;
+            if (noticePreview) noticePreview.appendChild(img);
+        }
         setupImagePreview('noticeImageInput', 'noticeImagePreview', false);
     } else if (type === 'location') {
-        document.getElementById('locationFields').style.display = 'block';
-        modalTitle.innerText = item ? '编辑门店' : '新增门店';
-        document.getElementById('locationName').value = item ? item.name : '';
-        document.getElementById('locationAddress').value = item ? item.address : '';
-        document.getElementById('locationHours').value = item ? item.hours : '';
-        document.getElementById('locationPhone').value = item ? item.phone : '';
-        document.getElementById('locationWaze').value = item ? item.wazeLink : '';
-        const previewDiv = document.getElementById('locationImagePreview');
-        const statusDiv = document.getElementById('locationUploadStatus');
-        previewDiv.innerHTML = ''; statusDiv.innerHTML = '';
-        if (item && item.image) { const imgEl = document.createElement('img'); imgEl.src = item.image; previewDiv.appendChild(imgEl); }
+        var locationFields = document.getElementById('locationFields');
+        if (locationFields) locationFields.style.display = 'block';
+        if (modalTitle) modalTitle.innerText = item ? '编辑门店' : '新增门店';
+        
+        var locationName = document.getElementById('locationName');
+        var locationAddress = document.getElementById('locationAddress');
+        var locationHours = document.getElementById('locationHours');
+        var locationPhone = document.getElementById('locationPhone');
+        var locationWaze = document.getElementById('locationWaze');
+        
+        if (locationName) locationName.value = item ? item.name : '';
+        if (locationAddress) locationAddress.value = item ? item.address : '';
+        if (locationHours) locationHours.value = item ? item.hours : '';
+        if (locationPhone) locationPhone.value = item ? item.phone : '';
+        if (locationWaze) locationWaze.value = item ? item.wazeLink : '';
+        
+        var locationPreview = document.getElementById('locationImagePreview');
+        if (locationPreview) locationPreview.innerHTML = '';
+        if (item && item.image) {
+            var img = document.createElement('img');
+            img.src = item.image;
+            if (locationPreview) locationPreview.appendChild(img);
+        }
         setupImagePreview('locationImageInput', 'locationImagePreview', false);
     }
-    document.getElementById('editModal').classList.add('active');
+    
+    var editModal = document.getElementById('editModal');
+    if (editModal) editModal.classList.add('active');
 }
 
 async function saveItem() {
-    const type = document.getElementById('editType').value;
-    const id = document.getElementById('editId').value;
+    const type = document.getElementById('editType') ? document.getElementById('editType').value : '';
+    const id = document.getElementById('editId') ? document.getElementById('editId').value : '';
     const isEdit = id !== '';
     const saveBtn = document.getElementById('saveItemBtn');
-    const originalText = saveBtn.innerText;
-    saveBtn.innerText = '保存中...';
-    saveBtn.disabled = true;
+    const originalText = saveBtn ? saveBtn.innerText : '保存';
+    if (saveBtn) {
+        saveBtn.innerText = '保存中...';
+        saveBtn.disabled = true;
+    }
 
     try {
         if (type === 'product') {
             const imageInput = document.getElementById('productImagesInput');
             let images = [];
-            if (imageInput.files.length > 0) {
+            if (imageInput && imageInput.files.length > 0) {
                 showProgress('正在上传商品图片...');
                 images = await uploadMultipleImages(Array.from(imageInput.files), 'productUploadStatus');
                 hideProgress();
             } else if (isEdit) { const existing = productsData.find(i => i.id == id); images = existing ? existing.images : []; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('productName').value, category: document.getElementById('productCategory').value, price: document.getElementById('productPrice').value, desc_zh: document.getElementById('productDescZh').value, desc_en: document.getElementById('productDescEn').value, images };
+            
+            const nameInput = document.getElementById('productName');
+            const categorySelect = document.getElementById('productCategory');
+            const priceInput = document.getElementById('productPrice');
+            const descZh = document.getElementById('productDescZh');
+            const descEn = document.getElementById('productDescEn');
+            
+            const newItem = { 
+                id: isEdit ? parseInt(id) : Date.now(), 
+                name: nameInput ? nameInput.value : '',
+                category: categorySelect ? categorySelect.value : 'water',
+                price: priceInput ? priceInput.value : '',
+                desc_zh: descZh ? descZh.value : '',
+                desc_en: descEn ? descEn.value : '',
+                images 
+            };
             if (isEdit) { const index = productsData.findIndex(i => i.id == id); if (index !== -1) productsData[index] = newItem; }
             else productsData.push(newItem);
             await saveAllData('products', productsData);
             renderProducts();
         } else if (type === 'agent') {
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('agentName').value, hp_code: document.getElementById('agentHpCode').value, contact: document.getElementById('agentContact').value, position: document.getElementById('agentPosition').value, receipt: parseInt(document.getElementById('agentReceipt').value) || 0, email: document.getElementById('agentEmail').value };
+            const nameInput = document.getElementById('agentName');
+            const hpCodeInput = document.getElementById('agentHpCode');
+            const contactInput = document.getElementById('agentContact');
+            const positionSelect = document.getElementById('agentPosition');
+            const receiptInput = document.getElementById('agentReceipt');
+            const emailInput = document.getElementById('agentEmail');
+            
+            const newItem = { 
+                id: isEdit ? parseInt(id) : Date.now(), 
+                name: nameInput ? nameInput.value : '',
+                hp_code: hpCodeInput ? hpCodeInput.value : '',
+                contact: contactInput ? contactInput.value : '',
+                position: positionSelect ? positionSelect.value : 'HP',
+                receipt: receiptInput ? parseInt(receiptInput.value) || 0 : 0,
+                email: emailInput ? emailInput.value : ''
+            };
             if (isEdit) { const index = agentsData.findIndex(i => i.id == id); if (index !== -1) agentsData[index] = newItem; }
             else agentsData.push(newItem);
             await saveAllData('agents', agentsData);
@@ -477,12 +580,23 @@ async function saveItem() {
         } else if (type === 'carousel') {
             const imageInput = document.getElementById('carouselImageInput');
             let image = '';
-            if (imageInput.files.length > 0) {
+            if (imageInput && imageInput.files.length > 0) {
                 showProgress('正在上传轮播图片...');
                 image = await uploadImage(imageInput.files[0], 'carouselUploadStatus');
                 hideProgress();
             } else if (isEdit) { const existing = carouselData.find(i => i.id == id); image = existing ? existing.image : ''; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('carouselTitle').value, desc: document.getElementById('carouselDesc').value, image, link: document.getElementById('carouselLink').value };
+            
+            const titleInput = document.getElementById('carouselTitle');
+            const descInput = document.getElementById('carouselDesc');
+            const linkInput = document.getElementById('carouselLink');
+            
+            const newItem = { 
+                id: isEdit ? parseInt(id) : Date.now(), 
+                title: titleInput ? titleInput.value : '',
+                desc: descInput ? descInput.value : '',
+                image, 
+                link: linkInput ? linkInput.value : ''
+            };
             if (isEdit) { const index = carouselData.findIndex(i => i.id == id); if (index !== -1) carouselData[index] = newItem; }
             else carouselData.push(newItem);
             await saveAllData('carousel', carouselData);
@@ -490,12 +604,23 @@ async function saveItem() {
         } else if (type === 'notice') {
             const imageInput = document.getElementById('noticeImageInput');
             let image = '';
-            if (imageInput.files.length > 0) {
+            if (imageInput && imageInput.files.length > 0) {
                 showProgress('正在上传公告图片...');
                 image = await uploadImage(imageInput.files[0], 'noticeUploadStatus');
                 hideProgress();
             } else if (isEdit) { const existing = noticeData.find(i => i.id == id); image = existing ? existing.image : ''; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), title: document.getElementById('noticeTitle').value, description: document.getElementById('noticeDesc').value, image, date: document.getElementById('noticeDate').value };
+            
+            const titleInput = document.getElementById('noticeTitle');
+            const descInput = document.getElementById('noticeDesc');
+            const dateInput = document.getElementById('noticeDate');
+            
+            const newItem = { 
+                id: isEdit ? parseInt(id) : Date.now(), 
+                title: titleInput ? titleInput.value : '',
+                description: descInput ? descInput.value : '',
+                image, 
+                date: dateInput ? dateInput.value : new Date().toISOString().split('T')[0]
+            };
             if (isEdit) { const index = noticeData.findIndex(i => i.id == id); if (index !== -1) noticeData[index] = newItem; }
             else noticeData.unshift(newItem);
             await saveAllData('notices', noticeData);
@@ -503,12 +628,27 @@ async function saveItem() {
         } else if (type === 'location') {
             const imageInput = document.getElementById('locationImageInput');
             let image = '';
-            if (imageInput.files.length > 0) {
+            if (imageInput && imageInput.files.length > 0) {
                 showProgress('正在上传门店图片...');
                 image = await uploadImage(imageInput.files[0], 'locationUploadStatus');
                 hideProgress();
             } else if (isEdit) { const existing = locationsData.find(i => i.id == id); image = existing ? existing.image : ''; }
-            const newItem = { id: isEdit ? parseInt(id) : Date.now(), name: document.getElementById('locationName').value, image, address: document.getElementById('locationAddress').value, hours: document.getElementById('locationHours').value, phone: document.getElementById('locationPhone').value, wazeLink: document.getElementById('locationWaze').value };
+            
+            const nameInput = document.getElementById('locationName');
+            const addressInput = document.getElementById('locationAddress');
+            const hoursInput = document.getElementById('locationHours');
+            const phoneInput = document.getElementById('locationPhone');
+            const wazeInput = document.getElementById('locationWaze');
+            
+            const newItem = { 
+                id: isEdit ? parseInt(id) : Date.now(), 
+                name: nameInput ? nameInput.value : '',
+                image, 
+                address: addressInput ? addressInput.value : '',
+                hours: hoursInput ? hoursInput.value : '',
+                phone: phoneInput ? phoneInput.value : '',
+                wazeLink: wazeInput ? wazeInput.value : ''
+            };
             if (isEdit) { const index = locationsData.findIndex(i => i.id == id); if (index !== -1) locationsData[index] = newItem; }
             else locationsData.push(newItem);
             await saveAllData('locations', locationsData);
@@ -520,8 +660,10 @@ async function saveItem() {
         showToast('保存失败: ' + error.message, 'error');
         hideProgress();
     } finally {
-        saveBtn.innerText = originalText;
-        saveBtn.disabled = false;
+        if (saveBtn) {
+            saveBtn.innerText = originalText;
+            saveBtn.disabled = false;
+        }
     }
 }
 
@@ -529,107 +671,185 @@ async function saveItem() {
 function openAboutModal(index = -1) {
     currentAboutSectionType = 'text';
     const isEdit = index >= 0;
-    document.getElementById('aboutEditIndex').value = index;
-    document.getElementById('aboutModalTitle').innerText = isEdit ? '编辑区块' : '新增区块';
+    var aboutEditIndex = document.getElementById('aboutEditIndex');
+    if (aboutEditIndex) aboutEditIndex.value = index;
     
-    document.getElementById('aboutSectionTitle').value = '';
-    document.getElementById('aboutSectionIcon').value = '';
-    document.getElementById('aboutTextContent').value = '';
-    document.getElementById('aboutImageUrl').value = '';
-    document.getElementById('aboutImageCaption').value = '';
-    document.getElementById('aboutImagePreview').innerHTML = '';
-    document.getElementById('aboutImageUploadStatus').innerHTML = '';
-    document.getElementById('statsFieldsContainer').innerHTML = '';
-    document.getElementById('teamFieldsContainer').innerHTML = '';
-    document.getElementById('timelineFieldsContainer').innerHTML = '';
+    var aboutModalTitle = document.getElementById('aboutModalTitle');
+    if (aboutModalTitle) aboutModalTitle.innerText = isEdit ? '编辑区块' : '新增区块';
+    
+    var aboutSectionTitle = document.getElementById('aboutSectionTitle');
+    var aboutSectionIcon = document.getElementById('aboutSectionIcon');
+    var aboutTextContent = document.getElementById('aboutTextContent');
+    var aboutImageUrl = document.getElementById('aboutImageUrl');
+    var aboutImageCaption = document.getElementById('aboutImageCaption');
+    var aboutImagePreview = document.getElementById('aboutImagePreview');
+    var aboutImageUploadStatus = document.getElementById('aboutImageUploadStatus');
+    var statsFieldsContainer = document.getElementById('statsFieldsContainer');
+    var teamFieldsContainer = document.getElementById('teamFieldsContainer');
+    var timelineFieldsContainer = document.getElementById('timelineFieldsContainer');
+    
+    if (aboutSectionTitle) aboutSectionTitle.value = '';
+    if (aboutSectionIcon) aboutSectionIcon.value = '';
+    if (aboutTextContent) aboutTextContent.value = '';
+    if (aboutImageUrl) aboutImageUrl.value = '';
+    if (aboutImageCaption) aboutImageCaption.value = '';
+    if (aboutImagePreview) aboutImagePreview.innerHTML = '';
+    if (aboutImageUploadStatus) aboutImageUploadStatus.innerHTML = '';
+    if (statsFieldsContainer) statsFieldsContainer.innerHTML = '';
+    if (teamFieldsContainer) teamFieldsContainer.innerHTML = '';
+    if (timelineFieldsContainer) timelineFieldsContainer.innerHTML = '';
     
     if (isEdit) {
         const section = aboutData.sections[index];
-        document.getElementById('aboutSectionTitle').value = section.title || '';
-        document.getElementById('aboutSectionIcon').value = section.icon || '';
+        if (aboutSectionTitle) aboutSectionTitle.value = section.title || '';
+        if (aboutSectionIcon) aboutSectionIcon.value = section.icon || '';
         currentAboutSectionType = section.type;
-        if (section.type === 'text') document.getElementById('aboutTextContent').value = section.content || '';
+        if (section.type === 'text' && aboutTextContent) aboutTextContent.value = section.content || '';
         else if (section.type === 'stats' && section.stats) section.stats.forEach(stat => addStatField(stat.number, stat.label));
         else if (section.type === 'team' && section.members) section.members.forEach(m => addTeamMemberField(m.name, m.role, m.bio, m.avatar));
         else if (section.type === 'timeline' && section.items) section.items.forEach(item => addTimelineItemField(item.year, item.title, item.desc));
         else if (section.type === 'image') {
-            document.getElementById('aboutImageUrl').value = section.image || '';
-            document.getElementById('aboutImageCaption').value = section.caption || '';
-            if (section.image) { const img = document.createElement('img'); img.src = section.image; document.getElementById('aboutImagePreview').appendChild(img); }
+            if (aboutImageUrl) aboutImageUrl.value = section.image || '';
+            if (aboutImageCaption) aboutImageCaption.value = section.caption || '';
+            if (section.image && aboutImagePreview) {
+                var img = document.createElement('img');
+                img.src = section.image;
+                aboutImagePreview.appendChild(img);
+            }
         }
     }
     updateAboutFieldsVisibility();
-    document.querySelectorAll('.section-type-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.type === currentAboutSectionType));
+    
+    var typeBtns = document.querySelectorAll('.section-type-btn');
+    for (var i = 0; i < typeBtns.length; i++) {
+        var btn = typeBtns[i];
+        if (btn.dataset.type === currentAboutSectionType) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    }
     setupImagePreview('aboutImageInput', 'aboutImagePreview', false);
-    document.getElementById('aboutSectionModal').classList.add('active');
+    
+    var aboutModal = document.getElementById('aboutSectionModal');
+    if (aboutModal) aboutModal.classList.add('active');
 }
 
 function updateAboutFieldsVisibility() {
-    document.getElementById('aboutTextFields').style.display = currentAboutSectionType === 'text' ? 'block' : 'none';
-    document.getElementById('aboutStatsFields').style.display = currentAboutSectionType === 'stats' ? 'block' : 'none';
-    document.getElementById('aboutTeamFields').style.display = currentAboutSectionType === 'team' ? 'block' : 'none';
-    document.getElementById('aboutTimelineFields').style.display = currentAboutSectionType === 'timeline' ? 'block' : 'none';
-    document.getElementById('aboutImageFields').style.display = currentAboutSectionType === 'image' ? 'block' : 'none';
+    var aboutTextFields = document.getElementById('aboutTextFields');
+    var aboutStatsFields = document.getElementById('aboutStatsFields');
+    var aboutTeamFields = document.getElementById('aboutTeamFields');
+    var aboutTimelineFields = document.getElementById('aboutTimelineFields');
+    var aboutImageFields = document.getElementById('aboutImageFields');
+    
+    if (aboutTextFields) aboutTextFields.style.display = currentAboutSectionType === 'text' ? 'block' : 'none';
+    if (aboutStatsFields) aboutStatsFields.style.display = currentAboutSectionType === 'stats' ? 'block' : 'none';
+    if (aboutTeamFields) aboutTeamFields.style.display = currentAboutSectionType === 'team' ? 'block' : 'none';
+    if (aboutTimelineFields) aboutTimelineFields.style.display = currentAboutSectionType === 'timeline' ? 'block' : 'none';
+    if (aboutImageFields) aboutImageFields.style.display = currentAboutSectionType === 'image' ? 'block' : 'none';
 }
 
 function addStatField(number = '', label = '') {
-    const container = document.getElementById('statsFieldsContainer');
-    const div = document.createElement('div');
+    var container = document.getElementById('statsFieldsContainer');
+    if (!container) return;
+    var div = document.createElement('div');
     div.className = 'field-item';
     div.innerHTML = `<div class="field-header"><h4>统计项</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div><input type="text" class="stat-number" placeholder="数值" value="${escapeHtml(number)}" style="margin-bottom:10px;"><input type="text" class="stat-label" placeholder="标签" value="${escapeHtml(label)}">`;
     container.appendChild(div);
 }
 
 function addTeamMemberField(name = '', role = '', bio = '', avatar = '') {
-    const container = document.getElementById('teamFieldsContainer');
-    const div = document.createElement('div');
+    var container = document.getElementById('teamFieldsContainer');
+    if (!container) return;
+    var div = document.createElement('div');
     div.className = 'field-item';
     div.innerHTML = `<div class="field-header"><h4>成员</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div><input type="text" class="member-name" placeholder="姓名" value="${escapeHtml(name)}" style="margin-bottom:10px;"><input type="text" class="member-role" placeholder="职位" value="${escapeHtml(role)}" style="margin-bottom:10px;"><textarea class="member-bio" placeholder="简介" rows="2" style="margin-bottom:10px;">${escapeHtml(bio)}</textarea><input type="text" class="member-avatar" placeholder="头像 URL" value="${escapeHtml(avatar)}">`;
     container.appendChild(div);
 }
 
 function addTimelineItemField(year = '', title = '', desc = '') {
-    const container = document.getElementById('timelineFieldsContainer');
-    const div = document.createElement('div');
+    var container = document.getElementById('timelineFieldsContainer');
+    if (!container) return;
+    var div = document.createElement('div');
     div.className = 'field-item';
     div.innerHTML = `<div class="field-header"><h4>事件</h4><button class="btn-remove-field" onclick="this.parentElement.parentElement.remove()">移除</button></div><input type="text" class="timeline-year" placeholder="年份" value="${escapeHtml(year)}" style="margin-bottom:10px;"><input type="text" class="timeline-title" placeholder="标题" value="${escapeHtml(title)}" style="margin-bottom:10px;"><textarea class="timeline-desc" placeholder="描述" rows="2">${escapeHtml(desc)}</textarea>`;
     container.appendChild(div);
 }
 
-function closeAboutModal() { document.getElementById('aboutSectionModal').classList.remove('active'); }
+function closeAboutModal() { 
+    var modal = document.getElementById('aboutSectionModal');
+    if (modal) modal.classList.remove('active');
+}
 
 async function saveAboutSection() {
-    const index = document.getElementById('aboutEditIndex').value;
+    var indexEl = document.getElementById('aboutEditIndex');
+    const index = indexEl ? indexEl.value : '';
     const isEdit = index !== '' && index !== '-1';
-    const title = document.getElementById('aboutSectionTitle').value;
-    const icon = document.getElementById('aboutSectionIcon').value;
+    
+    var titleEl = document.getElementById('aboutSectionTitle');
+    var iconEl = document.getElementById('aboutSectionIcon');
+    const title = titleEl ? titleEl.value : '';
+    const icon = iconEl ? iconEl.value : '';
     const type = currentAboutSectionType;
     let section = { type, title, icon };
     
-    if (type === 'text') section.content = document.getElementById('aboutTextContent').value;
-    else if (type === 'stats') {
+    if (type === 'text') {
+        var contentEl = document.getElementById('aboutTextContent');
+        section.content = contentEl ? contentEl.value : '';
+    } else if (type === 'stats') {
         section.stats = [];
-        document.querySelectorAll('#statsFieldsContainer .field-item').forEach(item => {
-            section.stats.push({ number: item.querySelector('.stat-number').value, label: item.querySelector('.stat-label').value });
-        });
+        var statItems = document.querySelectorAll('#statsFieldsContainer .field-item');
+        for (var i = 0; i < statItems.length; i++) {
+            var item = statItems[i];
+            var numberInput = item.querySelector('.stat-number');
+            var labelInput = item.querySelector('.stat-label');
+            section.stats.push({ 
+                number: numberInput ? numberInput.value : '', 
+                label: labelInput ? labelInput.value : '' 
+            });
+        }
     } else if (type === 'team') {
         section.members = [];
-        document.querySelectorAll('#teamFieldsContainer .field-item').forEach(item => {
-            section.members.push({ name: item.querySelector('.member-name').value, role: item.querySelector('.member-role').value, bio: item.querySelector('.member-bio').value, avatar: item.querySelector('.member-avatar').value });
-        });
+        var memberItems = document.querySelectorAll('#teamFieldsContainer .field-item');
+        for (var i = 0; i < memberItems.length; i++) {
+            var item = memberItems[i];
+            var nameInput = item.querySelector('.member-name');
+            var roleInput = item.querySelector('.member-role');
+            var bioInput = item.querySelector('.member-bio');
+            var avatarInput = item.querySelector('.member-avatar');
+            section.members.push({ 
+                name: nameInput ? nameInput.value : '',
+                role: roleInput ? roleInput.value : '',
+                bio: bioInput ? bioInput.value : '',
+                avatar: avatarInput ? avatarInput.value : ''
+            });
+        }
     } else if (type === 'timeline') {
         section.items = [];
-        document.querySelectorAll('#timelineFieldsContainer .field-item').forEach(item => {
-            section.items.push({ year: item.querySelector('.timeline-year').value, title: item.querySelector('.timeline-title').value, desc: item.querySelector('.timeline-desc').value });
-        });
+        var timelineItems = document.querySelectorAll('#timelineFieldsContainer .field-item');
+        for (var i = 0; i < timelineItems.length; i++) {
+            var item = timelineItems[i];
+            var yearInput = item.querySelector('.timeline-year');
+            var titleInput = item.querySelector('.timeline-title');
+            var descInput = item.querySelector('.timeline-desc');
+            section.items.push({ 
+                year: yearInput ? yearInput.value : '',
+                title: titleInput ? titleInput.value : '',
+                desc: descInput ? descInput.value : ''
+            });
+        }
     } else if (type === 'image') {
         const imageInput = document.getElementById('aboutImageInput');
-        if (imageInput.files.length > 0) {
+        if (imageInput && imageInput.files.length > 0) {
             showProgress('正在上传图片...');
             section.image = await uploadImage(imageInput.files[0], 'aboutImageUploadStatus');
             hideProgress();
-        } else section.image = document.getElementById('aboutImageUrl').value;
-        section.caption = document.getElementById('aboutImageCaption').value;
+        } else {
+            var imageUrlEl = document.getElementById('aboutImageUrl');
+            section.image = imageUrlEl ? imageUrlEl.value : '';
+        }
+        var captionEl = document.getElementById('aboutImageCaption');
+        section.caption = captionEl ? captionEl.value : '';
     }
     
     if (isEdit) aboutData.sections[parseInt(index)] = section;
@@ -652,21 +872,34 @@ const VALID_PASS = "A888888";
 const VALID_PIN = "168888";
 
 function showStep(step) {
-    document.getElementById('stepAccount').classList.add('hidden');
-    document.getElementById('stepPin').classList.add('hidden');
-    document.getElementById(`step${step.charAt(0).toUpperCase() + step.slice(1)}`).classList.remove('hidden');
-    document.getElementById('loginError').innerText = '';
-    document.getElementById('pinError').innerText = '';
+    var stepAccount = document.getElementById('stepAccount');
+    var stepPin = document.getElementById('stepPin');
+    if (stepAccount) stepAccount.classList.add('hidden');
+    if (stepPin) stepPin.classList.add('hidden');
+    
+    var targetStep = document.getElementById(`step${step.charAt(0).toUpperCase() + step.slice(1)}`);
+    if (targetStep) targetStep.classList.remove('hidden');
+    
+    var loginError = document.getElementById('loginError');
+    var pinError = document.getElementById('pinError');
+    if (loginError) loginError.innerText = '';
+    if (pinError) pinError.innerText = '';
 }
 
 function validateAccount() {
-    const id = document.getElementById('loginId').value;
-    const pass = document.getElementById('loginPass').value;
+    var idInput = document.getElementById('loginId');
+    var passInput = document.getElementById('loginPass');
+    const id = idInput ? idInput.value : '';
+    const pass = passInput ? passInput.value : '';
     if (id === VALID_ID && pass === VALID_PASS) {
         showStep('pin');
-        setTimeout(() => document.querySelector('.pin-input').focus(), 100);
+        setTimeout(() => {
+            var firstPin = document.querySelector('.pin-input');
+            if (firstPin) firstPin.focus();
+        }, 100);
     } else {
-        document.getElementById('loginError').innerText = '账号或密码错误';
+        var loginError = document.getElementById('loginError');
+        if (loginError) loginError.innerText = '账号或密码错误';
     }
 }
 
@@ -691,58 +924,107 @@ function setupPinInputs() {
     });
 }
 
-function getPinValue() { return Array.from(document.querySelectorAll('.pin-input')).map(i => i.value).join(''); }
-function checkPinComplete() { document.getElementById('loginWithPinBtn').disabled = getPinValue().length !== 6; }
+function getPinValue() { 
+    var inputs = document.querySelectorAll('.pin-input');
+    var values = [];
+    for (var i = 0; i < inputs.length; i++) {
+        values.push(inputs[i].value);
+    }
+    return values.join('');
+}
+function checkPinComplete() { 
+    var loginBtn = document.getElementById('loginWithPinBtn');
+    if (loginBtn) loginBtn.disabled = getPinValue().length !== 6;
+}
 
 function validatePin() {
     if (getPinValue() === VALID_PIN) {
-        document.getElementById('loginPage').style.display = 'none';
-        document.getElementById('adminPage').style.display = 'block';
+        var loginPage = document.getElementById('loginPage');
+        var adminPage = document.getElementById('adminPage');
+        if (loginPage) loginPage.style.display = 'none';
+        if (adminPage) adminPage.style.display = 'block';
         loadAllData();
     } else {
-        document.getElementById('pinError').innerText = '安全码错误';
-        document.querySelectorAll('.pin-input').forEach(i => i.value = '');
-        document.getElementById('loginWithPinBtn').disabled = true;
-        document.querySelector('.pin-input').focus();
+        var pinError = document.getElementById('pinError');
+        if (pinError) pinError.innerText = '安全码错误';
+        var pinInputs = document.querySelectorAll('.pin-input');
+        for (var i = 0; i < pinInputs.length; i++) {
+            pinInputs[i].value = '';
+        }
+        var loginBtn = document.getElementById('loginWithPinBtn');
+        if (loginBtn) loginBtn.disabled = true;
+        var firstPin = document.querySelector('.pin-input');
+        if (firstPin) firstPin.focus();
     }
 }
 
 function logout() {
-    document.getElementById('loginPage').style.display = 'block';
-    document.getElementById('adminPage').style.display = 'none';
-    document.getElementById('loginId').value = '';
-    document.getElementById('loginPass').value = '';
-    document.querySelectorAll('.pin-input').forEach(i => i.value = '');
-    document.getElementById('loginWithPinBtn').disabled = true;
+    var loginPage = document.getElementById('loginPage');
+    var adminPage = document.getElementById('adminPage');
+    if (loginPage) loginPage.style.display = 'block';
+    if (adminPage) adminPage.style.display = 'none';
+    
+    var loginId = document.getElementById('loginId');
+    var loginPass = document.getElementById('loginPass');
+    if (loginId) loginId.value = '';
+    if (loginPass) loginPass.value = '';
+    
+    var pinInputs = document.querySelectorAll('.pin-input');
+    for (var i = 0; i < pinInputs.length; i++) {
+        pinInputs[i].value = '';
+    }
+    var loginBtn = document.getElementById('loginWithPinBtn');
+    if (loginBtn) loginBtn.disabled = true;
     showStep('account');
 }
 
 // ========== 事件绑定 ==========
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('goToPinBtn')?.addEventListener('click', validateAccount);
-    document.getElementById('loginWithPinBtn')?.addEventListener('click', validatePin);
-    document.getElementById('backToAccountBtn')?.addEventListener('click', () => showStep('account'));
+    var goToPinBtn = document.getElementById('goToPinBtn');
+    var loginWithPinBtn = document.getElementById('loginWithPinBtn');
+    var backToAccountBtn = document.getElementById('backToAccountBtn');
+    var logoutBtn = document.getElementById('logoutBtn');
+    var closeModalBtn = document.getElementById('closeModalBtn');
+    var cancelModalBtn = document.getElementById('cancelModalBtn');
+    var saveItemBtn = document.getElementById('saveItemBtn');
+    var closeAboutModalBtn = document.getElementById('closeAboutModalBtn');
+    var cancelAboutModalBtn = document.getElementById('cancelAboutModalBtn');
+    var saveAboutSectionBtn = document.getElementById('saveAboutSectionBtn');
+    var addStatFieldBtn = document.getElementById('addStatFieldBtn');
+    var addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+    var addTimelineItemBtn = document.getElementById('addTimelineItemBtn');
+    
+    if (goToPinBtn) goToPinBtn.addEventListener('click', validateAccount);
+    if (loginWithPinBtn) loginWithPinBtn.addEventListener('click', validatePin);
+    if (backToAccountBtn) backToAccountBtn.addEventListener('click', () => showStep('account'));
     setupPinInputs();
-    document.getElementById('logoutBtn')?.addEventListener('click', logout);
-    document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
-    document.getElementById('cancelModalBtn')?.addEventListener('click', closeModal);
-    document.getElementById('saveItemBtn')?.addEventListener('click', saveItem);
-    document.getElementById('closeAboutModalBtn')?.addEventListener('click', closeAboutModal);
-    document.getElementById('cancelAboutModalBtn')?.addEventListener('click', closeAboutModal);
-    document.getElementById('saveAboutSectionBtn')?.addEventListener('click', saveAboutSection);
-    document.querySelectorAll('.section-type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.section-type-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentAboutSectionType = btn.dataset.type;
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeModal);
+    if (saveItemBtn) saveItemBtn.addEventListener('click', saveItem);
+    if (closeAboutModalBtn) closeAboutModalBtn.addEventListener('click', closeAboutModal);
+    if (cancelAboutModalBtn) cancelAboutModalBtn.addEventListener('click', closeAboutModal);
+    if (saveAboutSectionBtn) saveAboutSectionBtn.addEventListener('click', saveAboutSection);
+    
+    var typeBtns = document.querySelectorAll('.section-type-btn');
+    for (var i = 0; i < typeBtns.length; i++) {
+        typeBtns[i].addEventListener('click', function() {
+            var btns = document.querySelectorAll('.section-type-btn');
+            for (var j = 0; j < btns.length; j++) {
+                btns[j].classList.remove('active');
+            }
+            this.classList.add('active');
+            currentAboutSectionType = this.dataset.type;
             updateAboutFieldsVisibility();
         });
-    });
-    document.getElementById('addStatFieldBtn')?.addEventListener('click', () => addStatField());
-    document.getElementById('addTeamMemberBtn')?.addEventListener('click', () => addTeamMemberField());
-    document.getElementById('addTimelineItemBtn')?.addEventListener('click', () => addTimelineItemField());
+    }
+    
+    if (addStatFieldBtn) addStatFieldBtn.addEventListener('click', () => addStatField());
+    if (addTeamMemberBtn) addTeamMemberBtn.addEventListener('click', () => addTeamMemberField());
+    if (addTimelineItemBtn) addTimelineItemBtn.addEventListener('click', () => addTimelineItemField());
 });
-// ========== 暴露函数给全局作用域（供 HTML 调用）==========
+
+// ========== 暴露函数给全局作用域 ==========
 window.openModal = openModal;
 window.openAboutModal = openAboutModal;
 window.closeModal = closeModal;
