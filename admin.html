@@ -64,72 +64,111 @@
         .back-link { margin-top: 15px; color: #80abce; cursor: pointer; font-size: 14px; }
         .error-msg { color: #e74c3c; margin-top: 15px; font-size: 14px; }
 
-        /* ========== Admin 布局 ========== */
+        /* ========== Admin 侧边栏布局 ========== */
         #adminPage {
             display: none;
             min-height: 100vh;
         }
 
-        /* 顶部导航栏 */
-        .admin-topbar {
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 15px 30px;
+        .admin-layout {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            min-height: 100vh;
         }
-        .admin-logo {
+
+        /* 左侧边栏 */
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50 0%, #1a2632 100%);
+            color: #fff;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-logo {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        .admin-logo img {
+
+        .sidebar-logo img {
             height: 40px;
+            width: auto;
         }
-        .admin-logo span {
+
+        .sidebar-logo span {
             font-size: 20px;
             font-weight: 700;
             color: #80abce;
         }
-        .admin-menu {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
         }
-        .admin-menu button {
-            padding: 10px 20px;
-            background: #f0f2f5;
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+            border-radius: 12px;
+        }
+
+        .sidebar-menu button {
+            width: 100%;
+            padding: 14px 18px;
+            background: transparent;
             border: none;
-            border-radius: 30px;
-            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            font-size: 15px;
             font-weight: 500;
+            text-align: left;
             cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
         }
-        .admin-menu button.active {
+
+        .sidebar-menu button i {
+            font-size: 20px;
+            width: 24px;
+        }
+
+        .sidebar-menu button:hover {
+            background: rgba(128, 171, 206, 0.2);
+            color: #fff;
+        }
+
+        .sidebar-menu button.active {
             background: #80abce;
             color: #fff;
         }
-        .admin-menu button:hover:not(.active) {
-            background: #e0e4e8;
-        }
-        .logout-btn {
-            background: #e74c3c !important;
-            color: #fff !important;
-        }
-        .logout-btn:hover {
-            background: #c0392b !important;
+
+        .logout-sidebar {
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
         }
 
-        /* 主内容区 */
-        .admin-content {
-            padding: 30px;
+        .logout-sidebar button {
+            color: #e74c3c;
+        }
+        .logout-sidebar button:hover {
+            background: rgba(231, 76, 60, 0.2);
+        }
+
+        /* 右侧主内容 */
+        .admin-main {
+            flex: 1;
+            margin-left: 260px;
+            padding: 25px 30px;
         }
 
         /* 面板卡片 */
@@ -306,25 +345,59 @@
             border-radius: 8px;
         }
 
+        /* 移动端侧边栏切换按钮 */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 201;
+            background: #80abce;
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
         /* 响应式 */
         @media (max-width: 768px) {
-            .admin-topbar {
-                padding: 15px;
+            .mobile-menu-toggle {
+                display: block;
             }
-            .admin-menu {
-                width: 100%;
-                justify-content: center;
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 200;
             }
-            .admin-content {
-                padding: 20px;
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+            .admin-main {
+                margin-left: 0;
+                padding: 20px 15px;
+                padding-top: 70px;
             }
             th, td {
                 padding: 12px;
+            }
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-add {
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
+
+<!-- 移动端菜单按钮 -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
 
 <!-- ========== 登录界面 ========== -->
 <div id="loginPage">
@@ -357,99 +430,103 @@
     </div>
 </div>
 
-<!-- ========== 后台管理界面 ========== -->
+<!-- ========== 后台管理界面（侧边栏版）========== -->
 <div id="adminPage">
-    <div class="admin-topbar">
-        <div class="admin-logo">
-            <img src="img/coway-malaysia-logo.png" alt="Coway" onerror="this.src='https://placehold.co/40x40/80abce/white?text=C'">
-            <span>Admin</span>
+    <div class="admin-layout">
+        <!-- 左侧边栏 -->
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-logo">
+                <img src="img/coway-malaysia-logo.png" alt="Coway" onerror="this.src='https://placehold.co/40x40/80abce/white?text=C'">
+                <span>Admin</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><button data-tab="products" class="active"><i>📦</i> 商品管理</button></li>
+                <li><button data-tab="carousel"><i>🎠</i> 轮播广告</button></li>
+                <li><button data-tab="notice"><i>📰</i> 优惠公告</button></li>
+                <li><button data-tab="agents"><i>👥</i> Agent 管理</button></li>
+                <li><button data-tab="locations"><i>📍</i> 门店管理</button></li>
+                <li><button data-tab="about"><i>📄</i> 关于我们</button></li>
+                <li class="logout-sidebar"><button id="logoutBtn"><i>🚪</i> 退出登录</button></li>
+            </ul>
         </div>
-        <div class="admin-menu">
-            <button data-tab="products" class="active">📦 商品</button>
-            <button data-tab="carousel">🎠 轮播</button>
-            <button data-tab="notice">📰 公告</button>
-            <button data-tab="agents">👥 Agent</button>
-            <button data-tab="locations">📍 门店</button>
-            <button data-tab="about">📄 关于</button>
-            <button id="logoutBtn" class="logout-btn">🚪 退出</button>
-        </div>
-    </div>
 
-    <div class="admin-content">
-        <!-- 商品面板 -->
-        <div id="productsPanel" class="panel active">
-            <div class="card">
-                <div class="card-header">
-                    <h3>商品列表</h3>
-                    <button class="btn-add" id="addProductBtn">➕ 新增商品</button>
-                </div>
-                <div class="table-container">
-                    <div id="productsList"></div>
+        <!-- 右侧主内容 -->
+        <div class="admin-main">
+            <!-- 商品面板 -->
+            <div id="productsPanel" class="panel active">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>商品列表</h3>
+                        <button class="btn-add" id="addProductBtn">➕ 新增商品</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="productsList"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 轮播面板 -->
-        <div id="carouselPanel" class="panel">
-            <div class="card">
-                <div class="card-header">
-                    <h3>轮播列表</h3>
-                    <button class="btn-add" id="addCarouselBtn">➕ 新增轮播</button>
-                </div>
-                <div class="table-container">
-                    <div id="carouselList"></div>
+            <!-- 轮播面板 -->
+            <div id="carouselPanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>轮播列表</h3>
+                        <button class="btn-add" id="addCarouselBtn">➕ 新增轮播</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="carouselList"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 公告面板 -->
-        <div id="noticePanel" class="panel">
-            <div class="card">
-                <div class="card-header">
-                    <h3>公告列表</h3>
-                    <button class="btn-add" id="addNoticeBtn">➕ 新增公告</button>
-                </div>
-                <div class="table-container">
-                    <div id="noticeList"></div>
+            <!-- 公告面板 -->
+            <div id="noticePanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>公告列表</h3>
+                        <button class="btn-add" id="addNoticeBtn">➕ 新增公告</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="noticeList"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Agent面板 -->
-        <div id="agentsPanel" class="panel">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Agent列表</h3>
-                    <button class="btn-add" id="addAgentBtn">➕ 新增Agent</button>
-                </div>
-                <div class="table-container">
-                    <div id="agentsList"></div>
+            <!-- Agent面板 -->
+            <div id="agentsPanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Agent列表</h3>
+                        <button class="btn-add" id="addAgentBtn">➕ 新增Agent</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="agentsList"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 门店面板 -->
-        <div id="locationsPanel" class="panel">
-            <div class="card">
-                <div class="card-header">
-                    <h3>门店列表</h3>
-                    <button class="btn-add" id="addLocationBtn">➕ 新增门店</button>
-                </div>
-                <div class="table-container">
-                    <div id="locationsList"></div>
+            <!-- 门店面板 -->
+            <div id="locationsPanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>门店列表</h3>
+                        <button class="btn-add" id="addLocationBtn">➕ 新增门店</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="locationsList"></div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 关于我们面板 -->
-        <div id="aboutPanel" class="panel">
-            <div class="card">
-                <div class="card-header">
-                    <h3>关于我们区块</h3>
-                    <button class="btn-add" id="addAboutBtn">➕ 新增区块</button>
-                </div>
-                <div class="table-container">
-                    <div id="aboutList"></div>
+            <!-- 关于我们面板 -->
+            <div id="aboutPanel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>关于我们区块</h3>
+                        <button class="btn-add" id="addAboutBtn">➕ 新增区块</button>
+                    </div>
+                    <div class="table-container">
+                        <div id="aboutList"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -485,5 +562,37 @@
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/admin.js"></script>
+<script>
+    // 侧边栏移动端切换
+    var toggleBtn = document.getElementById('mobileMenuToggle');
+    var sidebar = document.getElementById('adminSidebar');
+    if (toggleBtn && sidebar) {
+        toggleBtn.onclick = function() {
+            sidebar.classList.toggle('open');
+        };
+        // 点击内容区域关闭侧边栏（移动端）
+        document.querySelector('.admin-main')?.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+            }
+        });
+    }
+    
+    // 面板切换（适配侧边栏按钮）
+    var menuBtns = document.querySelectorAll('.sidebar-menu button[data-tab]');
+    for (var i = 0; i < menuBtns.length; i++) {
+        menuBtns[i].onclick = function() {
+            var tab = this.getAttribute('data-tab');
+            document.querySelectorAll('.sidebar-menu button').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            document.querySelectorAll('.panel').forEach(function(panel) {
+                panel.classList.remove('active');
+            });
+            document.getElementById(tab + 'Panel').classList.add('active');
+        };
+    }
+</script>
 </body>
 </html>
