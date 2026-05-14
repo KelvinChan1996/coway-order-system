@@ -165,44 +165,6 @@
             padding: 20px 30px 40px;
         }
 
-        /* 顶部栏 */
-        .admin-header {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(128, 171, 206, 0.2);
-        }
-
-        .admin-title {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2c3e50;
-            margin-right: auto;
-        }
-
-        .btn-add-top {
-            background: linear-gradient(135deg, #80abce, #6a9ab8);
-            color: #fff;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 12px rgba(128, 171, 206, 0.3);
-        }
-
-        .btn-add-top:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(128, 171, 206, 0.4);
-        }
-
         /* 卡片容器 */
         .admin-card {
             background: #fff;
@@ -225,12 +187,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .card-header h3 {
             font-size: 18px;
             color: #2c3e50;
             font-weight: 600;
+        }
+
+        .btn-add-top {
+            background: linear-gradient(135deg, #80abce, #6a9ab8);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(128, 171, 206, 0.3);
+        }
+
+        .btn-add-top:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128, 171, 206, 0.4);
         }
 
         .card-body {
@@ -434,6 +419,13 @@
                 width: 260px;
                 transform: translateX(0);
             }
+            .card-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-add-top {
+                justify-content: center;
+            }
         }
 
         .mobile-menu-toggle {
@@ -455,9 +447,6 @@
         @media (max-width: 768px) {
             .mobile-menu-toggle {
                 display: block;
-            }
-            .admin-header {
-                padding-left: 50px;
             }
         }
 
@@ -600,38 +589,57 @@
 
         <!-- 右侧主内容 -->
         <div class="admin-main">
-            <div class="admin-header">
-                <div class="admin-title" id="currentPanelTitle">商品管理</div>
-                <button class="btn-add-top" id="globalAddBtn">➕ 新增</button>
-            </div>
-
+            <!-- 商品面板 -->
             <div id="productsPanel" class="admin-card panel">
-                <div class="card-header"><h3>商品列表</h3></div>
+                <div class="card-header">
+                    <h3>商品列表</h3>
+                    <button class="btn-add-top" id="addProductBtn">➕ 新增商品</button>
+                </div>
                 <div class="card-body"><div id="productsList" class="data-table-container"></div></div>
             </div>
 
+            <!-- 轮播面板 -->
             <div id="carouselPanel" class="admin-card panel" style="display:none;">
-                <div class="card-header"><h3>轮播广告列表</h3></div>
+                <div class="card-header">
+                    <h3>轮播广告列表</h3>
+                    <button class="btn-add-top" id="addCarouselBtn">➕ 新增广告</button>
+                </div>
                 <div class="card-body"><div id="carouselList" class="data-table-container"></div></div>
             </div>
 
+            <!-- 公告面板 -->
             <div id="noticePanel" class="admin-card panel" style="display:none;">
-                <div class="card-header"><h3>公告列表</h3></div>
+                <div class="card-header">
+                    <h3>公告列表</h3>
+                    <button class="btn-add-top" id="addNoticeBtn">➕ 新增公告</button>
+                </div>
                 <div class="card-body"><div id="noticeList" class="data-table-container"></div></div>
             </div>
 
+            <!-- Agent面板 -->
             <div id="agentsPanel" class="admin-card panel" style="display:none;">
-                <div class="card-header"><h3>Agent 列表</h3></div>
+                <div class="card-header">
+                    <h3>Agent 列表</h3>
+                    <button class="btn-add-top" id="addAgentBtn">➕ 新增 Agent</button>
+                </div>
                 <div class="card-body"><div id="agentsList" class="data-table-container"></div></div>
             </div>
 
+            <!-- 门店面板 -->
             <div id="locationsPanel" class="admin-card panel" style="display:none;">
-                <div class="card-header"><h3>门店列表</h3></div>
+                <div class="card-header">
+                    <h3>门店列表</h3>
+                    <button class="btn-add-top" id="addLocationBtn">➕ 新增门店</button>
+                </div>
                 <div class="card-body"><div id="locationsList" class="data-table-container"></div></div>
             </div>
 
+            <!-- 关于我们面板 -->
             <div id="aboutPanel" class="admin-card panel" style="display:none;">
-                <div class="card-header"><h3>关于我们区块</h3></div>
+                <div class="card-header">
+                    <h3>关于我们区块</h3>
+                    <button class="btn-add-top" id="addAboutSectionBtn">➕ 新增区块</button>
+                </div>
                 <div class="card-body"><div id="aboutSectionsList" class="data-table-container"></div></div>
             </div>
         </div>
@@ -810,6 +818,23 @@
         if (modal) modal.classList.remove('active');
     };
     
+    // ========== 独立新增按钮绑定 ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        var addProductBtn = document.getElementById('addProductBtn');
+        var addCarouselBtn = document.getElementById('addCarouselBtn');
+        var addNoticeBtn = document.getElementById('addNoticeBtn');
+        var addAgentBtn = document.getElementById('addAgentBtn');
+        var addLocationBtn = document.getElementById('addLocationBtn');
+        var addAboutSectionBtn = document.getElementById('addAboutSectionBtn');
+        
+        if (addProductBtn) addProductBtn.onclick = function() { openModal('product', null); };
+        if (addCarouselBtn) addCarouselBtn.onclick = function() { openModal('carousel', null); };
+        if (addNoticeBtn) addNoticeBtn.onclick = function() { openModal('notice', null); };
+        if (addAgentBtn) addAgentBtn.onclick = function() { openModal('agent', null); };
+        if (addLocationBtn) addLocationBtn.onclick = function() { openModal('location', null); };
+        if (addAboutSectionBtn) addAboutSectionBtn.onclick = function() { openAboutModal(-1); };
+    });
+    
     // ========== 侧边栏切换 ==========
     var menuItems = document.querySelectorAll('.sidebar-menu li[data-tab]');
     for (var i = 0; i < menuItems.length; i++) {
@@ -829,52 +854,12 @@
             var targetPanel = document.getElementById(tab + 'Panel');
             if (targetPanel) targetPanel.style.display = 'block';
             
-            var titles = {
-                products: '商品管理',
-                carousel: '轮播广告',
-                notice: '优惠公告',
-                agents: 'Agent 管理',
-                locations: '门店管理',
-                about: '关于我们'
-            };
-            var titleEl = document.getElementById('currentPanelTitle');
-            if (titleEl) titleEl.innerText = titles[tab] || '管理';
-            
             if (tab === 'products' && typeof renderProducts === 'function') renderProducts();
             else if (tab === 'carousel' && typeof renderCarousel === 'function') renderCarousel();
             else if (tab === 'notice' && typeof renderNotices === 'function') renderNotices();
             else if (tab === 'agents' && typeof renderAgents === 'function') renderAgents();
             else if (tab === 'locations' && typeof renderLocations === 'function') renderLocations();
             else if (tab === 'about' && typeof renderAboutSections === 'function') renderAboutSections();
-        });
-    }
-    
-    // ========== 全局添加按钮 ==========
-    var addBtn = document.getElementById('globalAddBtn');
-    if (addBtn) {
-        addBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var activeItem = document.querySelector('.sidebar-menu li.active');
-            var activeTab = activeItem ? activeItem.getAttribute('data-tab') : 'products';
-            
-            if (activeTab === 'about') {
-                if (typeof window.openAboutModal === 'function') {
-                    window.openAboutModal(-1);
-                } else {
-                    alert('请刷新页面后重试');
-                }
-            } else {
-                var modalType = activeTab === 'products' ? 'product' : 
-                                activeTab === 'carousel' ? 'carousel' :
-                                activeTab === 'notice' ? 'notice' :
-                                activeTab === 'agents' ? 'agent' :
-                                activeTab === 'locations' ? 'location' : 'product';
-                if (typeof window.openModal === 'function') {
-                    window.openModal(modalType, null);
-                } else {
-                    alert('请刷新页面后重试');
-                }
-            }
         });
     }
     
@@ -897,13 +882,11 @@
     }
     
     // ========== 确保所有弹窗初始隐藏 ==========
-    document.addEventListener('DOMContentLoaded', function() {
-        var modals = document.querySelectorAll('.modal, #aboutSectionModal');
-        for (var i = 0; i < modals.length; i++) {
-            modals[i].classList.remove('active');
-            modals[i].style.display = 'none';
-        }
-    });
+    var modals = document.querySelectorAll('.modal, #aboutSectionModal');
+    for (var i = 0; i < modals.length; i++) {
+        modals[i].classList.remove('active');
+        modals[i].style.display = 'none';
+    }
 </script>
 </body>
 </html>
