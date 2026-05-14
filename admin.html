@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Admin | 内容管理系统</title>
-    <link rel="stylesheet" href="css/common.css">
     <style>
         * {
             margin: 0;
@@ -15,7 +14,7 @@
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
             font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            overflow-x: hidden;
+            min-height: 100vh;
         }
 
         /* ========== 登录界面 ========== */
@@ -41,148 +40,120 @@
         .input-group label { display: block; font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 6px; }
         .input-group input {
             width: 100%; padding: 14px 16px; border: 2px solid #e0e0e0; border-radius: 12px;
-            font-size: 16px; background: #f8fafc; transition: all 0.3s;
+            font-size: 16px; background: #f8fafc;
         }
         .input-group input:focus {
-            outline: none; border-color: #80abce; background: #fff;
-            box-shadow: 0 0 0 3px rgba(128,171,206,0.1);
+            outline: none; border-color: #80abce;
         }
         
         .pin-input-container {
             display: flex; gap: 10px; justify-content: center; margin: 25px 0;
         }
         .pin-input {
-            width: 50px; height: 60px; text-align: center; font-size: 28px; font-weight: 600;
-            border: 2px solid #e0e0e0; border-radius: 12px; background: #f8fafc;
+            width: 50px; height: 60px; text-align: center; font-size: 28px;
+            border: 2px solid #e0e0e0; border-radius: 12px;
         }
-        .pin-input:focus {
-            outline: none; border-color: #80abce;
-        }
+        .pin-input:focus { outline: none; border-color: #80abce; }
         
         .login-btn {
             width: 100%; padding: 14px; background: #80abce; color: #fff; border: none;
             border-radius: 40px; font-size: 16px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; margin-top: 10px;
         }
-        .login-btn:hover { background: #6a9ab8; transform: translateY(-2px); }
-        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .login-btn:hover { background: #6a9ab8; }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .back-link { margin-top: 15px; color: #80abce; cursor: pointer; font-size: 14px; }
-        .back-link:hover { text-decoration: underline; }
         .error-msg { color: #e74c3c; margin-top: 15px; font-size: 14px; }
 
-        /* ========== Admin 布局（初始隐藏）========== */
+        /* ========== Admin 布局 ========== */
         #adminPage {
             display: none;
-        }
-
-        .admin-wrapper {
-            display: flex;
             min-height: 100vh;
         }
 
-        /* 左侧边栏 */
-        .admin-sidebar {
-            width: 280px;
-            background: linear-gradient(180deg, #2c3e50 0%, #1a2632 100%);
-            color: #fff;
-            position: fixed;
-            left: 0;
+        /* 顶部导航栏 */
+        .admin-topbar {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            position: sticky;
             top: 0;
-            bottom: 0;
-            overflow-y: auto;
-            transition: all 0.3s ease;
             z-index: 100;
-            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
         }
-
-        .sidebar-logo {
-            padding: 25px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 20px;
+        .admin-logo {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
-        .sidebar-logo img {
+        .admin-logo img {
             height: 40px;
-            width: auto;
         }
-
-        .sidebar-logo span {
+        .admin-logo span {
             font-size: 20px;
             font-weight: 700;
             color: #80abce;
-            letter-spacing: 1px;
         }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .sidebar-menu li {
-            margin: 5px 15px;
-            border-radius: 12px;
-            transition: all 0.3s;
-        }
-
-        .sidebar-menu li a {
+        .admin-menu {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 15px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .admin-menu button {
+            padding: 10px 20px;
+            background: #f0f2f5;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
             font-weight: 500;
-            border-radius: 12px;
-            transition: all 0.3s;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
-        .sidebar-menu li a i {
-            font-size: 20px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .sidebar-menu li:hover a {
-            background: rgba(128, 171, 206, 0.2);
-            color: #fff;
-        }
-
-        .sidebar-menu li.active a {
+        .admin-menu button.active {
             background: #80abce;
             color: #fff;
-            box-shadow: 0 4px 12px rgba(128, 171, 206, 0.3);
+        }
+        .admin-menu button:hover:not(.active) {
+            background: #e0e4e8;
+        }
+        .logout-btn {
+            background: #e74c3c !important;
+            color: #fff !important;
+        }
+        .logout-btn:hover {
+            background: #c0392b !important;
         }
 
-        /* 右侧主内容 */
-        .admin-main {
-            flex: 1;
-            margin-left: 280px;
-            padding: 20px 30px 40px;
+        /* 主内容区 */
+        .admin-content {
+            padding: 30px;
         }
 
-        /* 卡片容器 */
-        .admin-card {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
-            border: 1px solid rgba(128, 171, 206, 0.1);
-            overflow: hidden;
-            animation: fadeInUp 0.4s ease;
+        /* 面板卡片 */
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
+        .panel.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            border: 1px solid rgba(128,171,206,0.1);
+            overflow: hidden;
+        }
         .card-header {
             padding: 20px 25px;
-            background: linear-gradient(135deg, #f8fafc, #fff);
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
@@ -190,115 +161,75 @@
             flex-wrap: wrap;
             gap: 15px;
         }
-
         .card-header h3 {
             font-size: 18px;
             color: #2c3e50;
-            font-weight: 600;
         }
-
-        .btn-add-top {
-            background: linear-gradient(135deg, #80abce, #6a9ab8);
+        .btn-add {
+            background: #80abce;
             color: #fff;
             border: none;
             padding: 10px 24px;
             border-radius: 40px;
             font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(128, 171, 206, 0.3);
+        }
+        .btn-add:hover {
+            background: #6a9ab8;
         }
 
-        .btn-add-top:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 171, 206, 0.4);
+        /* 表格 */
+        .table-container {
+            overflow-x: auto;
         }
-
-        .card-body {
-            padding: 0;
-        }
-
-        /* 表格样式 */
-        .data-table {
+        table {
             width: 100%;
             border-collapse: collapse;
         }
-
-        .data-table th,
-        .data-table td {
+        th, td {
             padding: 16px 20px;
             text-align: left;
             border-bottom: 1px solid #f0f0f0;
         }
-
-        .data-table th {
+        th {
             background: #fafbfc;
             font-weight: 600;
             color: #555;
             font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
-
-        .data-table tr:hover td {
+        tr:hover td {
             background: #f8fafc;
         }
-
-        .preview-img-sm {
+        .preview-img {
             width: 50px;
             height: 50px;
             object-fit: cover;
             border-radius: 8px;
-            background: #f0f0f0;
         }
-
-        .action-btns {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-edit-sm, .btn-delete-sm {
+        .btn-edit, .btn-delete {
             padding: 6px 16px;
             border-radius: 20px;
             border: none;
             cursor: pointer;
             font-size: 12px;
-            font-weight: 500;
-            transition: all 0.2s;
+            margin-right: 8px;
         }
-
-        .btn-edit-sm {
+        .btn-edit {
             background: #80abce;
             color: #fff;
         }
-
-        .btn-edit-sm:hover {
-            background: #6a9ab8;
-            transform: scale(1.02);
-        }
-
-        .btn-delete-sm {
+        .btn-delete {
             background: #e74c3c;
             color: #fff;
         }
-
-        .btn-delete-sm:hover {
-            background: #c0392b;
-            transform: scale(1.02);
-        }
-
         .empty-row {
             text-align: center;
             padding: 60px;
             color: #999;
         }
 
-        /* ========== 弹窗样式（默认隐藏）========== */
-        .modal, #aboutSectionModal {
+        /* 弹窗 */
+        .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -310,22 +241,19 @@
             justify-content: center;
             align-items: center;
         }
-
-        .modal.active, #aboutSectionModal.active {
+        .modal.active {
             display: flex;
         }
-
-        .modal-content, #aboutSectionModal .modal-content {
+        .modal-content {
             background: #fff;
             border-radius: 20px;
-            max-width: 600px;
+            max-width: 550px;
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
             padding: 25px;
             position: relative;
         }
-
         .modal-close {
             position: absolute;
             top: 15px;
@@ -334,151 +262,30 @@
             cursor: pointer;
             color: #999;
         }
-
         .modal-buttons {
             display: flex;
             gap: 15px;
             margin-top: 20px;
             justify-content: flex-end;
         }
-
-        .btn-save, .btn-cancel {
-            padding: 10px 24px;
-            border-radius: 40px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
         .btn-save {
             background: #27ae60;
             color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            cursor: pointer;
         }
-
         .btn-cancel {
             background: #95a5a6;
             color: #fff;
-        }
-
-        /* 进度条弹窗 */
-        .progress-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s;
-        }
-
-        .progress-modal.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .progress-content {
-            background: #fff;
-            padding: 30px 40px;
-            border-radius: 20px;
-            min-width: 350px;
-            text-align: center;
-        }
-
-        .progress-bar-container {
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            height: 12px;
-            margin: 20px 0;
-        }
-
-        .progress-bar-fill {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #80abce, #6a9ab8);
-            transition: width 0.3s ease;
-        }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .admin-sidebar {
-                width: 0;
-                transform: translateX(-100%);
-            }
-            .admin-main {
-                margin-left: 0;
-                padding: 15px;
-            }
-            .admin-sidebar.open {
-                width: 260px;
-                transform: translateX(0);
-            }
-            .card-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .btn-add-top {
-                justify-content: center;
-            }
-        }
-
-        .mobile-menu-toggle {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 101;
-            background: #80abce;
-            color: #fff;
             border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            font-size: 24px;
+            padding: 10px 24px;
+            border-radius: 40px;
             cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .mobile-menu-toggle {
-                display: block;
-            }
-        }
-
-        /* 表单样式 */
-        .image-upload-area {
-            margin: 15px 0;
-        }
-        .image-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .image-preview img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-        .current-image-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        .upload-status {
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .upload-status.success { color: #27ae60; }
-        .upload-status.error { color: #e74c3c; }
-        .upload-status.uploading { color: #f39c12; }
-
+        /* 表单 */
         input, select, textarea {
             width: 100%;
             padding: 10px;
@@ -486,71 +293,56 @@
             border: 1px solid #ddd;
             border-radius: 8px;
         }
-
-        .section-type-selector {
+        .image-preview {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
         }
-        .section-type-btn {
-            padding: 8px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 30px;
-            background: #fff;
-            cursor: pointer;
+        .image-preview img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
         }
-        .section-type-btn.active {
-            border-color: #80abce;
-            background: #e8f0f8;
-            color: #80abce;
-        }
-        .field-item {
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #e0e0e0;
-        }
-        .btn-add-field {
-            background: #80abce;
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .btn-remove-field {
-            background: #e74c3c;
-            color: #fff;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 20px;
-            cursor: pointer;
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .admin-topbar {
+                padding: 15px;
+            }
+            .admin-menu {
+                width: 100%;
+                justify-content: center;
+            }
+            .admin-content {
+                padding: 20px;
+            }
+            th, td {
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
 
 <!-- ========== 登录界面 ========== -->
-<div id="loginPage" class="login-container">
+<div id="loginPage">
     <div class="login-header">
         <div class="logo-icon">💧</div>
         <h2>Admin</h2>
         <p>安全验证 · 内容管理系统</p>
     </div>
     
-    <div id="stepAccount" class="login-step">
+    <div id="stepAccount">
         <div class="input-group"><label>👤 ID</label><input type="text" id="loginId" placeholder="请输入账号" value="coway"></div>
         <div class="input-group"><label>🔒 密码</label><input type="password" id="loginPass" placeholder="请输入密码" value="A888888"></div>
         <button class="login-btn" id="goToPinBtn">下一步 · 安全验证</button>
         <div id="loginError" class="error-msg"></div>
     </div>
     
-    <div id="stepPin" class="login-step hidden">
-        <p style="margin-bottom:20px; color:#555;">请输入6位私人安全码</p>
+    <div id="stepPin" style="display:none;">
+        <p style="margin-bottom:20px;">请输入6位私人安全码</p>
         <div class="pin-input-container">
             <input type="text" class="pin-input" maxlength="1" data-index="0">
             <input type="text" class="pin-input" maxlength="1" data-index="1">
@@ -565,328 +357,133 @@
     </div>
 </div>
 
-<!-- ========== 后台管理界面（初始隐藏）========== -->
-<div id="adminPage" style="display: none;">
-    <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
-
-    <div class="admin-wrapper">
-        <!-- 左侧边栏 -->
-        <div class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-logo">
-                <img src="img/coway-malaysia-logo.png" alt="Coway" onerror="this.src='https://placehold.co/40x40/80abce/white?text=C'">
-                <span>Admin</span>
-            </div>
-            <ul class="sidebar-menu">
-                <li data-tab="products" class="active"><a href="#"><i>📦</i> 商品管理</a></li>
-                <li data-tab="carousel"><a href="#"><i>🎠</i> 轮播广告</a></li>
-                <li data-tab="notice"><a href="#"><i>📰</i> 优惠公告</a></li>
-                <li data-tab="agents"><a href="#"><i>👥</i> Agent 管理</a></li>
-                <li data-tab="locations"><a href="#"><i>📍</i> 门店管理</a></li>
-                <li data-tab="about"><a href="#"><i>📄</i> 关于我们</a></li>
-                <li style="margin-top: 40px;"><a href="#" id="logoutBtnAdmin"><i>🚪</i> 退出登录</a></li>
-            </ul>
+<!-- ========== 后台管理界面 ========== -->
+<div id="adminPage">
+    <div class="admin-topbar">
+        <div class="admin-logo">
+            <img src="img/coway-malaysia-logo.png" alt="Coway" onerror="this.src='https://placehold.co/40x40/80abce/white?text=C'">
+            <span>Admin</span>
         </div>
+        <div class="admin-menu">
+            <button data-tab="products" class="active">📦 商品</button>
+            <button data-tab="carousel">🎠 轮播</button>
+            <button data-tab="notice">📰 公告</button>
+            <button data-tab="agents">👥 Agent</button>
+            <button data-tab="locations">📍 门店</button>
+            <button data-tab="about">📄 关于</button>
+            <button id="logoutBtn" class="logout-btn">🚪 退出</button>
+        </div>
+    </div>
 
-        <!-- 右侧主内容 -->
-        <div class="admin-main">
-            <!-- 商品面板 -->
-            <div id="productsPanel" class="admin-card panel">
+    <div class="admin-content">
+        <!-- 商品面板 -->
+        <div id="productsPanel" class="panel active">
+            <div class="card">
                 <div class="card-header">
                     <h3>商品列表</h3>
-                    <button class="btn-add-top" id="addProductBtn">➕ 新增商品</button>
+                    <button class="btn-add" id="addProductBtn">➕ 新增商品</button>
                 </div>
-                <div class="card-body"><div id="productsList" class="data-table-container"></div></div>
+                <div class="table-container">
+                    <div id="productsList"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- 轮播面板 -->
-            <div id="carouselPanel" class="admin-card panel" style="display:none;">
+        <!-- 轮播面板 -->
+        <div id="carouselPanel" class="panel">
+            <div class="card">
                 <div class="card-header">
-                    <h3>轮播广告列表</h3>
-                    <button class="btn-add-top" id="addCarouselBtn">➕ 新增广告</button>
+                    <h3>轮播列表</h3>
+                    <button class="btn-add" id="addCarouselBtn">➕ 新增轮播</button>
                 </div>
-                <div class="card-body"><div id="carouselList" class="data-table-container"></div></div>
+                <div class="table-container">
+                    <div id="carouselList"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- 公告面板 -->
-            <div id="noticePanel" class="admin-card panel" style="display:none;">
+        <!-- 公告面板 -->
+        <div id="noticePanel" class="panel">
+            <div class="card">
                 <div class="card-header">
                     <h3>公告列表</h3>
-                    <button class="btn-add-top" id="addNoticeBtn">➕ 新增公告</button>
+                    <button class="btn-add" id="addNoticeBtn">➕ 新增公告</button>
                 </div>
-                <div class="card-body"><div id="noticeList" class="data-table-container"></div></div>
+                <div class="table-container">
+                    <div id="noticeList"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- Agent面板 -->
-            <div id="agentsPanel" class="admin-card panel" style="display:none;">
+        <!-- Agent面板 -->
+        <div id="agentsPanel" class="panel">
+            <div class="card">
                 <div class="card-header">
-                    <h3>Agent 列表</h3>
-                    <button class="btn-add-top" id="addAgentBtn">➕ 新增 Agent</button>
+                    <h3>Agent列表</h3>
+                    <button class="btn-add" id="addAgentBtn">➕ 新增Agent</button>
                 </div>
-                <div class="card-body"><div id="agentsList" class="data-table-container"></div></div>
+                <div class="table-container">
+                    <div id="agentsList"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- 门店面板 -->
-            <div id="locationsPanel" class="admin-card panel" style="display:none;">
+        <!-- 门店面板 -->
+        <div id="locationsPanel" class="panel">
+            <div class="card">
                 <div class="card-header">
                     <h3>门店列表</h3>
-                    <button class="btn-add-top" id="addLocationBtn">➕ 新增门店</button>
+                    <button class="btn-add" id="addLocationBtn">➕ 新增门店</button>
                 </div>
-                <div class="card-body"><div id="locationsList" class="data-table-container"></div></div>
+                <div class="table-container">
+                    <div id="locationsList"></div>
+                </div>
             </div>
+        </div>
 
-            <!-- 关于我们面板 -->
-            <div id="aboutPanel" class="admin-card panel" style="display:none;">
+        <!-- 关于我们面板 -->
+        <div id="aboutPanel" class="panel">
+            <div class="card">
                 <div class="card-header">
                     <h3>关于我们区块</h3>
-                    <button class="btn-add-top" id="addAboutSectionBtn">➕ 新增区块</button>
+                    <button class="btn-add" id="addAboutBtn">➕ 新增区块</button>
                 </div>
-                <div class="card-body"><div id="aboutSectionsList" class="data-table-container"></div></div>
+                <div class="table-container">
+                    <div id="aboutList"></div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ========== 编辑弹窗（默认隐藏）========== -->
+<!-- ========== 通用编辑弹窗 ========== -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <span class="modal-close" id="closeModalBtn">&times;</span>
         <h3 id="modalTitle">编辑</h3>
         <input type="hidden" id="editId">
         <input type="hidden" id="editType">
-        
-        <!-- 商品字段 -->
-        <div id="productFields">
-            <input type="text" id="productName" placeholder="商品名称">
-            <select id="productCategory">
-                <option value="water">水机</option>
-                <option value="air">空气净化器</option>
-                <option value="ac">冷气机</option>
-                <option value="washer">洗衣机</option>
-                <option value="toilet">马桶</option>
-                <option value="massageChair">按摩椅</option>
-                <option value="massageBed">按摩床</option>
-                <option value="bed">床</option>
-            </select>
-            <input type="text" id="productPrice" placeholder="价格 (如: RM 3,999)">
-            <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
-            <textarea id="productDescEn" placeholder="英文描述" rows="3"></textarea>
-            <div class="image-upload-area">
-                <label>📷 商品图片</label>
-                <input type="file" id="productImagesInput" accept="image/*" multiple>
-                <div id="productImagesPreview" class="image-preview"></div>
-                <div id="productImagesInfo" class="current-image-info"></div>
-                <div id="productUploadStatus" class="upload-status"></div>
-            </div>
-        </div>
-        
-        <!-- Agent字段 -->
-        <div id="agentFields" style="display:none;">
-            <input type="text" id="agentName" placeholder="姓名 *">
-            <input type="text" id="agentHpCode" placeholder="HP CODE *">
-            <input type="text" id="agentContact" placeholder="手机号码 (如: 60123456789) *">
-            <select id="agentPosition"><option value="HP">HP</option><option value="SM">SM</option><option value="GSM">GSM</option></select>
-            <input type="number" id="agentReceipt" placeholder="当前单数 (DO)">
-            <input type="email" id="agentEmail" placeholder="Email">
-        </div>
-        
-        <!-- 轮播字段 -->
-        <div id="carouselFields" style="display:none;">
-            <input type="text" id="carouselTitle" placeholder="广告标题">
-            <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
-            <div class="image-upload-area">
-                <label>📷 广告图片</label>
-                <input type="file" id="carouselImageInput" accept="image/*">
-                <div id="carouselImagePreview" class="image-preview"></div>
-                <div id="carouselUploadStatus" class="upload-status"></div>
-            </div>
-            <input type="text" id="carouselLink" placeholder="链接">
-        </div>
-        
-        <!-- 公告字段 -->
-        <div id="noticeFields" style="display:none;">
-            <input type="text" id="noticeTitle" placeholder="公告标题">
-            <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
-            <div class="image-upload-area">
-                <label>📷 公告图片</label>
-                <input type="file" id="noticeImageInput" accept="image/*">
-                <div id="noticeImagePreview" class="image-preview"></div>
-                <div id="noticeUploadStatus" class="upload-status"></div>
-            </div>
-            <input type="date" id="noticeDate">
-        </div>
-        
-        <!-- 门店字段 -->
-        <div id="locationFields" style="display:none;">
-            <input type="text" id="locationName" placeholder="门店名称">
-            <div class="image-upload-area">
-                <label>📷 门店图片</label>
-                <input type="file" id="locationImageInput" accept="image/*">
-                <div id="locationImagePreview" class="image-preview"></div>
-                <div id="locationUploadStatus" class="upload-status"></div>
-            </div>
-            <textarea id="locationAddress" placeholder="地址" rows="2"></textarea>
-            <input type="text" id="locationHours" placeholder="营业时间">
-            <input type="text" id="locationPhone" placeholder="电话">
-            <input type="text" id="locationWaze" placeholder="Waze 链接">
-        </div>
-        
+        <div id="editFields"></div>
         <div class="modal-buttons">
-            <button class="btn-save" id="saveItemBtn">保存</button>
+            <button class="btn-save" id="saveBtn">保存</button>
             <button class="btn-cancel" id="cancelModalBtn">取消</button>
         </div>
     </div>
 </div>
 
-<!-- 关于我们编辑弹窗 -->
-<div id="aboutSectionModal" class="modal">
-    <div class="modal-content">
-        <span class="modal-close" id="closeAboutModalBtn">&times;</span>
-        <h3 id="aboutModalTitle">编辑区块</h3>
-        <input type="hidden" id="aboutEditIndex">
-        
-        <div class="section-type-selector">
-            <button class="section-type-btn active" data-type="text">📝 文本</button>
-            <button class="section-type-btn" data-type="stats">📊 统计数据</button>
-            <button class="section-type-btn" data-type="team">👥 团队成员</button>
-            <button class="section-type-btn" data-type="timeline">📅 时间线</button>
-            <button class="section-type-btn" data-type="image">🖼️ 图片</button>
-        </div>
-        
-        <input type="text" id="aboutSectionTitle" placeholder="区块标题">
-        <input type="text" id="aboutSectionIcon" placeholder="图标 (emoji)" value="📝">
-        
-        <div id="aboutTextFields"><textarea id="aboutTextContent" placeholder="文本内容" rows="5"></textarea></div>
-        <div id="aboutStatsFields" style="display:none;"><div id="statsFieldsContainer"></div><button class="btn-add-field" id="addStatFieldBtn">+ 添加统计项</button></div>
-        <div id="aboutTeamFields" style="display:none;"><div id="teamFieldsContainer"></div><button class="btn-add-field" id="addTeamMemberBtn">+ 添加成员</button></div>
-        <div id="aboutTimelineFields" style="display:none;"><div id="timelineFieldsContainer"></div><button class="btn-add-field" id="addTimelineItemBtn">+ 添加事件</button></div>
-        <div id="aboutImageFields" style="display:none;">
-            <div class="image-upload-area">
-                <label>📷 图片</label>
-                <input type="file" id="aboutImageInput" accept="image/*">
-                <div id="aboutImagePreview" class="image-preview"></div>
-                <div id="aboutImageUploadStatus" class="upload-status"></div>
-                <input type="hidden" id="aboutImageUrl">
-            </div>
-            <input type="text" id="aboutImageCaption" placeholder="图片说明 (可选)">
-        </div>
-        
-        <div class="modal-buttons">
-            <button class="btn-save" id="saveAboutSectionBtn">保存</button>
-            <button class="btn-cancel" id="cancelAboutModalBtn">取消</button>
-        </div>
-    </div>
-</div>
-
 <!-- 进度条弹窗 -->
-<div id="progressModal" class="progress-modal">
-    <div class="progress-content">
-        <h3 id="progressTitle">正在处理...</h3>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="progressBarFill"></div>
+<div id="progressModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h3 id="progressTitle">处理中...</h3>
+        <div style="background:#e0e0e0; border-radius:10px; height:12px; margin:20px 0;">
+            <div id="progressBar" style="width:0%; height:100%; background:#80abce; border-radius:10px;"></div>
         </div>
-        <div class="progress-text" id="progressText">0%</div>
-        <div class="progress-detail" id="progressDetail"></div>
+        <div id="progressText">0%</div>
     </div>
 </div>
 
 <script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/admin.js"></script>
-<script>
-    // ========== 进度条控制 ==========
-    window.showProgressModal = function(title) {
-        var modal = document.getElementById('progressModal');
-        if (!modal) return;
-        document.getElementById('progressTitle').innerText = title;
-        document.getElementById('progressBarFill').style.width = '0%';
-        document.getElementById('progressText').innerText = '0%';
-        document.getElementById('progressDetail').innerText = '';
-        modal.classList.add('active');
-    };
-    
-    window.updateProgressBar = function(percent, detail) {
-        var bar = document.getElementById('progressBarFill');
-        var text = document.getElementById('progressText');
-        var detailEl = document.getElementById('progressDetail');
-        if (bar) bar.style.width = percent + '%';
-        if (text) text.innerHTML = percent + '%';
-        if (detailEl && detail) detailEl.innerHTML = detail;
-    };
-    
-    window.hideProgressModal = function() {
-        var modal = document.getElementById('progressModal');
-        if (modal) modal.classList.remove('active');
-    };
-    
-    // ========== 独立新增按钮绑定 ==========
-    document.addEventListener('DOMContentLoaded', function() {
-        var addProductBtn = document.getElementById('addProductBtn');
-        var addCarouselBtn = document.getElementById('addCarouselBtn');
-        var addNoticeBtn = document.getElementById('addNoticeBtn');
-        var addAgentBtn = document.getElementById('addAgentBtn');
-        var addLocationBtn = document.getElementById('addLocationBtn');
-        var addAboutSectionBtn = document.getElementById('addAboutSectionBtn');
-        
-        if (addProductBtn) addProductBtn.onclick = function() { openModal('product', null); };
-        if (addCarouselBtn) addCarouselBtn.onclick = function() { openModal('carousel', null); };
-        if (addNoticeBtn) addNoticeBtn.onclick = function() { openModal('notice', null); };
-        if (addAgentBtn) addAgentBtn.onclick = function() { openModal('agent', null); };
-        if (addLocationBtn) addLocationBtn.onclick = function() { openModal('location', null); };
-        if (addAboutSectionBtn) addAboutSectionBtn.onclick = function() { openAboutModal(-1); };
-    });
-    
-    // ========== 侧边栏切换 ==========
-    var menuItems = document.querySelectorAll('.sidebar-menu li[data-tab]');
-    for (var i = 0; i < menuItems.length; i++) {
-        menuItems[i].addEventListener('click', function(e) {
-            e.preventDefault();
-            var tab = this.getAttribute('data-tab');
-            var allMenuItems = document.querySelectorAll('.sidebar-menu li');
-            for (var j = 0; j < allMenuItems.length; j++) {
-                allMenuItems[j].classList.remove('active');
-            }
-            this.classList.add('active');
-            
-            var panels = document.querySelectorAll('.panel');
-            for (var k = 0; k < panels.length; k++) {
-                panels[k].style.display = 'none';
-            }
-            var targetPanel = document.getElementById(tab + 'Panel');
-            if (targetPanel) targetPanel.style.display = 'block';
-            
-            if (tab === 'products' && typeof renderProducts === 'function') renderProducts();
-            else if (tab === 'carousel' && typeof renderCarousel === 'function') renderCarousel();
-            else if (tab === 'notice' && typeof renderNotices === 'function') renderNotices();
-            else if (tab === 'agents' && typeof renderAgents === 'function') renderAgents();
-            else if (tab === 'locations' && typeof renderLocations === 'function') renderLocations();
-            else if (tab === 'about' && typeof renderAboutSections === 'function') renderAboutSections();
-        });
-    }
-    
-    // ========== 移动端菜单 ==========
-    var menuToggle = document.getElementById('mobileMenuToggle');
-    var sidebar = document.getElementById('adminSidebar');
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('open');
-        });
-    }
-    
-    // ========== 退出登录 ==========
-    var logoutBtnAdmin = document.getElementById('logoutBtnAdmin');
-    if (logoutBtnAdmin && typeof logout === 'function') {
-        logoutBtnAdmin.addEventListener('click', function(e) {
-            e.preventDefault();
-            logout();
-        });
-    }
-    
-    // ========== 确保所有弹窗初始隐藏 ==========
-    var modals = document.querySelectorAll('.modal, #aboutSectionModal');
-    for (var i = 0; i < modals.length; i++) {
-        modals[i].classList.remove('active');
-        modals[i].style.display = 'none';
-    }
-</script>
 </body>
 </html>
