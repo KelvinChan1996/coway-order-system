@@ -742,3 +742,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addTeamMemberBtn')?.addEventListener('click', () => addTeamMemberField());
     document.getElementById('addTimelineItemBtn')?.addEventListener('click', () => addTimelineItemField());
 });
+// ========== 暴露函数给全局作用域（供 HTML 调用）==========
+window.openModal = openModal;
+window.openAboutModal = openAboutModal;
+window.closeModal = closeModal;
+window.closeAboutModal = closeAboutModal;
+window.saveItem = saveItem;
+window.saveAboutSection = saveAboutSection;
+window.renderProducts = renderProducts;
+window.renderCarousel = renderCarousel;
+window.renderNotices = renderNotices;
+window.renderAgents = renderAgents;
+window.renderLocations = renderLocations;
+window.renderAboutSections = renderAboutSections;
+window.addStatField = addStatField;
+window.addTeamMemberField = addTeamMemberField;
+window.addTimelineItemField = addTimelineItemField;
+window.updateAboutFieldsVisibility = updateAboutFieldsVisibility;
+window.logout = logout;
+window.loadAllData = loadAllData;
+
+console.log('admin.js 加载完成，所有函数已暴露');
