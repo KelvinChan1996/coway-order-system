@@ -477,6 +477,11 @@
             object-fit: cover;
             border-radius: 8px;
         }
+        .current-image-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
         .upload-status {
             font-size: 12px;
             margin-top: 5px;
@@ -542,15 +547,15 @@
 
 <!-- ========== 登录界面 ========== -->
 <div id="loginPage" class="login-container">
-   <div class="login-header">
-    <div class="logo-icon">💧</div>
-    <h2>Admin</h2>
-    <p>安全验证 · 内容管理系统</p>
-</div>
+    <div class="login-header">
+        <div class="logo-icon">💧</div>
+        <h2>Admin</h2>
+        <p>安全验证 · 内容管理系统</p>
+    </div>
     
     <div id="stepAccount" class="login-step">
-        <div class="input-group"><label>👤 ID</label><input type="text" id="loginId" placeholder="请输入账号"></div>
-        <div class="input-group"><label>🔒 密码</label><input type="password" id="loginPass" placeholder="请输入密码"></div>
+        <div class="input-group"><label>👤 ID</label><input type="text" id="loginId" placeholder="请输入账号" value="coway"></div>
+        <div class="input-group"><label>🔒 密码</label><input type="password" id="loginPass" placeholder="请输入密码" value="A888888"></div>
         <button class="login-btn" id="goToPinBtn">下一步 · 安全验证</button>
         <div id="loginError" class="error-msg"></div>
     </div>
@@ -638,15 +643,21 @@
     <div class="modal-content">
         <span class="modal-close" id="closeModalBtn">&times;</span>
         <h3 id="modalTitle">编辑</h3>
-        <input type="hidden" id="editId"><input type="hidden" id="editType">
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editType">
         
-        <div id="productFields" style="display:block;">
+        <!-- 商品字段 -->
+        <div id="productFields">
             <input type="text" id="productName" placeholder="商品名称">
             <select id="productCategory">
-                <option value="water">水机</option><option value="air">空气净化器</option>
-                <option value="ac">冷气机</option><option value="washer">洗衣机</option>
-                <option value="toilet">马桶</option><option value="massageChair">按摩椅</option>
-                <option value="massageBed">按摩床</option><option value="bed">床</option>
+                <option value="water">水机</option>
+                <option value="air">空气净化器</option>
+                <option value="ac">冷气机</option>
+                <option value="washer">洗衣机</option>
+                <option value="toilet">马桶</option>
+                <option value="massageChair">按摩椅</option>
+                <option value="massageBed">按摩床</option>
+                <option value="bed">床</option>
             </select>
             <input type="text" id="productPrice" placeholder="价格 (如: RM 3,999)">
             <textarea id="productDescZh" placeholder="中文描述" rows="3"></textarea>
@@ -655,10 +666,12 @@
                 <label>📷 商品图片</label>
                 <input type="file" id="productImagesInput" accept="image/*" multiple>
                 <div id="productImagesPreview" class="image-preview"></div>
+                <div id="productImagesInfo" class="current-image-info"></div>
                 <div id="productUploadStatus" class="upload-status"></div>
             </div>
         </div>
         
+        <!-- Agent字段 -->
         <div id="agentFields" style="display:none;">
             <input type="text" id="agentName" placeholder="姓名 *">
             <input type="text" id="agentHpCode" placeholder="HP CODE *">
@@ -668,6 +681,7 @@
             <input type="email" id="agentEmail" placeholder="Email">
         </div>
         
+        <!-- 轮播字段 -->
         <div id="carouselFields" style="display:none;">
             <input type="text" id="carouselTitle" placeholder="广告标题">
             <textarea id="carouselDesc" placeholder="广告描述" rows="2"></textarea>
@@ -680,6 +694,7 @@
             <input type="text" id="carouselLink" placeholder="链接">
         </div>
         
+        <!-- 公告字段 -->
         <div id="noticeFields" style="display:none;">
             <input type="text" id="noticeTitle" placeholder="公告标题">
             <textarea id="noticeDesc" placeholder="公告内容" rows="3"></textarea>
@@ -692,6 +707,7 @@
             <input type="date" id="noticeDate">
         </div>
         
+        <!-- 门店字段 -->
         <div id="locationFields" style="display:none;">
             <input type="text" id="locationName" placeholder="门店名称">
             <div class="image-upload-area">
@@ -781,9 +797,12 @@
     };
     
     window.updateProgressBar = function(percent, detail) {
-        document.getElementById('progressBarFill').style.width = percent + '%';
-        document.getElementById('progressText').innerHTML = percent + '%';
-        if (detail) document.getElementById('progressDetail').innerHTML = detail;
+        var bar = document.getElementById('progressBarFill');
+        var text = document.getElementById('progressText');
+        var detailEl = document.getElementById('progressDetail');
+        if (bar) bar.style.width = percent + '%';
+        if (text) text.innerHTML = percent + '%';
+        if (detailEl && detail) detailEl.innerHTML = detail;
     };
     
     window.hideProgressModal = function() {
@@ -792,15 +811,23 @@
     };
     
     // ========== 侧边栏切换 ==========
-    document.querySelectorAll('.sidebar-menu li[data-tab]').forEach(function(item) {
-        item.addEventListener('click', function(e) {
+    var menuItems = document.querySelectorAll('.sidebar-menu li[data-tab]');
+    for (var i = 0; i < menuItems.length; i++) {
+        menuItems[i].addEventListener('click', function(e) {
             e.preventDefault();
-            var tab = this.dataset.tab;
-            document.querySelectorAll('.sidebar-menu li').forEach(function(li) { li.classList.remove('active'); });
+            var tab = this.getAttribute('data-tab');
+            var allMenuItems = document.querySelectorAll('.sidebar-menu li');
+            for (var j = 0; j < allMenuItems.length; j++) {
+                allMenuItems[j].classList.remove('active');
+            }
             this.classList.add('active');
             
-            document.querySelectorAll('.panel').forEach(function(panel) { panel.style.display = 'none'; });
-            document.getElementById(tab + 'Panel').style.display = 'block';
+            var panels = document.querySelectorAll('.panel');
+            for (var k = 0; k < panels.length; k++) {
+                panels[k].style.display = 'none';
+            }
+            var targetPanel = document.getElementById(tab + 'Panel');
+            if (targetPanel) targetPanel.style.display = 'block';
             
             var titles = {
                 products: '商品管理',
@@ -810,7 +837,8 @@
                 locations: '门店管理',
                 about: '关于我们'
             };
-            document.getElementById('currentPanelTitle').innerText = titles[tab] || '管理';
+            var titleEl = document.getElementById('currentPanelTitle');
+            if (titleEl) titleEl.innerText = titles[tab] || '管理';
             
             if (tab === 'products' && typeof renderProducts === 'function') renderProducts();
             else if (tab === 'carousel' && typeof renderCarousel === 'function') renderCarousel();
@@ -819,19 +847,34 @@
             else if (tab === 'locations' && typeof renderLocations === 'function') renderLocations();
             else if (tab === 'about' && typeof renderAboutSections === 'function') renderAboutSections();
         });
-    });
+    }
     
     // ========== 全局添加按钮 ==========
     var addBtn = document.getElementById('globalAddBtn');
     if (addBtn) {
-        addBtn.addEventListener('click', function() {
-            var activeTab = document.querySelector('.sidebar-menu li.active')?.dataset.tab;
-            if (activeTab === 'products' && typeof openModal === 'function') openModal('product', null);
-            else if (activeTab === 'carousel' && typeof openModal === 'function') openModal('carousel', null);
-            else if (activeTab === 'notice' && typeof openModal === 'function') openModal('notice', null);
-            else if (activeTab === 'agents' && typeof openModal === 'function') openModal('agent', null);
-            else if (activeTab === 'locations' && typeof openModal === 'function') openModal('location', null);
-            else if (activeTab === 'about' && typeof openAboutModal === 'function') openAboutModal(-1);
+        addBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var activeItem = document.querySelector('.sidebar-menu li.active');
+            var activeTab = activeItem ? activeItem.getAttribute('data-tab') : 'products';
+            
+            if (activeTab === 'about') {
+                if (typeof window.openAboutModal === 'function') {
+                    window.openAboutModal(-1);
+                } else {
+                    alert('请刷新页面后重试');
+                }
+            } else {
+                var modalType = activeTab === 'products' ? 'product' : 
+                                activeTab === 'carousel' ? 'carousel' :
+                                activeTab === 'notice' ? 'notice' :
+                                activeTab === 'agents' ? 'agent' :
+                                activeTab === 'locations' ? 'location' : 'product';
+                if (typeof window.openModal === 'function') {
+                    window.openModal(modalType, null);
+                } else {
+                    alert('请刷新页面后重试');
+                }
+            }
         });
     }
     
@@ -844,13 +887,22 @@
         });
     }
     
+    // ========== 退出登录 ==========
+    var logoutBtnAdmin = document.getElementById('logoutBtnAdmin');
+    if (logoutBtnAdmin && typeof logout === 'function') {
+        logoutBtnAdmin.addEventListener('click', function(e) {
+            e.preventDefault();
+            logout();
+        });
+    }
+    
     // ========== 确保所有弹窗初始隐藏 ==========
     document.addEventListener('DOMContentLoaded', function() {
         var modals = document.querySelectorAll('.modal, #aboutSectionModal');
-        modals.forEach(function(modal) {
-            modal.classList.remove('active');
-            modal.style.display = 'none';
-        });
+        for (var i = 0; i < modals.length; i++) {
+            modals[i].classList.remove('active');
+            modals[i].style.display = 'none';
+        }
     });
 </script>
 </body>
